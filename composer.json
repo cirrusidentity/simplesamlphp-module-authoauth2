@@ -1,0 +1,21 @@
+{
+    "name": "cirrusidentity/simplesamlphp-module-authoauth2",
+    "description": "SSP Module for Oauth2 authentication sources",
+    "type": "simplesamlphp-module",
+    "require": {
+        "php" : ">=5.6",
+        "simplesamlphp/composer-module-installer": "^1.1",
+        "league/oauth2-client": "^2.2"
+    },
+    "require-dev": {
+        "simplesamlphp/simplesamlphp": "~1.15",
+        "phpunit/phpunit": "5.7.*",
+        "codeception/aspect-mock": "*",
+        "cirrusidentity/simplesamlphp-test-utils": "dev-master"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Test\\SimpleSAML\\": "tests/lib/"
+        }
+    }
+}
