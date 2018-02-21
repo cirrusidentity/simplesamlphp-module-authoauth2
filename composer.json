@@ -2,6 +2,8 @@
     "name": "cirrusidentity/simplesamlphp-module-authoauth2",
     "description": "SSP Module for Oauth2 authentication sources",
     "type": "simplesamlphp-module",
+    "keywords" : ["simplesamlphp", "oauth2", "oidc"],
+    "license" : "LGPL-2.1-only",
     "require": {
         "php" : ">=5.6",
         "simplesamlphp/composer-module-installer": "^1.1",
