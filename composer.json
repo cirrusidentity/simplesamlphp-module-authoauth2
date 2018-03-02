@@ -8,11 +8,11 @@
         "php" : ">=5.6",
         "simplesamlphp/composer-module-installer": "^1.1",
         "league/oauth2-client": "^2.3",
-        "simplesamlphp/simplesamlphp": "~1.15",
-        "cirrusidentity/simplesamlphp-test-utils": "dev-master"
+        "simplesamlphp/simplesamlphp": "~1.15"
     },
     "require-dev": {
-        "phpunit/phpunit": "5.7.*"
+        "phpunit/phpunit": "5.7.*",
+        "cirrusidentity/simplesamlphp-test-utils": "dev-master"
     },
     "autoload-dev": {
         "psr-4": {
