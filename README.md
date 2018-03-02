@@ -28,7 +28,7 @@ excellent [PHP League OAuth2 Client](http://oauth2-client.thephpleague.com/).
 
 The module can be installed with composer.
 
-    composer require cirrusidentity/simplesamlphp-module-authoauth2
+    composer require cirrusidentity/simplesamlphp-module-authoauth2:dev-master
 
 # Usage
 
