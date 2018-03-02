@@ -7,13 +7,12 @@
     "require": {
         "php" : ">=5.6",
         "simplesamlphp/composer-module-installer": "^1.1",
-        "league/oauth2-client": "^2.2",
-        "simplesamlphp/simplesamlphp": "~1.15"
+        "league/oauth2-client": "^2.3",
+        "simplesamlphp/simplesamlphp": "~1.15",
+        "cirrusidentity/simplesamlphp-test-utils": "dev-master"
     },
     "require-dev": {
-        "phpunit/phpunit": "5.7.*",
-        "codeception/aspect-mock": "*",
-        "cirrusidentity/simplesamlphp-test-utils": "dev-master"
+        "phpunit/phpunit": "5.7.*"
     },
     "autoload-dev": {
         "psr-4": {

@@ -1,0 +1,188 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: patrick
+ * Date: 3/1/18
+ * Time: 2:10 PM
+ */
+
+namespace Test\SimpleSAML;
+
+
+use CirrusIdentity\SSP\Test\Auth\MockAuthSource;
+use PHPUnit_Framework_MockObject_MockObject;
+use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
+use SimpleSAML\Module\authoauth2\OAuth2ResponseHandler;
+use SimpleSAML_Auth_State;
+use SimpleSAML_Error_AuthSource;
+use SimpleSAML_Error_UserAborted;
+use SimpleSAML_Session;
+
+use AspectMock\Test as test;
+
+
+class OAuth2ResponseHandlerTest extends \PHPUnit_Framework_TestCase
+{
+    /**
+     * @var OAuth2ResponseHandler
+     */
+    private $responseHandler;
+
+    private $validStateValue = 'authoauth2|validStateId';
+
+    /**
+     * @var PHPUnit_Framework_MockObject_MockObject|OAuth2
+     */
+    private $mockAuthSource;
+
+    public static function setUpBeforeClass()
+    {
+        putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(__DIR__) . '/config');
+    }
+
+    protected function setUp()
+    {
+        test::clean();
+        MockAuthSource::clearInternalState();
+        $this->responseHandler = new OAuth2ResponseHandler();
+
+        $this->mockAuthSource = $this->createMock(OAuth2::class);
+        $this->mockAuthSource->method('getAuthId')->willReturn('mockAuthSource');
+
+        MockAuthSource::getById($this->mockAuthSource, 'mockAuthSource');
+    }
+
+    /**
+     * Confirm checking if response can be handled by this module
+     */
+    public function testCanHandle()
+    {
+        $this->assertFalse($this->responseHandler->canHandleResponseFromRequest([]));
+        $this->assertFalse($this->responseHandler->canHandleResponseFromRequest(['wrongParams' => 'value']));
+        $this->assertFalse($this->responseHandler->canHandleResponseFromRequest(['wrongParams' => 'value']));
+        $this->assertFalse($this->responseHandler->canHandleResponseFromRequest(['state' => 'wrong-prefix']));
+
+        $this->assertTrue($this->responseHandler->canHandleResponseFromRequest(['state' => 'authoauth2|']));
+        $this->assertTrue($this->responseHandler->canHandleResponseFromRequest(['state' => $this->validStateValue]));
+        $this->assertTrue($this->responseHandler->canHandleResponseFromRequest([
+            'state' => 'authoauth2|otherstate',
+            'other' => 'param'
+        ]));
+    }
+
+    /**
+     * If we can't handle the state param throw an exception
+     */
+    public function testUnhandleableResponse()
+    {
+        $this->expectException(\SimpleSAML_Error_BadRequest::class);
+        $this->responseHandler->handleResponseFromRequest(['state' => 'wrong-prefix']);
+    }
+
+    /**
+     * Test behavior if state not found in session. User session could have expired during login.
+     */
+    public function testNoStateFoundInSession()
+    {
+
+        $this->expectException(\SimpleSAML_Error_NoState::class);
+        $request = [
+            'state' => $this->validStateValue,
+        ];
+
+        $this->responseHandler->handleResponseFromRequest($request);
+    }
+
+    /**
+     * @dataProvider noCodeDataProvider
+     * @param $queryParams
+     * @param $expectedException
+     * @param $expectedMessage
+     */
+    public function testNoCodeInResponse($queryParams, $expectedException, $expectedMessage)
+    {
+        $this->expectException($expectedException);
+        $this->expectExceptionMessage($expectedMessage);
+        $request = array_merge([
+            'state' => $this->validStateValue,
+        ], $queryParams);
+
+        $stateValue = serialize([
+            SimpleSAML_Auth_State::ID => 'validStateId',
+            SimpleSAML_Auth_State::STAGE => 'authouath2:init',
+            'authouath2:AuthId' => 'mockAuthSource',
+        ]);
+
+        SimpleSAML_Session::getSessionFromRequest()->setData('SimpleSAML_Auth_State', 'validStateId', $stateValue);
+        $this->responseHandler->handleResponseFromRequest($request);
+    }
+
+    public function noCodeDataProvider() {
+        return [
+            // OAuth2 AS did not return error code or a authz code
+            [[], SimpleSAML_Error_AuthSource::class, "Error with authentication source 'mockAuthSource': Authentication failed: []" ],
+            // OAuth2 AS says client not allowed
+            [['error' => 'unauthorized_client'], SimpleSAML_Error_AuthSource::class, "Error with authentication source 'mockAuthSource': Authentication failed: [unauthorized_client]" ],
+            // OAuth2 AS has custom error code
+            [['error' => 'special_code', 'error_description' => 'Closed'], SimpleSAML_Error_AuthSource::class, "Error with authentication source 'mockAuthSource': Authentication failed: [special_code] Closed" ],
+            // OAuth2 AS says users denied access
+            [['error' => 'access_denied', 'error_description' => 'User declined'], SimpleSAML_Error_UserAborted::class, "USERABORTED" ],
+
+        ];
+    }
+
+    public function testValidResponse()
+    {
+
+        // given: a valid response
+        $request = [
+            'state' => $this->validStateValue,
+            'code' => 'authCode'
+        ];
+
+        $stateValue = serialize([
+            SimpleSAML_Auth_State::ID => 'validStateId',
+            SimpleSAML_Auth_State::STAGE => 'authouath2:init',
+            'authouath2:AuthId' => 'mockAuthSource',
+        ]);
+        // Mock completeAuth so we can verify its called later
+        $double = MockAuthSource::completeAuth();
+
+        // phpunit mock to confirm authsource called
+        $this->mockAuthSource->expects($this->once())
+            ->method('finalStep')
+            ->with(
+            // Check state was deserialized and passed in
+                $this->arrayHasKey('authouath2:AuthId'),
+                // Check OAuth2 auth code was passed in
+                $this->equalTo('authCode')
+            );
+
+        SimpleSAML_Session::getSessionFromRequest()->setData('SimpleSAML_Auth_State', 'validStateId', $stateValue);
+        // when: handling the response
+        $this->responseHandler->handleResponseFromRequest($request);
+
+        // then: final method should be called (base on earlier 'expects') and
+        //  then completeAuth is called
+        $double->verifyInvokedOnce('completeAuth');
+        $firstParam = $double->getCallsForMethod('completeAuth')[0][0];
+        $this->assertEquals('mockAuthSource', $firstParam['authouath2:AuthId']);
+    }
+
+    /**
+     * Confirm mock verification is working.
+     */
+    public function testSanityCheckMocks() {
+        $myState = [];
+        $this->mockAuthSource->expects($this->once())
+            ->method('finalStep')
+            ->with(
+                $myState,
+                'code'
+            );
+        $this->mockAuthSource->finalStep($myState, 'code');
+
+    }
+
+
+}
