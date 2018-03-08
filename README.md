@@ -4,6 +4,7 @@
 
 - [Installation](#installation)
 - [Usage](#usage)
+  - [Provider specifc Tips](#provider-specifc-tips)
   - [Generic Usage](#generic-usage)
   - [Provider Specific Usage](#provider-specific-usage)
   - [Template Specific Usage](#template-specific-usage)
@@ -37,6 +38,10 @@ The generic OAuth2 client is configured with
 * the client secret/id 
 * optional parameters for scope
 * optional query parameters for the authorization url
+
+## Provider specifc Tips
+
+ * [Google](/docs/GOOGLE.md)
 
 ## Generic Usage
 
