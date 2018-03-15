@@ -3,8 +3,10 @@
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
 - [Google as an AuthSource](#google-as-an-authsource)
-- [Recommended Config](#recommended-config)
-- [Resitricting home domain](#resitricting-home-domain)
+- [Usage](#usage)
+  - [Recommended Config](#recommended-config)
+  - [Resitricting hosted domain](#resitricting-hosted-domain)
+- [Creating Google OIDC Client](#creating-google-oidc-client)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -19,7 +21,8 @@ return data in a Google specific format.
 You can also choose between using the generic OAuth/OIDC implementation or using
 a [Google specific library](https://github.com/thephpleague/oauth2-google/).
 
-# Recommended Config
+# Usage
+## Recommended Config
 
 We recommend using the OIDC configuration with the generic implementation. This
 requires the least configuration.
@@ -44,12 +47,15 @@ and then you can map the ODIC attributes to regular friendly names in your `auth
     ),
 ```
 
-# Resitricting home domain
+## Resitricting hosted domain
 
-If you want to restrict the home domain of a user you can pass the
+If you want to restrict the hosted domain of a user you can pass the
 `hd` query parameter to Google.  You **must** ensure the `hd` value
 returned from Google matches what you expect - a user could remove the
 `hd` from the browser flow and login with any account.
+
+TODO: Once https://github.com/thephpleague/oauth2-google/pull/54 is accepted into the oauth2-google project then
+this check would be done automatically. This example would then need to be updated to use that project
 
 ```php
    // Using the generic provider
@@ -63,5 +69,11 @@ returned from Google matches what you expect - a user could remove the
        ],
     ],
 ```
+
+# Creating Google OIDC Client
+
+Google provides [documentation](https://developers.google.com/identity/protocols/OpenIDConnect#appsetup). Follow the section related to 'Setting up OAuth 2.0' to setup an API project and create an OAuth2 client. If you intend to use the Google Plus API (instead of OIDC) than you must enable it from the API library in Google's developer console.
+
+The section in the documentation about accessing the service, authentication and server flows are performed by this module.
 
 
