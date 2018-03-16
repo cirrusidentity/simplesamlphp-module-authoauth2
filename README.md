@@ -39,6 +39,12 @@ The generic OAuth2 client is configured with
 * optional parameters for scope
 * optional query parameters for the authorization url
 
+## Redirect URI
+
+Almost all OAuth2/OIDC providers will require you to register a redirect URI. Use a url of the form below, and set hostname, SSP_PATH and optionally port to the correct values.
+
+    https://hostname/SSP_PATH/module.php/authoauth2/linkback.php
+
 ## Provider specifc Tips
 
  * [Google](/docs/GOOGLE.md)

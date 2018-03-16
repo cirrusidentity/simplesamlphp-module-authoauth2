@@ -76,4 +76,7 @@ Google provides [documentation](https://developers.google.com/identity/protocols
 
 The section in the documentation about accessing the service, authentication and server flows are performed by this module.
 
+You will need to add the correct redirect URI to your OAuth2 client in the Google console. Use a url of the form below, and set hostname, SSP_PATH and optionally port to the correct values.
+
+    https://hostname/SSP_PATH/module.php/authoauth2/linkback.php
 
