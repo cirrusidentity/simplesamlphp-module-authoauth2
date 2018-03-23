@@ -38,13 +38,17 @@ requires the least configuration.
    ],
 ```
 
-and then you can map the ODIC attributes to regular friendly names in your `authprocs`.
+and if are using this with a SAML IdP then you can map the OIDC attributes to regular friendly names in your `authproc` section of `saml20-idp-hosted.php`.
 
 ```php
+    // saml20-idp-hosted.php
+$metadata['myEntityId'] = array(			
     'authproc' => array(
         // Convert oidc names to ldap friendly names
         90 => array('class' => 'core:AttributeMap',  'authoauth2:oidc2name'),
     ),
+   // other IdP config options
+)
 ```
 
 ## Resitricting hosted domain
