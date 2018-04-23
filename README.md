@@ -4,7 +4,7 @@
 
 - [Installation](#installation)
 - [Usage](#usage)
-  - [Provider specifc Tips](#provider-specifc-tips)
+  - [Provider specific Tips](#provider-specific-tips)
   - [Generic Usage](#generic-usage)
   - [Provider Specific Usage](#provider-specific-usage)
   - [Template Specific Usage](#template-specific-usage)
@@ -45,7 +45,7 @@ Almost all OAuth2/OIDC providers will require you to register a redirect URI. Us
 
     https://hostname/SSP_PATH/module.php/authoauth2/linkback.php
 
-## Provider specifc Tips
+## Provider specific Tips
 
  * [Google](/docs/GOOGLE.md)
 
