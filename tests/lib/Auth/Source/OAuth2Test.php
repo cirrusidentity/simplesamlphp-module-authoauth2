@@ -6,6 +6,7 @@ namespace Test\SimpleSAML\Auth\Source;
 use AspectMock\Test as test;
 use CirrusIdentity\SSP\Test\Capture\RedirectException;
 use CirrusIdentity\SSP\Test\MockHttp;
+use GuzzleHttp\HandlerStack;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Provider\GenericResourceOwner;
 use League\OAuth2\Client\Token\AccessToken;
@@ -141,6 +142,30 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
         // then: The attributes should be returned based on the getResourceOwner call
         $expectedAttributes = ['test.name' => ['Bob']];
         $this->assertEquals($expectedAttributes, $state['Attributes']);
+
+    }
+
+    public function testEnableDebugLogging()
+    {
+
+        $info = ['AuthId' => 'oauth2'];
+        $config = [
+            'providerClass' => MockOAuth2Provider::class,
+            'attributePrefix' => 'test.',
+            'logHttpTraffic' => true,
+        ];
+
+        // when: turning a code into a token and then into a resource owner attributes
+        $authOAuth2 = new OAuth2($info, $config);
+        $provider = $authOAuth2->getProvider($authOAuth2->getConfig());
+
+        $clientConfig = $provider->getHttpClient()->getConfig();
+        /** @var HandlerStack $handlerStack */
+        $handlerStack = $clientConfig['handler'];
+        // annoyingly the handlerStack doesn't let us check for middleware by name,
+        // so we need to convert to a string and then see if it contains the named middleware
+        $strHandler = (string) $handlerStack;
+        $this->assertContains('logHttpTraffic', $strHandler);
 
     }
 

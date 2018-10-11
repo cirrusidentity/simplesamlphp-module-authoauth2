@@ -4,6 +4,7 @@
 
 - [Installation](#installation)
 - [Usage](#usage)
+  - [Redirect URI](#redirect-uri)
   - [Provider specific Tips](#provider-specific-tips)
   - [Generic Usage](#generic-usage)
   - [Provider Specific Usage](#provider-specific-usage)
@@ -12,6 +13,10 @@
     - [Generic Facebook](#generic-facebook)
     - [Generic Amazon](#generic-amazon)
     - [Generic Google](#generic-google)
+    - [Provider Specific Google](#provider-specific-google)
+- [Debugging](#debugging)
+  - [HTTP Logging](#http-logging)
+  - [Using Curl](#using-curl)
 - [Migrating from an existing auth module](#migrating-from-an-existing-auth-module)
   - [Calling OAuth2ResponseHandler](#calling-oauth2responsehandler)
 - [Development](#development)
@@ -82,8 +87,12 @@ Generic usage provides enough configuration parameters to use with any OAuth2 or
               // http://docs.guzzlephp.org/en/stable/request-options.html#proxy
               'proxy' => [
               ],
+              
               // All attribute keys will have this prefix
               'attributePrefix' => 'someprefix.'
+              // Enable logging of request/response. This *will* leak you client secret and tokens into the logs
+              'logHttpTraffic' => true, //default is false
+              'logMessageFormat' => 'A Guzzle MessageFormatter format string', // default setting is sufficient for most debugging
               
           ),
 ```
@@ -211,7 +220,50 @@ simplify the configuration
     ),
 ```
 
+# Debugging
 
+## HTTP Logging
+
+You can enable http logging with the `logHttpTraffic` flag and optionally customize the 
+format with `logMessageFormat`. See Guzzle's `MessageFormatter` class for how to define a
+format string.
+
+**security note:** enabling http logging will make your client secret and any returned access
+or id tokens to appear in your logs.
+
+## Using Curl
+
+You can use `curl` on the command line to interact with the OAuth2/OIDC server.
+
+**Get Code**
+
+The first step is get a valid code AND ensure the module doesn't try to use it. 
+This can be done by constructing an authorize url with an invalid state value but with all other params correct
+
+https://as.example.com/openid/authorize?state=invalid-state&scope=openid&response_type=code&redirect_uri=https%3A%2F%2Fmyapp.example.com%2Fsimplesaml%2Fmodule.php%2Fauthoauth2%2Flinkback.php&client_id=my_client
+
+If you log in with the above it will redirect you back to your SSP instance with an `authorization_code` (which you should capture) 
+and then your SSP instance will report an error about an invalid state parameter. The state check happens prior to consuming the `authorization_code` so you know SSP hasn't used it.
+
+**Get Access Token**
+
+Now you can use the code and try to get an access token
+
+```bash
+curl -d "code=REPLACE" \
+    -d "client_secret=my_secret" \
+    -d "client_id=my_client" \
+    -d "redirect_uri=https://myapp.example.com/simplesaml/module.php/authoauth2/linkback.php" \
+    -d 'grant_type=authorization_code' \
+   https://as.example.com/openid/token
+```
+
+**Get User Info**
+
+Take the access token from above and call the user info endpoint
+
+    curl -H "Authorization: Bearer $ACCESS_TOKEN" https://as.example.com/userInfo
+ 
 
 # Migrating from an existing auth module
 
