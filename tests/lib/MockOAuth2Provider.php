@@ -15,14 +15,14 @@ class MockOAuth2Provider extends GenericProvider implements \SimpleSAML\Utils\Cl
     /**
      * MockOAuth2Provider constructor.
      */
-    public function __construct()
+    public function __construct(array $options = [], array $collaborators = [])
     {
-        $options = [
+        $defaultOptions = [
             'urlAuthorize' => 'https://mock.com/authorize',
             'urlAccessToken' => 'https://mock.com/token',
             'urlResourceOwnerDetails' => 'https://mock.com/userInfo',
         ];
-        parent::__construct($options, []);
+        parent::__construct(array_merge($options,$defaultOptions), $collaborators);
     }
 
 

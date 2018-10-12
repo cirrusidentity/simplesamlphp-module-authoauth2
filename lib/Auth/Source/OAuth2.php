@@ -2,6 +2,10 @@
 
 namespace SimpleSAML\Module\authoauth2\Auth\Source;
 
+use GuzzleHttp\Client;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\MessageFormatter;
+use GuzzleHttp\Middleware;
 use League\OAuth2\Client\Provider\GenericProvider;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
@@ -9,6 +13,7 @@ use SAML2\Utils;
 use SimpleSAML\Logger;
 use SimpleSAML\Module\authoauth2\AttributeManipulator;
 use SimpleSAML\Module\authoauth2\ConfigTemplate;
+use SimpleSAML\Module\authoauth2\PsrLogBridge;
 use SimpleSAML\Utils\Arrays;
 use SimpleSAML\Utils\HTTP;
 
@@ -28,6 +33,12 @@ class OAuth2 extends \SimpleSAML_Auth_Source
 
     /** Used to aid migrating other Oauth2 SSP libraries to this one */
     const STATE_PREFIX = 'authoauth2';
+
+    /**
+     *  The Guzzle log message formatter to use.
+     * @see MessageFormatter
+     */
+    const DEBUG_LOG_FORMAT = "{method} {uri} {code} {req_headers_Authorization} >>>>'{req_body}' <<<<'{res_body}'";
 
     /**
      * @var \SimpleSAML_Configuration
@@ -70,7 +81,8 @@ class OAuth2 extends \SimpleSAML_Auth_Source
      * Return a label for the OAuth2 provider that can be used in log statements, etc
      * @return string
      */
-    private function getLabel() {
+    private function getLabel()
+    {
         return $this->config->getString('label', '');
     }
 
@@ -102,25 +114,42 @@ class OAuth2 extends \SimpleSAML_Auth_Source
 
     /**
      * Get the provider to use to talk to the OAuth2 server.
+     * Only visible for testing
      *
      * Since SSP may serialize Auth modules we don't assign the potentially unserializable provider to a field.
      * @param \SimpleSAML_Configuration $config
      * @return \League\OAuth2\Client\Provider\AbstractProvider
      */
-    protected function getProvider(\SimpleSAML_Configuration $config) {
+    public function getProvider(\SimpleSAML_Configuration $config)
+    {
+        $providerLabel = $this->getLabel();
 
+        $collaborators = [];
+        if ($config->getBoolean('logHttpTraffic', false) === true) {
+            $format = $config->getString('logMessageFormat', self::DEBUG_LOG_FORMAT);
+            Logger::debug('Enable traffic logging');
+            $handlerStack = HandlerStack::create();
+            $handlerStack->push(
+                Middleware::log(new PsrLogBridge(), new MessageFormatter("authoauth2: $providerLabel $format")),
+                'logHttpTraffic'
+            );
+            $clientConfig = $config->toArray();
+            $clientConfig['handler'] = $handlerStack;
+            $client = new Client($clientConfig);
+            $collaborators['httpClient'] = $client;
+        }
         if ($config->hasValue('providerClass')) {
             $providerClass = $config->getString('providerClass');
             if (class_exists($providerClass)) {
-                if ( !is_subclass_of($providerClass, AbstractProvider::class)) {
+                if (!is_subclass_of($providerClass, AbstractProvider::class)) {
                     throw new \InvalidArgumentException("The OAuth2 provider '$providerClass' does not extend " . AbstractProvider::class);
                 }
-                return new $providerClass($config->toArray());
+                return new $providerClass($config->toArray(), $collaborators);
             } else {
                 throw new \InvalidArgumentException("No OAuth2 provider class found for '$providerClass'.");
             }
         }
-        return new GenericProvider($config->toArray());
+        return new GenericProvider($config->toArray(), $collaborators);
     }
 
     /**
@@ -148,7 +177,8 @@ class OAuth2 extends \SimpleSAML_Auth_Source
         $attributeManipulator = new AttributeManipulator();
         $state['Attributes'] = $attributeManipulator->prefixAndFlatten($attributes, $prefix);
         $this->postFinalStep($accessToken, $provider, $state);
-        Logger::debug('authoauth2: ' . $providerLabel . ' attributes: ' . implode(", ", array_keys($state['Attributes'] )));
+        Logger::debug('authoauth2: ' . $providerLabel . ' attributes: ' . implode(", ",
+                array_keys($state['Attributes'])));
         // Track time spent calling out to oauth2 server. This can often be a source of slowness.
         $time = microtime(true) - $start;
         Logger::debug('authoauth2: ' . $providerLabel . ' finished authentication in ' . $time . ' seconds');
@@ -161,7 +191,8 @@ class OAuth2 extends \SimpleSAML_Auth_Source
      * @param AbstractProvider $provider The Oauth2 provider
      * @param array $state The current state
      */
-    protected function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, &$state) {
+    protected function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, &$state)
+    {
 
     }
 
