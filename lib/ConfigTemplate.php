@@ -58,14 +58,31 @@ class ConfigTemplate {
 
     //https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc
     //https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration
+    // WARNING: The OIDC user resource endpoint only returns sub, which is a targeted id.
+    // You must decode the id token instead to determine user attributes. There you will
+    // find oid which is the ID you are probably expecting if you are moving from the live apis.
     const MicrosoftOIDC = [
         'authoauth2:OAuth2',
-        // *** Microsoft graph Endpoints ***
+        // *** Microsoft oidc Endpoints ***
         'urlAuthorize' => 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
         'urlAccessToken' => 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
         'urlResourceOwnerDetails' => 'https://graph.microsoft.com/oidc/userinfo',
         'attributePrefix' => 'oidc.',
         'scopes' => ['openid', 'email', 'profile'],
+        'scopeSeparator' => ' ',
+
+        // Improve log lines
+        'label' => 'microsoft'
+    ];
+
+    const MicrosoftGraphV1 = [
+        'authoauth2:OAuth2',
+        // *** Microsoft graph Endpoints ***
+        'urlAuthorize' => 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
+        'urlAccessToken' => 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
+        'urlResourceOwnerDetails' => 'https://graph.microsoft.com/v1.0/me/',
+        'attributePrefix' => 'microsoft.',
+        'scopes' => ['openid', 'email', 'profile', 'user.read'],
         'scopeSeparator' => ' ',
 
         // Improve log lines

@@ -93,6 +93,7 @@ Generic usage provides enough configuration parameters to use with any OAuth2 or
               // Enable logging of request/response. This *will* leak you client secret and tokens into the logs
               'logHttpTraffic' => true, //default is false
               'logMessageFormat' => 'A Guzzle MessageFormatter format string', // default setting is sufficient for most debugging
+              'logIdTokenJson' => true, //default false. Log the json in the ID token.
               
           ),
 ```

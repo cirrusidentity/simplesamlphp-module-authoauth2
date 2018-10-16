@@ -42,7 +42,7 @@ class AttributeManipulator
 
     /**
      * Attempt to stringify the input
-     * @param $input mixed if an array stringify the values, removing nullts
+     * @param $input mixed if an array stringify the values, removing nulls
      * @return array|string
      */
     protected function stringify($input) {

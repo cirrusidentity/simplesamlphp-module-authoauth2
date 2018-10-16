@@ -43,7 +43,7 @@ class OAuth2 extends \SimpleSAML_Auth_Source
     /**
      * @var \SimpleSAML_Configuration
      */
-    private $config;
+    protected $config;
 
 
     /**
@@ -81,7 +81,7 @@ class OAuth2 extends \SimpleSAML_Auth_Source
      * Return a label for the OAuth2 provider that can be used in log statements, etc
      * @return string
      */
-    private function getLabel()
+    protected function getLabel()
     {
         return $this->config->getString('label', '');
     }
@@ -169,6 +169,14 @@ class OAuth2 extends \SimpleSAML_Auth_Source
         $accessToken = $provider->getAccessToken('authorization_code', [
             'code' => $oauth2Code
         ]);
+        if ($this->config->getBoolean('logIdTokenJson', false) &&
+            array_key_exists('id_token', $accessToken->getValues())) {
+            $idToken =  $accessToken->getValues()['id_token'];
+            $decodedIdToken = base64_decode(
+                explode('.', $idToken)[1]
+            );
+            Logger::debug('authoauth2: ' . $providerLabel . ' id_token json: ' . $decodedIdToken);
+        }
 
         $resourceOwner = $provider->getResourceOwner($accessToken);
 
@@ -184,6 +192,41 @@ class OAuth2 extends \SimpleSAML_Auth_Source
         Logger::debug('authoauth2: ' . $providerLabel . ' finished authentication in ' . $time . ' seconds');
 
     }
+
+    /**
+     * @param $idToken
+     * @return string[] id token attributes
+     */
+    protected function extraIdTokenAttributes($idToken) {
+        // We don't need to verify the signature on the id token since it was the token returned directly from
+        // the OP over TLS
+        $decoded = $this->extraAndDecodeJwtPayload($idToken);
+        $data = json_decode($decoded, true);
+        //TODO: spec recommends checking that aud matches us and issuer is as expected.
+        if ($data == null) {
+            Logger::warning("authoauth2: '$data' payload can't be decoded to json.");
+            return null;
+        }
+        return $data;
+    }
+
+    protected function extraAndDecodeJwtPayload($jwt) {
+        $parts = explode('.', $jwt);
+        if (count($parts) < 3) {
+            Logger::warning("authoauth2: idToken '$jwt' is in unexpected format.");
+            return null;
+        }
+        // payload is b64url encode
+        $decoded = base64_decode(strtr($parts[1], '-_', '+/'), true);
+        if ($decoded === false) {
+            Logger::warning("authoauth2: idToken '$jwt' payload can't be decoded.");
+            return null;
+        }
+
+        return $decoded;
+
+    }
+
 
     /**
      * Allow subclasses to invoked any additional methods, such as extra API calls
