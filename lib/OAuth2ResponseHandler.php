@@ -8,6 +8,7 @@
 
 namespace SimpleSAML\Module\authoauth2;
 
+use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use SimpleSAML\Logger;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
 
@@ -69,7 +70,11 @@ class OAuth2ResponseHandler
 
         try {
             $source->finalStep($state, $request['code']);
+        } catch (IdentityProviderException $e) {
+            Logger::error("authoauth2: error in '$sourceId' msg '{$e->getMessage()}' body '" . var_export($e->getResponseBody(), true) . "'");
+            \SimpleSAML_Auth_State::throwException($state, new \SimpleSAML_Error_AuthSource($sourceId, 'Error on oauth2 linkback endpoint.', $e));
         } catch (\Exception $e) {
+            Logger::error("authoauth2: error in '$sourceId' msg '{$e->getMessage()}'");
             \SimpleSAML_Auth_State::throwException($state, new \SimpleSAML_Error_AuthSource($sourceId, 'Error on oauth2 linkback endpoint.', $e));
         }
 
