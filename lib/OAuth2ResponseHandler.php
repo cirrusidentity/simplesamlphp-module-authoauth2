@@ -83,7 +83,7 @@ class OAuth2ResponseHandler
                 new \SimpleSAML_Error_AuthSource($sourceId, 'Error on oauth2 linkback endpoint.', $e)
             );
         } catch (\Exception $e) {
-            Logger::error("authoauth2: error in '$sourceId' msg '{$e->getMessage()}'");
+            Logger::error("authoauth2: error in '$sourceId' '" . get_class($e) . "' msg '{$e->getMessage()}'");
             \SimpleSAML_Auth_State::throwException(
                 $state,
                 new \SimpleSAML_Error_AuthSource($sourceId, 'Error on oauth2 linkback endpoint.', $e)
