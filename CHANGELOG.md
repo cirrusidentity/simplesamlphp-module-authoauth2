@@ -4,6 +4,7 @@
 
 _Release: 2018-?
 
+* Perform 1 retry on network errors
 * Use ssp 1.16.2 as the dependency
 * Add php 7.1 and 7.2 to travis buildds
 * PSR-2 styling
