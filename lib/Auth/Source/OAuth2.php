@@ -3,6 +3,7 @@
 namespace SimpleSAML\Module\authoauth2\Auth\Source;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\MessageFormatter;
 use GuzzleHttp\Middleware;
@@ -165,9 +166,15 @@ class OAuth2 extends \SimpleSAML_Auth_Source
 
         $provider = $this->getProvider($this->config);
 
-        $accessToken = $provider->getAccessToken('authorization_code', [
-            'code' => $oauth2Code
-        ]);
+        $accessToken = $this->retry(
+            function () use ($provider, $oauth2Code) {
+                return $provider->getAccessToken('authorization_code', [
+                    'code' => $oauth2Code
+                ]);
+            },
+            $this->config->getInteger('retryOnError', 1)
+        );
+
         if ($this->config->getBoolean('logIdTokenJson', false) &&
             array_key_exists('id_token', $accessToken->getValues())) {
             $idToken = $accessToken->getValues()['id_token'];
@@ -177,7 +184,12 @@ class OAuth2 extends \SimpleSAML_Auth_Source
             Logger::debug('authoauth2: ' . $providerLabel . ' id_token json: ' . $decodedIdToken);
         }
 
-        $resourceOwner = $provider->getResourceOwner($accessToken);
+        $resourceOwner = $this->retry(
+            function () use ($provider, $accessToken) {
+                return $provider->getResourceOwner($accessToken);
+            },
+            $this->config->getInteger('retryOnError', 1)
+        );
 
         $attributes = $resourceOwner->toArray();
         $prefix = $this->config->getString('attributePrefix', '');
@@ -190,6 +202,31 @@ class OAuth2 extends \SimpleSAML_Auth_Source
         // Track time spent calling out to oauth2 server. This can often be a source of slowness.
         $time = microtime(true) - $start;
         Logger::debug('authoauth2: ' . $providerLabel . ' finished authentication in ' . $time . ' seconds');
+    }
+
+    /**
+     * Retry token and user info endpoints in event of network errors.
+     * @param callable $function the function to try
+     * @param int $retries number of attempts to try
+     * @param int $delay The time to delay between tries.
+     * @return mixed the result of the function
+     */
+    protected function retry(callable $function, $retries = 1, $delay = 1)
+    {
+        $providerLabel = $this->getLabel();
+        try {
+            return $function();
+        } catch (ConnectException $e) {
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            Logger::info('authoauth2: ' . $providerLabel . " Connection error. Retries left $retries. error: {$e->getMessage()}");
+            if ($retries > 0) {
+                sleep($delay);
+                return $this->retry($function, $retries - 1, $retries);
+            } else {
+                Logger::info('authoauth2: ' . $providerLabel . ". Out of retries. Rethrowing error");
+                throw $e;
+            }
+        }
     }
 
     /**
