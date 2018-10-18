@@ -45,18 +45,21 @@ class AttributeManipulator
      * @param $input mixed if an array stringify the values, removing nulls
      * @return array|string
      */
-    protected function stringify($input) {
+    protected function stringify($input)
+    {
         if (is_bool($input)) {
             return $input ? 'true' : 'false';
-        } else if (is_array($input)) {
-            $array = [];
-            foreach ($input as $key => $value) {
-                if ($value === null) {
-                    continue;
+        } else {
+            if (is_array($input)) {
+                $array = [];
+                foreach ($input as $key => $value) {
+                    if ($value === null) {
+                        continue;
+                    }
+                    $array[$key] = $this->stringify($value);
                 }
-                $array[$key] = $this->stringify($value);
+                return $array;
             }
-            return $array;
         }
         return strval($input);
     }
@@ -67,7 +70,8 @@ class AttributeManipulator
      * @param array $array The array to check
      * @return bool true if is is sequential and values are simple (not array)
      */
-    private function isSimpleSequentialArray(array $array) {
+    private function isSimpleSequentialArray(array $array)
+    {
         foreach ($array as $key => $value) {
             if (!is_int($key) || is_array($value)) {
                 return false;

@@ -41,7 +41,7 @@ class MicrosoftHybridAuth extends OAuth2
     protected function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, &$state)
     {
         if (!array_key_exists('id_token', $accessToken->getValues())) {
-            Logger::error('mshybridauth: ' . $this->getLabel() .  ' no id_token returned');
+            Logger::error('mshybridauth: ' . $this->getLabel() . ' no id_token returned');
             return;
         }
 
@@ -54,6 +54,5 @@ class MicrosoftHybridAuth extends OAuth2
         if (array_key_exists('name', $idTokenData)) {
             $state['Attributes'][$prefix . 'name'] = [$idTokenData['name']];
         }
-
     }
 }

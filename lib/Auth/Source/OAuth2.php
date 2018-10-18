@@ -73,8 +73,6 @@ class OAuth2 extends \SimpleSAML_Auth_Source
             $config['timeout'] = 3;
         }
         $this->config = \SimpleSAML_Configuration::loadFromArray($config, 'authsources:oauth2');
-
-
     }
 
     /**
@@ -104,7 +102,7 @@ class OAuth2 extends \SimpleSAML_Auth_Source
         Logger::debug("authoauth2: $providerLabel saved state with stateID=$stateID");
 
         $options = $this->config->getArray('urlAuthorizeOptions', []);
-        // Add a prefix so we can tell we are the intended recipient for a redirect URI if the redirect URI was customized
+        // Add a prefix to tell we are the intended recipient for a redirect URI if the redirect URI was customized
         $options['state'] = self::STATE_PREFIX . '|' . $stateID;
         $authorizeURL = $provider->getAuthorizationUrl($options);
         Logger::debug("authoauth2: $providerLabel redirecting to authorizeURL=$authorizeURL");
@@ -142,6 +140,7 @@ class OAuth2 extends \SimpleSAML_Auth_Source
             $providerClass = $config->getString('providerClass');
             if (class_exists($providerClass)) {
                 if (!is_subclass_of($providerClass, AbstractProvider::class)) {
+                    // phpcs:ignore Generic.Files.LineLength.TooLong
                     throw new \InvalidArgumentException("The OAuth2 provider '$providerClass' does not extend " . AbstractProvider::class);
                 }
                 return new $providerClass($config->toArray(), $collaborators);
@@ -171,7 +170,7 @@ class OAuth2 extends \SimpleSAML_Auth_Source
         ]);
         if ($this->config->getBoolean('logIdTokenJson', false) &&
             array_key_exists('id_token', $accessToken->getValues())) {
-            $idToken =  $accessToken->getValues()['id_token'];
+            $idToken = $accessToken->getValues()['id_token'];
             $decodedIdToken = base64_decode(
                 explode('.', $idToken)[1]
             );
@@ -185,19 +184,20 @@ class OAuth2 extends \SimpleSAML_Auth_Source
         $attributeManipulator = new AttributeManipulator();
         $state['Attributes'] = $attributeManipulator->prefixAndFlatten($attributes, $prefix);
         $this->postFinalStep($accessToken, $provider, $state);
-        Logger::debug('authoauth2: ' . $providerLabel . ' attributes: ' . implode(", ",
-                array_keys($state['Attributes'])));
+        Logger::debug(
+            'authoauth2: ' . $providerLabel . ' attributes: ' . implode(", ", array_keys($state['Attributes']))
+        );
         // Track time spent calling out to oauth2 server. This can often be a source of slowness.
         $time = microtime(true) - $start;
         Logger::debug('authoauth2: ' . $providerLabel . ' finished authentication in ' . $time . ' seconds');
-
     }
 
     /**
      * @param $idToken
      * @return string[] id token attributes
      */
-    protected function extraIdTokenAttributes($idToken) {
+    protected function extraIdTokenAttributes($idToken)
+    {
         // We don't need to verify the signature on the id token since it was the token returned directly from
         // the OP over TLS
         $decoded = $this->extraAndDecodeJwtPayload($idToken);
@@ -213,7 +213,8 @@ class OAuth2 extends \SimpleSAML_Auth_Source
         return $data;
     }
 
-    protected function extraAndDecodeJwtPayload($jwt) {
+    protected function extraAndDecodeJwtPayload($jwt)
+    {
         $parts = explode('.', $jwt);
         if ($parts === false || count($parts) < 3) {
             Logger::warning("authoauth2: idToken '$jwt' is in unexpected format.");
@@ -225,11 +226,8 @@ class OAuth2 extends \SimpleSAML_Auth_Source
             Logger::warning("authoauth2: idToken '$jwt' payload can't be decoded.");
             return null;
         }
-
         return $decoded;
-
     }
-
 
     /**
      * Allow subclasses to invoked any additional methods, such as extra API calls
@@ -239,7 +237,6 @@ class OAuth2 extends \SimpleSAML_Auth_Source
      */
     protected function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, &$state)
     {
-
     }
 
     /**
@@ -250,5 +247,4 @@ class OAuth2 extends \SimpleSAML_Auth_Source
     {
         return $this->config;
     }
-
 }
