@@ -317,3 +317,9 @@ Note: `*.tutorial.stack-dev.cirrusidentity.com` resolves to your local host.
 `authsources.php` contains some preconfigured clients. The generic facebook and google ones should work as is.
 The generic amazon one requires `https`. You can run use it and when Amazon redirects back to `https` change the url to
 `http` to proceed. The google provider authsource requires you to install the google auth module first.
+
+## Code style
+
+Run `phpcs` to check code style
+
+    ./vendor/bin/phpcs --standard=PSR2 lib/

@@ -2,7 +2,6 @@
 
 namespace Test\SimpleSAML\Auth\Source;
 
-
 use AspectMock\Test as test;
 use CirrusIdentity\SSP\Test\Capture\RedirectException;
 use CirrusIdentity\SSP\Test\MockHttp;
@@ -36,14 +35,15 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
         $info = ['AuthId' => 'oauth2'];
         $authOAuth2 = new OAuth2($info, []);
 
-        $this->assertEquals('http://localhost/module.php/authoauth2/linkback.php',
-            $authOAuth2->getConfig()->getString('redirectUri'));
+        $this->assertEquals(
+            'http://localhost/module.php/authoauth2/linkback.php',
+            $authOAuth2->getConfig()->getString('redirectUri')
+        );
         $this->assertEquals(3, $authOAuth2->getConfig()->getInteger('timeout'));
 
         $authOAuth2 = new OAuth2($info, ['redirectUri' => 'http://other', 'timeout' => 6]);
         $this->assertEquals('http://other', $authOAuth2->getConfig()->getString('redirectUri'));
         $this->assertEquals(6, $authOAuth2->getConfig()->getInteger('timeout'));
-
     }
 
     public function testConfigTemplateByName()
@@ -59,7 +59,7 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
             'urlAuthorize' => 'https://accounts.google.com/o/oauth2/auth',
             'urlAccessToken' => 'https://accounts.google.com/o/oauth2/token',
             'urlResourceOwnerDetails' => 'https://www.googleapis.com/oauth2/v3/userinfo',
-            'scopes' =>  array(
+            'scopes' => array(
                 'openid',
                 'email',
                 'profile'
@@ -74,7 +74,6 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
         ];
 
         $this->assertEquals($expectedConfig, $authOAuth2->getConfig()->toArray());
-
     }
 
     public function testAuthenticatePerformsRedirect()
@@ -97,6 +96,7 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
         } catch (RedirectException $e) {
             $this->assertEquals('redirectTrustedURL', $e->getMessage());
             $this->assertEquals(
+            // phpcs:ignore Generic.Files.LineLength.TooLong
                 'https://example.com/auth?state=authoauth2%7CstateId&response_type=code&approval_prompt=auto&redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Flinkback.php',
                 $e->getUrl(),
                 "First argument should be the redirect url"
@@ -142,7 +142,6 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
         // then: The attributes should be returned based on the getResourceOwner call
         $expectedAttributes = ['test.name' => ['Bob']];
         $this->assertEquals($expectedAttributes, $state['Attributes']);
-
     }
 
     public function testEnableDebugLogging()
@@ -164,9 +163,7 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
         $handlerStack = $clientConfig['handler'];
         // annoyingly the handlerStack doesn't let us check for middleware by name,
         // so we need to convert to a string and then see if it contains the named middleware
-        $strHandler = (string) $handlerStack;
+        $strHandler = (string)$handlerStack;
         $this->assertContains('logHttpTraffic', $strHandler);
-
     }
-
 }

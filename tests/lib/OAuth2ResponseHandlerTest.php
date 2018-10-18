@@ -1,13 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: patrick
- * Date: 3/1/18
- * Time: 2:10 PM
- */
 
 namespace Test\SimpleSAML;
-
 
 use CirrusIdentity\SSP\Test\Auth\MockAuthSource;
 use PHPUnit_Framework_MockObject_MockObject;
@@ -19,7 +12,6 @@ use SimpleSAML_Error_UserAborted;
 use SimpleSAML_Session;
 
 use AspectMock\Test as test;
-
 
 class OAuth2ResponseHandlerTest extends \PHPUnit_Framework_TestCase
 {
@@ -117,16 +109,33 @@ class OAuth2ResponseHandlerTest extends \PHPUnit_Framework_TestCase
         $this->responseHandler->handleResponseFromRequest($request);
     }
 
-    public function noCodeDataProvider() {
+    public function noCodeDataProvider()
+    {
         return [
             // OAuth2 AS did not return error code or a authz code
-            [[], SimpleSAML_Error_AuthSource::class, "Error with authentication source 'mockAuthSource': Authentication failed: []" ],
+            [
+                [],
+                SimpleSAML_Error_AuthSource::class,
+                "Error with authentication source 'mockAuthSource': Authentication failed: []"
+            ],
             // OAuth2 AS says client not allowed
-            [['error' => 'unauthorized_client'], SimpleSAML_Error_AuthSource::class, "Error with authentication source 'mockAuthSource': Authentication failed: [unauthorized_client]" ],
+            [
+                ['error' => 'unauthorized_client'],
+                SimpleSAML_Error_AuthSource::class,
+                "Error with authentication source 'mockAuthSource': Authentication failed: [unauthorized_client]"
+            ],
             // OAuth2 AS has custom error code
-            [['error' => 'special_code', 'error_description' => 'Closed'], SimpleSAML_Error_AuthSource::class, "Error with authentication source 'mockAuthSource': Authentication failed: [special_code] Closed" ],
+            [
+                ['error' => 'special_code', 'error_description' => 'Closed'],
+                SimpleSAML_Error_AuthSource::class,
+                "Error with authentication source 'mockAuthSource': Authentication failed: [special_code] Closed"
+            ],
             // OAuth2 AS says users denied access
-            [['error' => 'access_denied', 'error_description' => 'User declined'], SimpleSAML_Error_UserAborted::class, "USERABORTED" ],
+            [
+                ['error' => 'access_denied', 'error_description' => 'User declined'],
+                SimpleSAML_Error_UserAborted::class,
+                "USERABORTED"
+            ],
 
         ];
     }
@@ -152,7 +161,7 @@ class OAuth2ResponseHandlerTest extends \PHPUnit_Framework_TestCase
         $this->mockAuthSource->expects($this->once())
             ->method('finalStep')
             ->with(
-            // Check state was deserialized and passed in
+                // Check state was deserialized and passed in
                 $this->arrayHasKey('authouath2:AuthId'),
                 // Check OAuth2 auth code was passed in
                 $this->equalTo('authCode')
@@ -172,7 +181,8 @@ class OAuth2ResponseHandlerTest extends \PHPUnit_Framework_TestCase
     /**
      * Confirm mock verification is working.
      */
-    public function testSanityCheckMocks() {
+    public function testSanityCheckMocks()
+    {
         $myState = [];
         $this->mockAuthSource->expects($this->once())
             ->method('finalStep')
@@ -181,8 +191,5 @@ class OAuth2ResponseHandlerTest extends \PHPUnit_Framework_TestCase
                 'code'
             );
         $this->mockAuthSource->finalStep($myState, 'code');
-
     }
-
-
 }

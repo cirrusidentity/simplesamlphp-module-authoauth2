@@ -22,7 +22,7 @@ class MockOAuth2Provider extends GenericProvider implements \SimpleSAML\Utils\Cl
             'urlAccessToken' => 'https://mock.com/token',
             'urlResourceOwnerDetails' => 'https://mock.com/userInfo',
         ];
-        parent::__construct(array_merge($options,$defaultOptions), $collaborators);
+        parent::__construct(array_merge($options, $defaultOptions), $collaborators);
     }
 
 
@@ -36,7 +36,8 @@ class MockOAuth2Provider extends GenericProvider implements \SimpleSAML\Utils\Cl
         return self::$delegate->getResourceOwner($token);
     }
 
-    public static function setDelegate(AbstractProvider $delegate) {
+    public static function setDelegate(AbstractProvider $delegate)
+    {
         self::$delegate = $delegate;
     }
 

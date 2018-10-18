@@ -14,18 +14,21 @@ use SimpleSAML\Utils\Attributes;
 class AttributeManipulatorTest extends \PHPUnit_Framework_TestCase
 {
 
-    public static function setUpBeforeClass() {
+    public static function setUpBeforeClass()
+    {
         putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(__DIR__) . '/config');
     }
+
     /**
      * Test that resource owner attributes are flattened into a SSPs attributes array format
      */
-    public function testPrefixAndFlatten() {
+    public function testPrefixAndFlatten()
+    {
 
         // Single values always become arrays and complex objects are flattened, and not strings are stringified
         $attributes = [
             'a' => 'b',
-            'complex' => [ 'e' => 'f'],
+            'complex' => ['e' => 'f'],
             'arrayValues' => ['a', 'b', 'c', 123, null],
             'bool' => false,
             'num' => 123,
@@ -33,7 +36,7 @@ class AttributeManipulatorTest extends \PHPUnit_Framework_TestCase
             // Google plus style emails are array of objects that have key value pairs
             "emails" => [
                 0 => [
-                    "value"=> "monitor@cirrusidentity.com",
+                    "value" => "monitor@cirrusidentity.com",
                     "type" => "account"
                 ],
             ],
@@ -47,7 +50,7 @@ class AttributeManipulatorTest extends \PHPUnit_Framework_TestCase
             'complex.e' => ['f'],
             'arrayValues' => ['a', 'b', 'c', '123'],
             'bool' => ['false'],
-            'num' => [ '123'],
+            'num' => ['123'],
             'emails.0.value' => ['monitor@cirrusidentity.com'],
             'emails.0.type' => ['account'],
         ];

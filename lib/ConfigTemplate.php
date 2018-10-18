@@ -2,7 +2,9 @@
 
 namespace SimpleSAML\Module\authoauth2;
 
-class ConfigTemplate {
+// phpcs:disable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
+class ConfigTemplate
+{
 
     const Facebook = [
         'authoauth2:OAuth2',
@@ -30,7 +32,7 @@ class ConfigTemplate {
         'urlAccessToken' => 'https://accounts.google.com/o/oauth2/token',
         'urlResourceOwnerDetails' => 'https://www.googleapis.com/oauth2/v3/userinfo',
 
-        'scopes' =>  array(
+        'scopes' => array(
             'openid',
             'email',
             'profile'
@@ -96,13 +98,13 @@ class ConfigTemplate {
         'urlAuthorize' => 'https://api.login.yahoo.com/oauth2/request_auth',
         'urlAccessToken' => 'https://api.login.yahoo.com/oauth2/get_token',
         'urlResourceOwnerDetails' => 'https://api.login.yahoo.com/openid/v1/userinfo',
-        'scopes' =>  array(
+        'scopes' => array(
             'openid',
 // Yahoo doesn't support standard OIDC claims, like email and profile
 //          'email',
 //          'profile',
-// Yahoo prefers the sdpp-w scope for getting acess to user's email, however it prompts user for write access. Leaving it
-// out makes things work fine IF you picked being able to edit private profile when creating your app
+// Yahoo prefers the sdpp-w scope for getting acess to user's email, however it prompts user for write access.
+// Leaving it out makes things work fine IF you picked being able to edit private profile when creating your app
 //            'sdpp-w',
         ),
         'scopeSeparator' => ' ',
@@ -113,3 +115,4 @@ class ConfigTemplate {
         'label' => 'yahoo'
     ];
 }
+// phpcs:enable
