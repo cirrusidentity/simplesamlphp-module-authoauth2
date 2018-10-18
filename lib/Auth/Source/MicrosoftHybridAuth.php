@@ -20,7 +20,6 @@ use SimpleSAML\Module\authoauth2\ConfigTemplate;
 class MicrosoftHybridAuth extends OAuth2
 {
 
-
     /**
      * MicrosoftHybridAuth constructor.
      */
@@ -33,7 +32,6 @@ class MicrosoftHybridAuth extends OAuth2
         parent::__construct($info, $config);
     }
 
-
     /**
      * Extract some additional data from the id token and add it to the attributes
      * @param AccessToken $accessToken
@@ -43,7 +41,7 @@ class MicrosoftHybridAuth extends OAuth2
     protected function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, &$state)
     {
         if (!array_key_exists('id_token', $accessToken->getValues())) {
-            Logger::warning('mshybridauth: ' . $this->getLabel() .  ' no id_token returned');
+            Logger::error('mshybridauth: ' . $this->getLabel() .  ' no id_token returned');
             return;
         }
 
@@ -51,10 +49,10 @@ class MicrosoftHybridAuth extends OAuth2
         $prefix = $this->config->getString('attributePrefix', '');
 
         if (array_key_exists('email', $idTokenData)) {
-            $state['Attributes'][$prefix . 'mail'] = $idTokenData['email'];
+            $state['Attributes'][$prefix . 'mail'] = [$idTokenData['email']];
         }
         if (array_key_exists('name', $idTokenData)) {
-            $state['Attributes'][$prefix . 'name'] = $idTokenData['name'];
+            $state['Attributes'][$prefix . 'name'] = [$idTokenData['name']];
         }
 
     }

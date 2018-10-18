@@ -201,18 +201,21 @@ class OAuth2 extends \SimpleSAML_Auth_Source
         // We don't need to verify the signature on the id token since it was the token returned directly from
         // the OP over TLS
         $decoded = $this->extraAndDecodeJwtPayload($idToken);
+        if ($decoded == null) {
+            return [];
+        }
         $data = json_decode($decoded, true);
         //TODO: spec recommends checking that aud matches us and issuer is as expected.
         if ($data == null) {
-            Logger::warning("authoauth2: '$data' payload can't be decoded to json.");
-            return null;
+            Logger::warning("authoauth2: '$decoded' payload can't be decoded to json.");
+            return [];
         }
         return $data;
     }
 
     protected function extraAndDecodeJwtPayload($jwt) {
         $parts = explode('.', $jwt);
-        if (count($parts) < 3) {
+        if ($parts === false || count($parts) < 3) {
             Logger::warning("authoauth2: idToken '$jwt' is in unexpected format.");
             return null;
         }
