@@ -78,6 +78,22 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expectedConfig, $authOAuth2->getConfig()->toArray());
     }
 
+    public function testResourceOwnerQueryParamOption()
+    {
+        $info = ['AuthId' => 'oauth2'];
+        $authOAuth2 = new OAuth2($info, [
+            'template' => 'Facebook',
+            'urlResourceOwnerOptions' => [
+                'fields' => 'override,options'
+            ],
+        ]);
+
+        $this->assertEquals(
+            'https://graph.facebook.com/me?fields=override%2Coptions',
+            $authOAuth2->getConfig()->getString('urlResourceOwnerDetails')
+        );
+    }
+
     public function testAuthenticatePerformsRedirect()
     {
         // Override redirect behavior

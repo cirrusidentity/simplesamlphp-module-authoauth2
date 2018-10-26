@@ -12,7 +12,10 @@ class ConfigTemplate
         'urlAuthorize' => 'https://www.facebook.com/dialog/oauth',
         'urlAccessToken' => 'https://graph.facebook.com/oauth/access_token',
         // Add requested attributes as fields
-        'urlResourceOwnerDetails' => 'https://graph.facebook.com/me?fields=id,name,first_name,last_name,email',
+        'urlResourceOwnerDetails' => 'https://graph.facebook.com/me',
+        'urlResourceOwnerOptions' => [
+            'fields' => 'id,name,first_name,last_name,email'
+        ],
         // Custom query parameters to add request email
         'urlAuthorizeOptions' => [
             // request email access

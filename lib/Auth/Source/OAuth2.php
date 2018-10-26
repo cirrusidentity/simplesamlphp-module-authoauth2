@@ -73,6 +73,11 @@ class OAuth2 extends \SimpleSAML_Auth_Source
         if (!array_key_exists('timeout', $config)) {
             $config['timeout'] = 3;
         }
+        // adjust config to add resource owner query parameters.
+        if (array_key_exists('urlResourceOwnerOptions', $config)) {
+            $newUrl = HTTP::addURLParameters($config['urlResourceOwnerDetails'], $config['urlResourceOwnerOptions']);
+            $config['urlResourceOwnerDetails'] = $newUrl;
+        }
         $this->config = \SimpleSAML_Configuration::loadFromArray($config, 'authsources:oauth2');
     }
 

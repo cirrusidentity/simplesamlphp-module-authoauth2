@@ -65,6 +65,10 @@ Generic usage provides enough configuration parameters to use with any OAuth2 or
               'urlAuthorize' => 'https://www.example.com/oauth2/authorize',
               'urlAccessToken' => 'https://www.example.com/oauth2/token',
               'urlResourceOwnerDetails' => 'https://api.example.com/userinfo',
+              // You can add query params directly to urlResourceOwnerDetails or use urlResourceOwnerOptions.
+              'urlResourceOwnerOptions' => [
+                 'fields' => 'id,name,first_name,last_name,email'
+              ],
               // *** Required for most integrations ***
               // Test App.
               'clientId' => '133972730583345',
