@@ -16,11 +16,7 @@ class ConfigTemplate
         'urlResourceOwnerOptions' => [
             'fields' => 'id,name,first_name,last_name,email'
         ],
-        // Custom query parameters to add request email
-        'urlAuthorizeOptions' => [
-            // request email access
-            'req_perm' => 'email',
-        ],
+        'scopes' => 'email',
         // Prefix attributes so we can use the facebook2name
         'attributePrefix' => 'facebook.',
 
@@ -53,10 +49,11 @@ class ConfigTemplate
         // *** LinkedIn Endpoints ***
         'urlAuthorize' => 'https://www.linkedin.com/oauth/v2/authorization',
         'urlAccessToken' => 'https://www.linkedin.com/oauth/v2/accessToken',
-        'urlResourceOwnerDetails' => 'https://api.linkedin.com/v1/people/~?format=json',
+        // phpcs:ignore Generic.Files.LineLength.TooLong
+        'urlResourceOwnerDetails' => 'https://api.linkedin.com/v1/people/~:(id,first-name,last-name,email-address)?format=json',
         //scopes are the default ones configured for your application
         'attributePrefix' => 'linkedin.',
-
+        'scopeSeparator' => ' ',
         // Improve log lines
         'label' => 'linkedin'
     ];

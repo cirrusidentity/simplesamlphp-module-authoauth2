@@ -166,13 +166,12 @@ simplify the configuration
         // *** My application ***
         'clientId' => '13397273example',
         'clientSecret' => '36aefb235314baexample',
+        'scopes' => 'email',
         // *** Optional ***
         // Custom query parameters to add to authorize request
         'urlAuthorizeOptions' => [
             // Force use to reauthenticate
             'auth_type' => 'reauthenticate',
-            // request email access
-            'req_perm' => 'email',
         ],
     ),
 ```
