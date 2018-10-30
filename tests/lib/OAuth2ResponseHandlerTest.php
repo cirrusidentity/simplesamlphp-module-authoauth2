@@ -3,6 +3,8 @@
 namespace Test\SimpleSAML;
 
 use CirrusIdentity\SSP\Test\Auth\MockAuthSource;
+use CirrusIdentity\SSP\Test\Capture\RedirectException;
+use CirrusIdentity\SSP\Test\MockHttp;
 use PHPUnit_Framework_MockObject_MockObject;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
 use SimpleSAML\Module\authoauth2\OAuth2ResponseHandler;
@@ -40,7 +42,6 @@ class OAuth2ResponseHandlerTest extends \PHPUnit_Framework_TestCase
 
         $this->mockAuthSource = $this->createMock(OAuth2::class);
         $this->mockAuthSource->method('getAuthId')->willReturn('mockAuthSource');
-
         MockAuthSource::getById($this->mockAuthSource, 'mockAuthSource');
     }
 
@@ -104,6 +105,9 @@ class OAuth2ResponseHandlerTest extends \PHPUnit_Framework_TestCase
             SimpleSAML_Auth_State::STAGE => 'authouath2:init',
             'authouath2:AuthId' => 'mockAuthSource',
         ]);
+        $this->mockAuthSource->method('getConfig')->willReturn(
+            new \SimpleSAML_Configuration(['useConsentErrorPage' => false], 'authsources:oauth2')
+        );
 
         SimpleSAML_Session::getSessionFromRequest()->setData('SimpleSAML_Auth_State', 'validStateId', $stateValue);
         $this->responseHandler->handleResponseFromRequest($request);
@@ -133,6 +137,18 @@ class OAuth2ResponseHandlerTest extends \PHPUnit_Framework_TestCase
             // OAuth2 AS says users denied access
             [
                 ['error' => 'access_denied', 'error_description' => 'User declined'],
+                SimpleSAML_Error_UserAborted::class,
+                "USERABORTED"
+            ],
+            // OAuth2 AS says users denied access, no description
+            [
+                ['error' => 'access_denied'],
+                SimpleSAML_Error_UserAborted::class,
+                "USERABORTED"
+            ],
+            // LinkedIn uses their own error code
+            [
+                ['error' => 'user_cancelled_authorize', 'error_description' => 'The user cancelled the authorization'],
                 SimpleSAML_Error_UserAborted::class,
                 "USERABORTED"
             ],
@@ -191,5 +207,39 @@ class OAuth2ResponseHandlerTest extends \PHPUnit_Framework_TestCase
                 'code'
             );
         $this->mockAuthSource->finalStep($myState, 'code');
+    }
+
+    public function testUserCancelledErrorPage()
+    {
+        // Override redirect behavior
+        MockHttp::throwOnRedirectTrustedURL();
+        // Use an empty config to test defaults
+        $this->mockAuthSource->method('getConfig')->willReturn(
+            new \SimpleSAML_Configuration([], 'authsources:oauth2')
+        );
+        $request = [
+            'state' => $this->validStateValue,
+            'error' => 'access_denied',
+        ];
+
+        $stateValue = serialize([
+            SimpleSAML_Auth_State::ID => 'validStateId',
+            SimpleSAML_Auth_State::STAGE => 'authouath2:init',
+            'authouath2:AuthId' => 'mockAuthSource',
+        ]);
+
+        SimpleSAML_Session::getSessionFromRequest()->setData('SimpleSAML_Auth_State', 'validStateId', $stateValue);
+        try {
+            $this->responseHandler->handleResponseFromRequest($request);
+            $this->fail("Redirect expected");
+        } catch (RedirectException $e) {
+            $this->assertEquals(
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+                'http://localhost/module.php/authoauth2/errors/consent.php',
+                $e->getUrl(),
+                "First argument should be the redirect url"
+            );
+            $this->assertEquals([], $e->getParams(), "query params are already added into url");
+        }
     }
 }

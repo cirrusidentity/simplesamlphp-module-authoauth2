@@ -10,7 +10,9 @@ namespace SimpleSAML\Module\authoauth2;
 
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use SimpleSAML\Logger;
+use SimpleSAML\Module;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
+use SimpleSAML\Utils\HTTP;
 
 class OAuth2ResponseHandler
 {
@@ -18,6 +20,12 @@ class OAuth2ResponseHandler
     private $expectedStateAuthId = OAuth2::AUTHID;
 
     private $expectedPrefix = OAuth2::STATE_PREFIX . '|';
+
+    /**
+     * 'access_denied' is OAuth2 standard. Some AS made up their own codes, so support the common ones.
+     * @var string[]
+     */
+    private $errorsUserConsent = ['access_denied', 'user_denied', 'user_cancelled_authorize'];
 
     /**
      * Look at the state parameter returned by the OAuth2 server and determine if we can handle it;
@@ -43,7 +51,6 @@ class OAuth2ResponseHandler
 
     public function handleResponseFromRequest(array $request)
     {
-        //TODO: use some error checking
         Logger::debug('authoauth2 : linkback request=' . var_export($request, true));
 
         if (!$this->canHandleResponseFromRequest($request)) {
@@ -93,15 +100,20 @@ class OAuth2ResponseHandler
         \SimpleSAML_Auth_Source::completeAuth($state);
     }
 
-    private function handleErrorResponse(\SimpleSAML_Auth_Source $source, array $state, array $request)
+    private function handleErrorResponse(OAuth2 $source, array $state, array $request)
     {
         // Errors can be pretty inconsistent
         $error = @$request['error'];
-        // 'access_denied' is OAuth2 standard. Some AS made up their own codes, so support the common ones.
-        if ($error === 'access_denied' || $error === 'user_denied') {
-            Logger::debug("Authsource '" . $source->getAuthId() . "' User denied access: $error");
-            $e = new \SimpleSAML_Error_UserAborted();
-            \SimpleSAML_Auth_State::throwException($state, $e);
+        if (in_array($error, $this->errorsUserConsent)) {
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            Logger::debug("Authsource '" . $source->getAuthId() . "' User denied access: $error. Msg: " .  @$request['error_description']);
+            if ($source->getConfig()->getBoolean('useConsentErrorPage', true)) {
+                $consentErrorPageUrl = Module::getModuleURL('authoauth2/errors/consent.php');
+                HTTP::redirectTrustedURL($consentErrorPageUrl);
+            } else {
+                $e = new \SimpleSAML_Error_UserAborted();
+                \SimpleSAML_Auth_State::throwException($state, $e);
+            }
         }
 
         $errorMsg = 'Authentication failed: [' . $error . '] ' . @$request['error_description'];
