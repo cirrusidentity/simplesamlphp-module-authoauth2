@@ -114,5 +114,19 @@ class ConfigTemplate
         // Improve log lines
         'label' => 'yahoo'
     ];
+
+    const Weibo = [
+        'authoauth2:OAuth2',
+        // *** Weibo Endpoints ***
+        'urlAuthorize' => 'https://api.weibo.com/oauth2/authorize',
+        'urlAccessToken' => 'https://api.weibo.com/oauth2/access_token',
+        'urlResourceOwnerDetails' => 'https://api.weibo.com/2/users/show.json',
+        'attributePrefix' => 'weibo.',
+        'scopeSeparator' => ' ',
+        // Improve log lines
+        'label' => 'weibo',
+        // uid attribute from token response needs to be included in user details call
+        'tokenFieldsToUserDetailsUrl' => ['uid' => 'uid', 'access_token' => 'access_token'],
+    ];
 }
 // phpcs:enable
