@@ -69,6 +69,12 @@ Generic usage provides enough configuration parameters to use with any OAuth2 or
               'urlResourceOwnerOptions' => [
                  'fields' => 'id,name,first_name,last_name,email'
               ],
+              // allow fields from token response to be query params on resource owne details request
+              'tokenFieldsToUserDetailsUrl' => [
+                   'fieldName' => 'queryParamName',
+                   'access_token' => 'access_token',
+                   'user_id' > 'user_id',
+              ],
               // *** Required for most integrations ***
               // Test App.
               'clientId' => '133972730583345',
@@ -295,9 +301,8 @@ In the below example the code will use the `authoauth2` if that is what initiate
 $handler = new \SimpleSAML\Module\authoauth2\OAuth2ResponseHandler();
 if ($handler->canHandleResponse()) {
    $handler->handleResponse();
- } else {
-    // The existing code
- }
+   return;
+ } 
 ```
 
 # Development

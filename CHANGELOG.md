@@ -6,6 +6,8 @@ _Release: 2018-?
 * Behavior changes from v1
     * User canceling consent sends them to error page rather than throwing USER_ABORT. Behavior is configurable
     * Automatic retry on network errors. Behavior is configurable
+* Option tokenFieldsToUserDetailsUrl to indicate which fields from token response should
+be query params on user info request
 * If user cancels consent, send them to page saying consent must be provided.
 * Perform 1 retry on network errors
 * Use ssp 1.16.2 as the dependency

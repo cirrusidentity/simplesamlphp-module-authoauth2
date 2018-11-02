@@ -14,6 +14,7 @@ use SAML2\Utils;
 use SimpleSAML\Logger;
 use SimpleSAML\Module\authoauth2\AttributeManipulator;
 use SimpleSAML\Module\authoauth2\ConfigTemplate;
+use SimpleSAML\Module\authoauth2\Providers\AdjustableGenericProvider;
 use SimpleSAML\Module\authoauth2\PsrLogBridge;
 use SimpleSAML\Utils\Arrays;
 use SimpleSAML\Utils\HTTP;
@@ -154,7 +155,7 @@ class OAuth2 extends \SimpleSAML_Auth_Source
                 throw new \InvalidArgumentException("No OAuth2 provider class found for '$providerClass'.");
             }
         }
-        return new GenericProvider($config->toArray(), $collaborators);
+        return new AdjustableGenericProvider($config->toArray(), $collaborators);
     }
 
     /**
