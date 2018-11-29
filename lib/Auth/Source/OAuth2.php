@@ -132,7 +132,7 @@ class OAuth2 extends \SimpleSAML_Auth_Source
         $collaborators = [];
         if ($config->getBoolean('logHttpTraffic', false) === true) {
             $format = $config->getString('logMessageFormat', self::DEBUG_LOG_FORMAT);
-            Logger::debug('Enable traffic logging');
+            Logger::debug('authoauth2: Enable traffic logging');
             $handlerStack = HandlerStack::create();
             $handlerStack->push(
                 Middleware::log(new PsrLogBridge(), new MessageFormatter("authoauth2: $providerLabel $format")),

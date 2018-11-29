@@ -37,7 +37,7 @@ class AdjustableGenericProvider extends GenericProvider
                 if (array_key_exists($field, $responseValues)) {
                     $toAdd[$param] = $responseValues[$field];
                 } else {
-                    Logger::debug("Token response missing field '$field'");
+                    Logger::debug("authoauth2: Token response missing field '$field'");
                 }
             }
         }

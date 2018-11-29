@@ -51,7 +51,7 @@ class OAuth2ResponseHandler
 
     public function handleResponseFromRequest(array $request)
     {
-        Logger::debug('authoauth2 : linkback request=' . var_export($request, true));
+        Logger::debug('authoauth2: linkback request=' . var_export($request, true));
 
         if (!$this->canHandleResponseFromRequest($request)) {
             // phpcs:ignore Generic.Files.LineLength.TooLong
@@ -106,7 +106,7 @@ class OAuth2ResponseHandler
         $error = @$request['error'];
         if (in_array($error, $this->errorsUserConsent)) {
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            Logger::debug("Authsource '" . $source->getAuthId() . "' User denied access: $error. Msg: " .  @$request['error_description']);
+            Logger::debug("authoauth2: Authsource '" . $source->getAuthId() . "' User denied access: $error. Msg: " .  @$request['error_description']);
             if ($source->getConfig()->getBoolean('useConsentErrorPage', true)) {
                 $consentErrorPageUrl = Module::getModuleURL('authoauth2/errors/consent.php');
                 HTTP::redirectTrustedURL($consentErrorPageUrl);
@@ -117,7 +117,7 @@ class OAuth2ResponseHandler
         }
 
         $errorMsg = 'Authentication failed: [' . $error . '] ' . @$request['error_description'];
-        Logger::debug("Authsource '" . $source->getAuthId() . "' return error $errorMsg");
+        Logger::debug("authoauth2: Authsource '" . $source->getAuthId() . "' return error $errorMsg");
         $e = new \SimpleSAML_Error_AuthSource($source->getAuthId(), $errorMsg);
         \SimpleSAML_Auth_State::throwException($state, $e);
     }
