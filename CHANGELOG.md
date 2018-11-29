@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+_Release: 2019-?
+* Nothing yet!
+
+## v2.0.0
+
 _Release: 2018-?
 * Behavior changes from v1
     * User canceling consent sends them to error page rather than throwing USER_ABORT. Behavior is configurable
@@ -11,7 +16,7 @@ be query params on user info request
 * If user cancels consent, send them to page saying consent must be provided.
 * Perform 1 retry on network errors
 * Use ssp 1.16.2 as the dependency
-* Add php 7.1 and 7.2 to travis buildds
+* Add php 7.1 and 7.2 to travis builds
 * PSR-2 styling
 * Add Microsoft authsource
 * Allow logging of id_token json

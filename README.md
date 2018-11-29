@@ -3,6 +3,7 @@
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
 - [Installation](#installation)
+  - [Changelog](#changelog)
 - [Usage](#usage)
   - [Redirect URI](#redirect-uri)
   - [Provider specific Tips](#provider-specific-tips)
@@ -20,6 +21,7 @@
 - [Migrating from an existing auth module](#migrating-from-an-existing-auth-module)
   - [Calling OAuth2ResponseHandler](#calling-oauth2responsehandler)
 - [Development](#development)
+  - [Code style](#code-style)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -34,7 +36,15 @@ excellent [PHP League OAuth2 Client](http://oauth2-client.thephpleague.com/).
 
 The module can be installed with composer.
 
+    composer require cirrusidentity/simplesamlphp-module-authoauth2
+
+Or you can install the latest from master
+
     composer require cirrusidentity/simplesamlphp-module-authoauth2:dev-master
+
+## Changelog
+
+[View the change log](CHANGELOG.md)
 
 # Usage
 
@@ -157,10 +167,13 @@ or by using the template option
 ## Samples
 
 Several of these samples show how to configure the generic endpoint to authenticate against Facebook, Amazon and Google, etc. 
-In a lot of cases there are provider specific implementations of the base OAuth2 client and using one of those may
-simplify the configuration
+In a lot of cases you can use a template from `ConfigTemplate` to make the configuration cleaner or you can use a provider specific implementations of the base OAuth2 client.
 
 ### Generic Facebook
+
+You can use the Facebook template `'template' => 'Facebook',` and then provide just the `clientId` and `clientSecret` to
+have a cleaner looking config
+
 ```php
     'genericFacebookTest' => array(
         'authoauth2:OAuth2',
@@ -199,14 +212,16 @@ simplify the configuration
 
 ### Generic Google
 
+View [full Google](/docs/GOOGLE.md) instructions.
+
+
 ```php
 'genericGoogleTest' => array(
         'authoauth2:OAuth2',
         // *** Google Endpoints ***
         'urlAuthorize' => 'https://accounts.google.com/o/oauth2/auth',
         'urlAccessToken' => 'https://accounts.google.com/o/oauth2/token',
-        'urlResourceOwnerDetails' => 'https://www.googleapis.com/plus/v1/people/me/openIdConnect',
-        //'urlResourceOwnerDetails' => 'https://www.googleapis.com/plus/v1/people/me?fields=id,name',
+        'urlResourceOwnerDetails' => 'https://www.googleapis.com/oauth2/v3/userinfo',
         // *** My application ***
         'clientId' => '685947170891-exmaple.apps.googleusercontent.com',
         'clientSecret' => 'wV0FdFs_example',
@@ -220,6 +235,9 @@ simplify the configuration
  ```
  
  ### Provider Specific Google
+ 
+ View [full Google](/docs/GOOGLE.md) instructions.
+
  
  ```php
     'googleProvider' => array(

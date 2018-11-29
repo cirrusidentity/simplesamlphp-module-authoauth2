@@ -5,7 +5,7 @@
 - [Google as an AuthSource](#google-as-an-authsource)
 - [Usage](#usage)
   - [Recommended Config](#recommended-config)
-  - [Resitricting hosted domain](#resitricting-hosted-domain)
+  - [Restricting hosted domain](#restricting-hosted-domain)
 - [Creating Google OIDC Client](#creating-google-oidc-client)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -15,8 +15,9 @@
 Google provides both OIDC and Google Plus endpoints for learning about
 a user.  The OIDC endpoints require fewer client API permissions and
 return data in a standardized format. The Google Plus endpoints can
-return more data about a user but require Goolge Plus permissions and
-return data in a Google specific format.
+return more data about a user but require Google Plus permissions and
+return data in a Google specific format. The Google Plus apis will be shutting down sometime in 2019
+so we recommend using the OIDC endpoints
 
 You can also choose between using the generic OAuth/OIDC implementation or using
 a [Google specific library](https://github.com/thephpleague/oauth2-google/).
@@ -51,7 +52,7 @@ $metadata['myEntityId'] = array(
 )
 ```
 
-## Resitricting hosted domain
+## Restricting hosted domain
 
 If you want to restrict the hosted domain of a user you can pass the
 `hd` query parameter to Google.  You **must** ensure the `hd` value
