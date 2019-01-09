@@ -25,7 +25,13 @@ class OAuth2ResponseHandler
      * 'access_denied' is OAuth2 standard. Some AS made up their own codes, so support the common ones.
      * @var string[]
      */
-    private $errorsUserConsent = ['access_denied', 'user_denied', 'user_cancelled_authorize', 'consent_required', 'user_cancelled_login'];
+    private $errorsUserConsent = [
+        'access_denied',
+        'user_denied',
+        'user_cancelled_authorize',
+        'consent_required',
+        'user_cancelled_login'
+    ];
 
     /**
      * Look at the state parameter returned by the OAuth2 server and determine if we can handle it;

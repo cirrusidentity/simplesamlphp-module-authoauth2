@@ -44,6 +44,7 @@ class ConfigTemplate
         'label' => 'google'
     ];
 
+    // Deprecated
     const LinkedIn = [
         'authoauth2:OAuth2',
         // *** LinkedIn Endpoints ***
@@ -53,6 +54,25 @@ class ConfigTemplate
         'urlResourceOwnerDetails' => 'https://api.linkedin.com/v1/people/~:(id,first-name,last-name,email-address)?format=json',
         //scopes are the default ones configured for your application
         'attributePrefix' => 'linkedin.',
+        'scopeSeparator' => ' ',
+        // Improve log lines
+        'label' => 'linkedin'
+    ];
+
+    const LinkedInV2 = [
+        'authoauth2:LinkedInV2Auth',
+        // *** LinkedIn Endpoints ***
+        'urlAuthorize' => 'https://www.linkedin.com/oauth/v2/authorization',
+        'urlAccessToken' => 'https://www.linkedin.com/oauth/v2/accessToken',
+        'urlResourceOwnerDetails' => 'https://api.linkedin.com/v2/me',
+        'urlResourceOwnerEmail' => 'https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))',
+        //scopes are the default ones configured for your application
+        'attributePrefix' => 'linkedin.',
+        'scopes' => [
+            'r_liteprofile',
+            // This requires additional api call to the urlResourceOwnerEmail url
+            'r_emailaddress',
+        ],
         'scopeSeparator' => ' ',
         // Improve log lines
         'label' => 'linkedin'
@@ -115,6 +135,7 @@ class ConfigTemplate
         'label' => 'yahoo'
     ];
 
+    // TODO: weibo is work in progress
     const Weibo = [
         'authoauth2:OAuth2',
         // *** Weibo Endpoints ***

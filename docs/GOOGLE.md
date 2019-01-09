@@ -12,12 +12,13 @@
 
 # Google as an AuthSource
 
-Google provides both OIDC and Google Plus endpoints for learning about
-a user.  The OIDC endpoints require fewer client API permissions and
-return data in a standardized format. The Google Plus endpoints can
-return more data about a user but require Google Plus permissions and
-return data in a Google specific format. The Google Plus apis will be shutting down sometime in 2019
-so we recommend using the OIDC endpoints
+Google provides OIDC (and previously Google Plus endpoints for
+learning about a user).  The OIDC endpoints require fewer client API
+permissions and return data in a standardized format. The Google Plus
+endpoints can return more data about a user but require Google Plus
+permissions and return data in a Google specific format. The Google
+Plus apis will be shutting down sometime in 2019 so we recommend using
+the OIDC endpoints
 
 You can also choose between using the generic OAuth/OIDC implementation or using
 a [Google specific library](https://github.com/thephpleague/oauth2-google/).
@@ -25,7 +26,7 @@ a [Google specific library](https://github.com/thephpleague/oauth2-google/).
 # Usage
 ## Recommended Config
 
-We recommend using the OIDC configuration with the generic implementation. This
+We recommend using the OIDC configuration with the generic OAuth2 authsource. This
 requires the least configuration.
 
 
@@ -59,6 +60,7 @@ If you want to restrict the hosted domain of a user you can pass the
 returned from Google matches what you expect - a user could remove the
 `hd` from the browser flow and login with any account.
 
+* Out of date *
 TODO: Once https://github.com/thephpleague/oauth2-google/pull/54 is accepted into the oauth2-google project then
 this check would be done automatically. This example would then need to be updated to use that project
 
