@@ -7,16 +7,15 @@ use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\MessageFormatter;
 use GuzzleHttp\Middleware;
-use League\OAuth2\Client\Provider\GenericProvider;
 use League\OAuth2\Client\Provider\AbstractProvider;
+use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 use League\OAuth2\Client\Token\AccessToken;
-use SAML2\Utils;
 use SimpleSAML\Logger;
+use SimpleSAML\Module;
 use SimpleSAML\Module\authoauth2\AttributeManipulator;
 use SimpleSAML\Module\authoauth2\ConfigTemplate;
 use SimpleSAML\Module\authoauth2\Providers\AdjustableGenericProvider;
 use SimpleSAML\Module\authoauth2\PsrLogBridge;
-use SimpleSAML\Utils\Arrays;
 use SimpleSAML\Utils\HTTP;
 
 /**
@@ -69,7 +68,7 @@ class OAuth2 extends \SimpleSAML_Auth_Source
             }
         }
         if (!array_key_exists('redirectUri', $config)) {
-            $config['redirectUri'] = \SimpleSAML\Module::getModuleURL('authoauth2/linkback.php');
+            $config['redirectUri'] = Module::getModuleURL('authoauth2/linkback.php');
         }
         if (!array_key_exists('timeout', $config)) {
             $config['timeout'] = 3;
@@ -190,6 +189,7 @@ class OAuth2 extends \SimpleSAML_Auth_Source
             Logger::debug('authoauth2: ' . $providerLabel . ' id_token json: ' . $decodedIdToken);
         }
 
+        /** @var ResourceOwnerInterface $resourceOwner */
         $resourceOwner = $this->retry(
             function () use ($provider, $accessToken) {
                 return $provider->getResourceOwner($accessToken);
@@ -198,9 +198,8 @@ class OAuth2 extends \SimpleSAML_Auth_Source
         );
 
         $attributes = $resourceOwner->toArray();
-        $prefix = $this->config->getString('attributePrefix', '');
-        $attributeManipulator = new AttributeManipulator();
-        $state['Attributes'] = $attributeManipulator->prefixAndFlatten($attributes, $prefix);
+        $prefix = $this->getAttributePrefix();
+        $state['Attributes'] = $this->convertResourceOwnerAttributes($attributes, $prefix);
         $this->postFinalStep($accessToken, $provider, $state);
         Logger::debug(
             'authoauth2: ' . $providerLabel . ' attributes: ' . implode(", ", array_keys($state['Attributes']))
@@ -208,6 +207,19 @@ class OAuth2 extends \SimpleSAML_Auth_Source
         // Track time spent calling out to oauth2 server. This can often be a source of slowness.
         $time = microtime(true) - $start;
         Logger::debug('authoauth2: ' . $providerLabel . ' finished authentication in ' . $time . ' seconds');
+    }
+
+    /**
+     * Take the array of users attributes from the Oauth2 provider and convert them into a form usable by SSP.
+     * The default implementation attempts to flatten the user attribute structure and prefix the attribute names
+     * @param array $resourceOwnerAttributes The array of attributes from the OAuth2/OIDC provider
+     * @param string $prefix A string to put in front of all attribute names
+     * @return array The SSP attributes, in form suitable to assign to $state['Attributes']
+     */
+    protected function convertResourceOwnerAttributes(array $resourceOwnerAttributes, $prefix)
+    {
+        $attributeManipulator = new AttributeManipulator();
+        return $attributeManipulator->prefixAndFlatten($resourceOwnerAttributes, $prefix);
     }
 
     /**
@@ -289,5 +301,10 @@ class OAuth2 extends \SimpleSAML_Auth_Source
     public function getConfig()
     {
         return $this->config;
+    }
+
+    protected function getAttributePrefix()
+    {
+        return $this->config->getString('attributePrefix', '');
     }
 }

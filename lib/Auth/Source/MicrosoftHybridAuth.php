@@ -46,7 +46,7 @@ class MicrosoftHybridAuth extends OAuth2
         }
 
         $idTokenData = $this->extraIdTokenAttributes($accessToken->getValues()['id_token']);
-        $prefix = $this->config->getString('attributePrefix', '');
+        $prefix = $this->getAttributePrefix();
 
         if (array_key_exists('email', $idTokenData)) {
             $state['Attributes'][$prefix . 'mail'] = [$idTokenData['email']];
