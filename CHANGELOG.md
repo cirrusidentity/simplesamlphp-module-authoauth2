@@ -5,9 +5,16 @@
 _Release: 2019-?
 * Nothing yet!
 
+## v2.1.0
+
+_Release: 2019-01-29
+* LinkedIn V2 authsource
+* Make attribute conversion method overridable
+* Some code style cleanup
+
 ## v2.0.0
 
-_Release: 2018-?
+_Release: 2018-11-29
 * Behavior changes from v1
     * User canceling consent sends them to error page rather than throwing USER_ABORT. Behavior is configurable
     * Automatic retry on network errors. Behavior is configurable
@@ -26,7 +33,7 @@ be query params on user info request
 
 ## v1.0.0
 
-_Released: 2018-?_
+_Released: 2018-08-21
 
 * Generic OAuth2/OIDC module
 * Template for Google OIDC
