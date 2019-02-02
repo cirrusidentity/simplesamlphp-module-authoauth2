@@ -12,13 +12,13 @@
 
 # Google as an AuthSource
 
-Google provides OIDC (and previously Google Plus endpoints for
-learning about a user).  The OIDC endpoints require fewer client API
+Google provides OIDC (and previously Google Plus) endpoints for
+learning about a user.  The OIDC endpoints require fewer client API
 permissions and return data in a standardized format. The Google Plus
 endpoints can return more data about a user but require Google Plus
 permissions and return data in a Google specific format. The Google
-Plus apis will be shutting down sometime in 2019 so we recommend using
-the OIDC endpoints
+Plus APIs will be shutting down sometime in 2019 so we recommend using
+the OIDC endpoints.
 
 You can also choose between using the generic OAuth/OIDC implementation or using
 a [Google specific library](https://github.com/thephpleague/oauth2-google/).
