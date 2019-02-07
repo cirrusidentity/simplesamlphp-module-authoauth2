@@ -29,11 +29,11 @@ the expected OIDC/OAuth pattern.
     ],
 ```
 
-# Migrarting from OAuth v1 authlinkedin
+# Migrating from OAuth v1 authlinkedin
 
-The `authlinkedin` module bundled with most version of SSP uses
+The `authlinkedin` module bundled with most versions of SSP uses
 deprecated OAuth v1 and v1 API endpoints.  To migrate to the new
-LinkedIn api you will need to add a [redirect URI to your linkedin
+LinkedIn API you will need to add a [redirect URI to your linkedin
 application](https://docs.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?context=linkedin/consumer/context). The
 redirect URI is
 
@@ -41,7 +41,7 @@ redirect URI is
 
 You will then need to change your `authsource` configuration to match the example usage above.
 
-On your idp side you may need to use `linkedin2name` from this module rather than `authlinkedin`.
+On your IdP side you may need to use `linkedin2name` from this module rather than `authlinkedin`.
 
 ```php
         // Convert linkedin names to ldap friendly names
