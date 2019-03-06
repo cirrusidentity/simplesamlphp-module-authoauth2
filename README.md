@@ -42,6 +42,11 @@ Or you can install the latest from master
 
     composer require cirrusidentity/simplesamlphp-module-authoauth2:dev-master
 
+If you install into a tar ball distribution of SSP then composer, by default, will also install all `dev` dependencies for SSP and this module. This can be a long list.
+If you prefer not having dev dependencies installed, then you can use.
+
+    composer require --no-update cirrusidentity/simplesamlphp-module-authoauth2 && composer update --no-dev cirrusidentity/simplesamlphp-module-authoauth2
+
 ## Changelog
 
 [View the change log](CHANGELOG.md)
