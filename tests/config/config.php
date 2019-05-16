@@ -1,7 +1,7 @@
 <?php
-/* 
+/*
  * The configuration of SimpleSAMLphp
- * 
+ *
  */
 
 $config = array(
@@ -56,7 +56,7 @@ $config = array(
     'errorreporting' => true,
 
     /**
-     * Custom error show function called from SimpleSAML_Error_Error::show.
+     * Custom error show function called from SimpleSAML\Error\Error::show.
      * See docs/simplesamlphp-errorhandling.txt for function code example.
      *
      * Example:
@@ -110,11 +110,11 @@ $config = array(
      * Logging.
      *
      * define the minimum log level to log
-     *		SimpleSAML_Logger::ERR		No statistics, only errors
-     *		SimpleSAML_Logger::WARNING	No statistics, only warnings/errors
-     *		SimpleSAML_Logger::NOTICE	Statistics and errors
-     *		SimpleSAML_Logger::INFO		Verbose logs
-     *		SimpleSAML_Logger::DEBUG	Full debug logs - not recommended for production
+     *		SimpleSAML\Logger::ERR		No statistics, only errors
+     *		SimpleSAML\Logger::WARNING	No statistics, only warnings/errors
+     *		SimpleSAML\Logger::NOTICE	Statistics and errors
+     *		SimpleSAML\Logger::INFO		Verbose logs
+     *		SimpleSAML\Logger::DEBUG	Full debug logs - not recommended for production
      *
      * Choose logging handler.
      *
@@ -423,9 +423,9 @@ $config = array(
     'language.cookie.lifetime' => (60 * 60 * 24 * 900),
 
     /**
-     * Custom getLanguage function called from SimpleSAML_XHTML_Template::getLanguage().
+     * Custom getLanguage function called from SimpleSAML\XHTML\Template::getLanguage().
      * Function should return language code of one of the available languages or NULL.
-     * See SimpleSAML_XHTML_Template::getLanguage() source code for more info.
+     * See SimpleSAML\XHTML\Template::getLanguage() source code for more info.
      *
      * This option can be used to implement a custom function for determining
      * the default language for the user.
