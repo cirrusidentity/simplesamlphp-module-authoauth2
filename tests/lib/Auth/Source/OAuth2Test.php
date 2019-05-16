@@ -104,7 +104,7 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
             'urlAccessToken' => 'https://example.com/token',
             'urlResourceOwnerDetails' => 'https://example.com/userinfo'
         ];
-        $state = [\SimpleSAML_Auth_State::ID => 'stateId'];
+        $state = [\SimpleSAML\Auth\State::ID => 'stateId'];
 
         $authOAuth2 = new OAuth2($info, $config);
 
@@ -136,7 +136,7 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
             'attributePrefix' => 'test.',
             'retryOnError' => 0,
         ];
-        $state = [\SimpleSAML_Auth_State::ID => 'stateId'];
+        $state = [\SimpleSAML\Auth\State::ID => 'stateId'];
 
         $mock = $this->getMockBuilder(AbstractProvider::class)
             ->disableOriginalConstructor()
@@ -173,7 +173,7 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
             'attributePrefix' => 'test.',
             'retryOnError' => 1,
         ];
-        $state = [\SimpleSAML_Auth_State::ID => 'stateId'];
+        $state = [\SimpleSAML\Auth\State::ID => 'stateId'];
 
         /** @var $mock AbstractProvider|\PHPUnit_Framework_MockObject_MockObject*/
         $mock = $this->getMockBuilder(AbstractProvider::class)
@@ -225,7 +225,7 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
             'attributePrefix' => 'test.',
             'retryOnError' => 2,
         ];
-        $state = [\SimpleSAML_Auth_State::ID => 'stateId'];
+        $state = [\SimpleSAML\Auth\State::ID => 'stateId'];
 
         /** @var $mock AbstractProvider|\PHPUnit_Framework_MockObject_MockObject*/
         $mock = $this->getMockBuilder(AbstractProvider::class)

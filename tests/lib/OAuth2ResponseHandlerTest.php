@@ -68,7 +68,7 @@ class OAuth2ResponseHandlerTest extends \PHPUnit_Framework_TestCase
      */
     public function testUnhandleableResponse()
     {
-        $this->expectException(\SimpleSAML_Error_BadRequest::class);
+        $this->expectException(\SimpleSAML\Error\BadRequest::class);
         $this->responseHandler->handleResponseFromRequest(['state' => 'wrong-prefix']);
     }
 
@@ -78,7 +78,7 @@ class OAuth2ResponseHandlerTest extends \PHPUnit_Framework_TestCase
     public function testNoStateFoundInSession()
     {
 
-        $this->expectException(\SimpleSAML_Error_NoState::class);
+        $this->expectException(\SimpleSAML\Error\NoState::class);
         $request = [
             'state' => $this->validStateValue,
         ];
@@ -106,7 +106,7 @@ class OAuth2ResponseHandlerTest extends \PHPUnit_Framework_TestCase
             'authouath2:AuthId' => 'mockAuthSource',
         ]);
         $this->mockAuthSource->method('getConfig')->willReturn(
-            new \SimpleSAML_Configuration(['useConsentErrorPage' => false], 'authsources:oauth2')
+            new \SimpleSAML\Configuration(['useConsentErrorPage' => false], 'authsources:oauth2')
         );
 
         SimpleSAML_Session::getSessionFromRequest()->setData('SimpleSAML_Auth_State', 'validStateId', $stateValue);
@@ -215,7 +215,7 @@ class OAuth2ResponseHandlerTest extends \PHPUnit_Framework_TestCase
         MockHttp::throwOnRedirectTrustedURL();
         // Use an empty config to test defaults
         $this->mockAuthSource->method('getConfig')->willReturn(
-            new \SimpleSAML_Configuration([], 'authsources:oauth2')
+            new \SimpleSAML\Configuration([], 'authsources:oauth2')
         );
         $request = [
             'state' => $this->validStateValue,

@@ -36,7 +36,7 @@ class MicrosoftHybridAuthTest extends \PHPUnit_Framework_TestCase
             'template' => 'MicrosoftGraphV1',
             'providerClass' => MockOAuth2Provider::class,
         ];
-        $state = [\SimpleSAML_Auth_State::ID => 'stateId'];
+        $state = [\SimpleSAML\Auth\State::ID => 'stateId'];
 
         /**
          * @var $mock AbstractProvider|\PHPUnit_Framework_MockObject_MockObject
