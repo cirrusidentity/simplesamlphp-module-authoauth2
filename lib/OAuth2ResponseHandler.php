@@ -61,26 +61,26 @@ class OAuth2ResponseHandler
 
         if (!$this->canHandleResponseFromRequest($request)) {
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            throw new \SimpleSAML_Error_BadRequest('Either missing state parameter on OAuth2 login callback, or cannot be handled by authoauth2');
+            throw new \SimpleSAML\Error\BadRequest('Either missing state parameter on OAuth2 login callback, or cannot be handled by authoauth2');
         }
         $stateIdWithPrefix = $request['state'];
         $stateId = substr($stateIdWithPrefix, strlen($this->expectedPrefix));
         //TODO: decide how no-state errors should be handled?
         // Likely cause is user clicked back button (state was already consumed and removed) or session expired
-        $state = \SimpleSAML_Auth_State::loadState($stateId, $this->expectedStageState);
+        $state = \SimpleSAML\Auth\State::loadState($stateId, $this->expectedStageState);
 
         // Find authentication source
         if (!array_key_exists($this->expectedStateAuthId, $state)) {
-            throw new \SimpleSAML_Error_BadRequest('No authsource id data in state for ' . $this->expectedStateAuthId);
+            throw new \SimpleSAML\Error\BadRequest('No authsource id data in state for ' . $this->expectedStateAuthId);
         }
         $sourceId = $state[$this->expectedStateAuthId];
 
         /**
          * @var OAuth2 $source
          */
-        $source = \SimpleSAML_Auth_Source::getById($sourceId, OAuth2::class);
+        $source = \SimpleSAML\Auth\Source::getById($sourceId, OAuth2::class);
         if ($source === null) {
-            throw new \SimpleSAML_Error_BadRequest('Could not find authentication source with id ' . $sourceId);
+            throw new \SimpleSAML\Error\BadRequest('Could not find authentication source with id ' . $sourceId);
         }
         if (!array_key_exists('code', $request)) {
             $this->handleErrorResponse($source, $state, $request);
@@ -91,19 +91,19 @@ class OAuth2ResponseHandler
         } catch (IdentityProviderException $e) {
             // phpcs:ignore Generic.Files.LineLength.TooLong
             Logger::error("authoauth2: error in '$sourceId' msg '{$e->getMessage()}' body '" . var_export($e->getResponseBody(), true) . "'");
-            \SimpleSAML_Auth_State::throwException(
+            \SimpleSAML\Auth\State::throwException(
                 $state,
-                new \SimpleSAML_Error_AuthSource($sourceId, 'Error on oauth2 linkback endpoint.', $e)
+                new \SimpleSAML\Error\AuthSource($sourceId, 'Error on oauth2 linkback endpoint.', $e)
             );
         } catch (\Exception $e) {
             Logger::error("authoauth2: error in '$sourceId' '" . get_class($e) . "' msg '{$e->getMessage()}'");
-            \SimpleSAML_Auth_State::throwException(
+            \SimpleSAML\Auth\State::throwException(
                 $state,
-                new \SimpleSAML_Error_AuthSource($sourceId, 'Error on oauth2 linkback endpoint.', $e)
+                new \SimpleSAML\Error\AuthSource($sourceId, 'Error on oauth2 linkback endpoint.', $e)
             );
         }
 
-        \SimpleSAML_Auth_Source::completeAuth($state);
+        \SimpleSAML\Auth\Source::completeAuth($state);
     }
 
     private function handleErrorResponse(OAuth2 $source, array $state, array $request)
@@ -117,14 +117,14 @@ class OAuth2ResponseHandler
                 $consentErrorPageUrl = Module::getModuleURL('authoauth2/errors/consent.php');
                 HTTP::redirectTrustedURL($consentErrorPageUrl);
             } else {
-                $e = new \SimpleSAML_Error_UserAborted();
-                \SimpleSAML_Auth_State::throwException($state, $e);
+                $e = new \SimpleSAML\Error\UserAborted();
+                \SimpleSAML\Auth\State::throwException($state, $e);
             }
         }
 
         $errorMsg = 'Authentication failed: [' . $error . '] ' . @$request['error_description'];
         Logger::debug("authoauth2: Authsource '" . $source->getAuthId() . "' return error $errorMsg");
-        $e = new \SimpleSAML_Error_AuthSource($source->getAuthId(), $errorMsg);
-        \SimpleSAML_Auth_State::throwException($state, $e);
+        $e = new \SimpleSAML\Error\AuthSource($source->getAuthId(), $errorMsg);
+        \SimpleSAML\Auth\State::throwException($state, $e);
     }
 }
