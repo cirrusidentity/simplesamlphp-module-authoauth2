@@ -67,6 +67,7 @@ Almost all OAuth2/OIDC providers will require you to register a redirect URI. Us
 
 ## Provider specific Tips
 
+ * [Bitbucket](/docs/BITBUCKET.md)
  * [Google](/docs/GOOGLE.md)
  * [LinkedIn](/docs/LINKEDIN.md)
  * [Microsoft](/docs/MICROSOFT.md)

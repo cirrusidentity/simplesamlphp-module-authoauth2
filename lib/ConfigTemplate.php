@@ -149,5 +149,20 @@ class ConfigTemplate
         // uid attribute from token response needs to be included in user details call
         'tokenFieldsToUserDetailsUrl' => ['uid' => 'uid', 'access_token' => 'access_token'],
     ];
+
+    const Bitbucket = [
+        'authoauth2:BitbucketAuth',
+        // *** Bitbucket Endpoints ***
+        'urlAuthorize' => 'https://bitbucket.org/site/oauth2/authorize',
+        'urlAccessToken' => 'https://bitbucket.org/site/oauth2/access_token',
+        'urlResourceOwnerDetails' => 'https://api.bitbucket.org/2.0/user',
+        'urlResourceOwnerEmail' => 'https://api.bitbucket.org/2.0/user/emails',
+        //scopes are the default ones configured for your application
+        'attributePrefix' => 'bitbucket.',
+        'scopes' => ['account', 'email'],
+        'scopeSeparator' => ' ',
+        // Improve log lines
+        'label' => 'bitbucket'
+    ];
 }
 // phpcs:enable
