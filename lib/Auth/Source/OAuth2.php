@@ -108,12 +108,26 @@ class OAuth2 extends \SimpleSAML\Auth\Source
         Logger::debug("authoauth2: $providerLabel saved state with stateID=$stateID");
 
         $options = $this->config->getArray('urlAuthorizeOptions', []);
+        $options = array_merge($options, $this->getAuthorizeOptionsFromState($state));
         // Add a prefix to tell we are the intended recipient for a redirect URI if the redirect URI was customized
         $options['state'] = self::STATE_PREFIX . '|' . $stateID;
         $authorizeURL = $provider->getAuthorizationUrl($options);
         Logger::debug("authoauth2: $providerLabel redirecting to authorizeURL=$authorizeURL");
 
         HTTP::redirectTrustedURL($authorizeURL);
+    }
+
+    /**
+     * Convert values from the state parameter of the authenticate call into options to the authorization request.
+     *
+     * Could be overridden in subclasses, base implementation does nothing
+     *
+     * @param array $state
+     * @return array
+     */
+    protected function getAuthorizeOptionsFromState(&$state)
+    {
+        return [];
     }
 
     /**
