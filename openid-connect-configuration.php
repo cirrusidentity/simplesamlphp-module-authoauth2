@@ -57,7 +57,23 @@ SNIP1;
 if (isset($conf->end_session_endpoint)) {
     echo "        'urlEndSession' => '$conf->end_session_endpoint',\n";
 }
-
+$jwksData = file_get_contents($conf->jwks_uri);
+if (!$jwksData) {
+    echo "Failed to get jwks data from $conf->jwks_uri\n";
+    exit;
+}
+$jwks = json_decode($jwksData, true);
+if (!$jwks) {
+    echo "Failed to json decode jwks data: " . $jwksData;
+    exit;
+}
+$keys = [];
+foreach ($jwks['keys'] as $key) {
+    $kid = $key['kid'];
+    $x5c = $key['x5c'];
+    $keys[$kid] = "-----BEGIN CERTIFICATE-----\n" . $x5c[0] . "\n-----END CERTIFICATE-----";
+}
+echo "        'keys' => " . var_export($keys, true);
 echo <<<SNIP2
 
     ),

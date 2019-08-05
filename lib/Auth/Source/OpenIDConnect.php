@@ -2,6 +2,7 @@
 
 namespace SimpleSAML\Module\authoauth2\Auth\Source;
 
+use Firebase\JWT;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
 use SimpleSAML\Auth;
@@ -55,6 +56,18 @@ class OpenIDConnect extends \SimpleSAML\Module\authoauth2\Auth\Source\OAuth2
      * @return array associative array of claims decoded from the id token
      */
     protected function verifyIdToken($id_token) {
+        $keys = $this->config->getArray('keys', null);
+        if ($keys) {
+            try {
+                JWT\JWT::decode($id_token, $keys, ['RS256']);
+            } catch (\UnexpectedValueException $e) {
+                $e2 = new \SimpleSAML\Error\AuthSource(
+                    $this->getAuthId(),
+                    "ID token validation failed: " . $e->getMessage()
+                );
+                \SimpleSAML\Auth\State::throwException($state, $e2);
+            }
+        }
         $id_token_claims = $this->extraIdTokenAttributes($id_token);
         if ($id_token_claims['aud'] !== $this->config->getString('clientId')) {
             $e = new \SimpleSAML\Error\AuthSource($this->getAuthId(), "ID token has incorrect audience");
