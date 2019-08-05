@@ -49,6 +49,26 @@ class OpenIDConnect extends \SimpleSAML\Module\authoauth2\Auth\Source\OAuth2
     }
 
     /**
+     * Do any required verification of the id token and return an array of decoded claims
+     *
+     * @param string $id_token Raw id token as string
+     * @return array associative array of claims decoded from the id token
+     */
+    protected function verifyIdToken($id_token) {
+        $id_token_claims = $this->extraIdTokenAttributes($id_token);
+        if ($id_token_claims['aud'] !== $this->config->getString('clientId')) {
+            $e = new \SimpleSAML\Error\AuthSource($this->getAuthId(), "ID token has incorrect audience");
+            \SimpleSAML\Auth\State::throwException($state, $e);
+        }
+        $issuer = $this->config->getString('issuer', null);
+        if ($issuer && $id_token_claims['iss'] !== $issuer) {
+            $e = new \SimpleSAML\Error\AuthSource($this->getAuthId(), "ID token has incorrect issuer");
+            \SimpleSAML\Auth\State::throwException($state, $e);
+        }
+        return $id_token_claims;
+    }
+
+    /**
      * This method is overriding the default empty implementation to parse attributes received in the id_token, and
      * place them into the attributes array.
      *
@@ -58,8 +78,9 @@ class OpenIDConnect extends \SimpleSAML\Module\authoauth2\Auth\Source\OAuth2
     {
         $prefix = $this->getAttributePrefix();
         $id_token = $accessToken->getValues()['id_token'];
+        $id_token_claims = $this->verifyIdToken($id_token);
         $state['Attributes'] = array_merge($this->convertResourceOwnerAttributes(
-            $this->extraIdTokenAttributes($id_token),
+            $id_token_claims,
             $prefix . 'id_token' . '.'
         ), $state['Attributes']);
         $state['id_token'] = $id_token;
