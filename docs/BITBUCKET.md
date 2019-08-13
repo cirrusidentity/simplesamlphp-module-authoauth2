@@ -26,7 +26,7 @@ the expected OIDC/OAuth pattern.
 # Creating Bitbucket OAuth Client
 
 Bitbucket provides [documentation](https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html). Follow the section related to 'Create a consumer' to create an OAuth consumer.
-You will need to add the correct redirect URI to your OAuth2 client in the Bitbucket console. Use a url of the form below, and set hostname, SSP_PATH and optionally port to the correct values.
+You will need to add the correct Callback URL to your OAuth2 client in the Bitbucket console. Use a URL of the form below, and set hostname, SSP_PATH and optionally port to the correct values.
 
 https://hostname/SSP_PATH/module.php/authoauth2/linkback.php
 
