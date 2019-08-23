@@ -55,7 +55,8 @@ class OpenIDConnect extends \SimpleSAML\Module\authoauth2\Auth\Source\OAuth2
      * @param string $id_token Raw id token as string
      * @return array associative array of claims decoded from the id token
      */
-    protected function verifyIdToken($id_token) {
+    protected function verifyIdToken($id_token, $state)
+    {
         $keys = $this->config->getArray('keys', null);
         if ($keys) {
             try {
@@ -91,7 +92,7 @@ class OpenIDConnect extends \SimpleSAML\Module\authoauth2\Auth\Source\OAuth2
     {
         $prefix = $this->getAttributePrefix();
         $id_token = $accessToken->getValues()['id_token'];
-        $id_token_claims = $this->verifyIdToken($id_token);
+        $id_token_claims = $this->verifyIdToken($id_token, $state);
         $state['Attributes'] = array_merge($this->convertResourceOwnerAttributes(
             $id_token_claims,
             $prefix . 'id_token' . '.'
