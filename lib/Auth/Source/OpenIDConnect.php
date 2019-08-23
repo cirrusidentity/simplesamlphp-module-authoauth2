@@ -137,5 +137,6 @@ class OpenIDConnect extends \SimpleSAML\Module\authoauth2\Auth\Source\OAuth2
             'state' => self::STATE_PREFIX . '-' . $stateID,
         ]);
         HTTP::redirectTrustedURL($endSessionURL);
+        // @codeCoverageIgnoreStart
     }
 }

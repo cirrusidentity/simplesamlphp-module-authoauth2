@@ -68,5 +68,6 @@ class OIDCLogoutHandler
         }
 
         \SimpleSAML\Auth\Source::completeLogout($state);
+        // @codeCoverageIgnoreStart
     }
 }

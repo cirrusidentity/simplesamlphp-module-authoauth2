@@ -19,6 +19,7 @@ use Test\SimpleSAML\MockOAuth2Provider;
  */
 class OAuth2Test extends \PHPUnit_Framework_TestCase
 {
+    const AUTH_ID = 'oauth2';
 
     public $module_config;
 
@@ -32,10 +33,15 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
         test::clean(); // remove all registered test doubles
     }
 
+    protected function getInstance(array $config)
+    {
+        $info = ['AuthId' => static::AUTH_ID];
+        return new OAuth2($info, $config);
+    }
+
     public function testDefaultConfigItemsSet()
     {
-        $info = ['AuthId' => 'oauth2'];
-        $authOAuth2 = new OAuth2($info, []);
+        $authOAuth2 = $this->getInstance([]);
 
         $this->assertEquals(
             'http://localhost/module.php/authoauth2/linkback.php',
@@ -43,15 +49,14 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
         );
         $this->assertEquals(3, $authOAuth2->getConfig()->getInteger('timeout'));
 
-        $authOAuth2 = new OAuth2($info, ['redirectUri' => 'http://other', 'timeout' => 6]);
+        $authOAuth2 = $this->getInstance(['redirectUri' => 'http://other', 'timeout' => 6]);
         $this->assertEquals('http://other', $authOAuth2->getConfig()->getString('redirectUri'));
         $this->assertEquals(6, $authOAuth2->getConfig()->getInteger('timeout'));
     }
 
     public function testConfigTemplateByName()
     {
-        $info = ['AuthId' => 'oauth2'];
-        $authOAuth2 = new OAuth2($info, [
+        $authOAuth2 = $this->getInstance([
             'template' => 'GoogleOIDC',
             'attributePrefix' => 'myPrefix.',
             'label' => 'override'
@@ -80,8 +85,7 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
 
     public function testResourceOwnerQueryParamOption()
     {
-        $info = ['AuthId' => 'oauth2'];
-        $authOAuth2 = new OAuth2($info, [
+        $authOAuth2 = $this->getInstance([
             'template' => 'Facebook',
             'urlResourceOwnerOptions' => [
                 'fields' => 'override,options'
@@ -94,19 +98,33 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testAuthenticatePerformsRedirect()
+    public function authenticateDataProvider() {
+        return [
+            [
+                [
+                    'urlAuthorize' => 'https://example.com/auth',
+                    'urlAccessToken' => 'https://example.com/token',
+                    'urlResourceOwnerDetails' => 'https://example.com/userinfo'
+                ],
+                [\SimpleSAML\Auth\State::ID => 'stateId'],
+                // phpcs:ignore Generic.Files.LineLength.TooLong
+                'https://example.com/auth?state=authoauth2%7CstateId&response_type=code&approval_prompt=auto&redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Flinkback.php'
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider authenticateDataProvider
+     * @param $config
+     * @param $state
+     * @param $expectedUrl
+     */
+    public function testAuthenticatePerformsRedirect($config, $state, $expectedUrl)
     {
         // Override redirect behavior
         MockHttp::throwOnRedirectTrustedURL();
-        $info = ['AuthId' => 'oauth2'];
-        $config = [
-            'urlAuthorize' => 'https://example.com/auth',
-            'urlAccessToken' => 'https://example.com/token',
-            'urlResourceOwnerDetails' => 'https://example.com/userinfo'
-        ];
-        $state = [\SimpleSAML\Auth\State::ID => 'stateId'];
 
-        $authOAuth2 = new OAuth2($info, $config);
+        $authOAuth2 = $this->getInstance($config);
 
         try {
             $authOAuth2->authenticate($state);
@@ -114,65 +132,75 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
         } catch (RedirectException $e) {
             $this->assertEquals('redirectTrustedURL', $e->getMessage());
             $this->assertEquals(
-            // phpcs:ignore Generic.Files.LineLength.TooLong
-                'https://example.com/auth?state=authoauth2%7CstateId&response_type=code&approval_prompt=auto&redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Flinkback.php',
+                $expectedUrl,
                 $e->getUrl(),
                 "First argument should be the redirect url"
             );
             $this->assertEquals([], $e->getParams(), "query params are already added into url");
         }
 
-        $this->assertEquals('oauth2', $state[OAuth2::AUTHID], 'Ensure authsource name is presevered in state');
+        $this->assertEquals(static::AUTH_ID, $state[OAuth2::AUTHID], 'Ensure authsource name is presevered in state');
     }
 
+    public function finalStepsDataProvider() {
+        return [
+            [
+                [
+                    'providerClass' => MockOAuth2Provider::class,
+                    'attributePrefix' => 'test.',
+                    'retryOnError' => 1,
+                ],
+                new AccessToken(['access_token' => 'stubToken']),
+                ['test.name' => ['Bob']],
+            ]
+        ];
+    }
 
-    public function testFinalSteps()
+    /**
+     * @dataProvider finalStepsDataProvider
+     * @param $config
+     * @param $accessToken
+     * @param $expectedAttributes
+     */
+    public function testFinalSteps($config, $accessToken, $expectedAttributes)
     {
         // given: A mock Oauth2 provider
         $code = 'theCode';
-        $info = ['AuthId' => 'oauth2'];
-        $config = [
-            'providerClass' => MockOAuth2Provider::class,
-            'attributePrefix' => 'test.',
-            'retryOnError' => 0,
-        ];
         $state = [\SimpleSAML\Auth\State::ID => 'stateId'];
 
         $mock = $this->getMockBuilder(AbstractProvider::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $token = new AccessToken(['access_token' => 'stubToken']);
         $mock->method('getAccessToken')
             ->with('authorization_code', ['code' => $code])
-            ->willReturn($token);
+            ->willReturn($accessToken);
 
         $attributes = ['name' => 'Bob'];
         $user = new GenericResourceOwner($attributes, 'userId');
         $mock->method('getResourceOwner')
-            ->with($token)
+            ->with($accessToken)
             ->willReturn($user);
 
         MockOAuth2Provider::setDelegate($mock);
 
         // when: turning a code into a token and then into a resource owner attributes
-        $authOAuth2 = new OAuth2($info, $config);
+        $authOAuth2 = $this->getInstance($config);
         $authOAuth2->finalStep($state, $code);
 
         // then: The attributes should be returned based on the getResourceOwner call
-        $expectedAttributes = ['test.name' => ['Bob']];
         $this->assertEquals($expectedAttributes, $state['Attributes']);
     }
 
-    public function testFinalStepsWithNetworkErrorsAndRetries()
+    /**
+     * @dataProvider finalStepsDataProvider
+     * @param $config
+     * @param $accessToken
+     * @param $expectedAttributes
+     */
+    public function testFinalStepsWithNetworkErrorsAndRetries($config, $accessToken, $expectedAttributes)
     {
         // given: A mock Oauth2 provider
         $code = 'theCode';
-        $info = ['AuthId' => 'oauth2'];
-        $config = [
-            'providerClass' => MockOAuth2Provider::class,
-            'attributePrefix' => 'test.',
-            'retryOnError' => 1,
-        ];
         $state = [\SimpleSAML\Auth\State::ID => 'stateId'];
 
         /** @var $mock AbstractProvider|\PHPUnit_Framework_MockObject_MockObject*/
@@ -184,18 +212,17 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
         $mockRequest = $this->getMockBuilder(RequestInterface::class)
             ->getMock();
 
-        $token = new AccessToken(['access_token' => 'stubToken']);
         $mock->method('getAccessToken')
             ->with('authorization_code', ['code' => $code])
             ->will($this->onConsecutiveCalls(
                 $this->throwException(new ConnectException('tokenConnectionException', $mockRequest)),
-                $token
+                $accessToken
             ));
 
         $attributes = ['name' => 'Bob'];
         $user = new GenericResourceOwner($attributes, 'userId');
         $mock->method('getResourceOwner')
-            ->with($token)
+            ->with($accessToken)
             ->will($this->onConsecutiveCalls(
                 $this->throwException(new ConnectException('resourceOwnerException', $mockRequest)),
                 $user
@@ -203,11 +230,10 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
         MockOAuth2Provider::setDelegate($mock);
 
         // when: turning a code into a token and then into a resource owner attributes
-        $authOAuth2 = new OAuth2($info, $config);
+        $authOAuth2 = $this->getInstance($config);
         $authOAuth2->finalStep($state, $code);
 
         // then: The attributes should be returned based on the getResourceOwner call
-        $expectedAttributes = ['test.name' => ['Bob']];
         $this->assertEquals($expectedAttributes, $state['Attributes']);
     }
 
@@ -219,7 +245,6 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
 
         // given: A mock Oauth2 provider
         $code = 'theCode';
-        $info = ['AuthId' => 'oauth2'];
         $config = [
             'providerClass' => MockOAuth2Provider::class,
             'attributePrefix' => 'test.',
@@ -248,14 +273,13 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
         MockOAuth2Provider::setDelegate($mock);
 
         // when: turning a code into a token and then into a resource owner attributes
-        $authOAuth2 = new OAuth2($info, $config);
+        $authOAuth2 = $this->getInstance($config);
         $authOAuth2->finalStep($state, $code);
     }
 
     public function testEnableDebugLogging()
     {
 
-        $info = ['AuthId' => 'oauth2'];
         $config = [
             'providerClass' => MockOAuth2Provider::class,
             'attributePrefix' => 'test.',
@@ -263,7 +287,7 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
         ];
 
         // when: turning a code into a token and then into a resource owner attributes
-        $authOAuth2 = new OAuth2($info, $config);
+        $authOAuth2 = $this->getInstance($config);
         $provider = $authOAuth2->getProvider($authOAuth2->getConfig());
 
         $clientConfig = $provider->getHttpClient()->getConfig();
