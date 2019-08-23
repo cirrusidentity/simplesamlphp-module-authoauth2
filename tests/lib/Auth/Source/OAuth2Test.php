@@ -122,7 +122,7 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
             $this->assertEquals([], $e->getParams(), "query params are already added into url");
         }
 
-        $this->assertEquals($state[OAuth2::AUTHID], 'oauth2', 'Ensure authsource name is presevered in state');
+        $this->assertEquals('oauth2', $state[OAuth2::AUTHID], 'Ensure authsource name is presevered in state');
     }
 
 
