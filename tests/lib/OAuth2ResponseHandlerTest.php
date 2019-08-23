@@ -101,15 +101,15 @@ class OAuth2ResponseHandlerTest extends \PHPUnit_Framework_TestCase
         ], $queryParams);
 
         $stateValue = serialize([
-            SimpleSAML\Auth\State::ID => 'validStateId',
-            SimpleSAML\Auth\State::STAGE => 'authouath2:init',
+            State::ID => 'validStateId',
+            State::STAGE => 'authouath2:init',
             'authouath2:AuthId' => 'mockAuthSource',
         ]);
         $this->mockAuthSource->method('getConfig')->willReturn(
             new \SimpleSAML\Configuration(['useConsentErrorPage' => false], 'authsources:oauth2')
         );
 
-        SimpleSAML\Session::getSessionFromRequest()->setData('SimpleSAML\Auth\State', 'validStateId', $stateValue);
+        Session::getSessionFromRequest()->setData('\SimpleSAML\Auth\State', 'validStateId', $stateValue);
         $this->responseHandler->handleResponseFromRequest($request);
     }
 
@@ -119,37 +119,37 @@ class OAuth2ResponseHandlerTest extends \PHPUnit_Framework_TestCase
             // OAuth2 AS did not return error code or a authz code
             [
                 [],
-                SimpleSAML\Error\AuthSource::class,
+                AuthSource::class,
                 "Error with authentication source 'mockAuthSource': Authentication failed: []"
             ],
             // OAuth2 AS says client not allowed
             [
                 ['error' => 'unauthorized_client'],
-                SimpleSAML\Error\AuthSource::class,
+                AuthSource::class,
                 "Error with authentication source 'mockAuthSource': Authentication failed: [unauthorized_client]"
             ],
             // OAuth2 AS has custom error code
             [
                 ['error' => 'special_code', 'error_description' => 'Closed'],
-                SimpleSAML\Error\AuthSource::class,
+                AuthSource::class,
                 "Error with authentication source 'mockAuthSource': Authentication failed: [special_code] Closed"
             ],
             // OAuth2 AS says users denied access
             [
                 ['error' => 'access_denied', 'error_description' => 'User declined'],
-                SimpleSAML\Error\UserAborted::class,
+                UserAborted::class,
                 "USERABORTED"
             ],
             // OAuth2 AS says users denied access, no description
             [
                 ['error' => 'access_denied'],
-                SimpleSAML\Error\UserAborted::class,
+                UserAborted::class,
                 "USERABORTED"
             ],
             // LinkedIn uses their own error code
             [
                 ['error' => 'user_cancelled_authorize', 'error_description' => 'The user cancelled the authorization'],
-                SimpleSAML\Error\UserAborted::class,
+                UserAborted::class,
                 "USERABORTED"
             ],
 
@@ -166,8 +166,8 @@ class OAuth2ResponseHandlerTest extends \PHPUnit_Framework_TestCase
         ];
 
         $stateValue = serialize([
-            SimpleSAML\Auth\State::ID => 'validStateId',
-            SimpleSAML\Auth\State::STAGE => 'authouath2:init',
+            State::ID => 'validStateId',
+            State::STAGE => 'authouath2:init',
             'authouath2:AuthId' => 'mockAuthSource',
         ]);
         // Mock completeAuth so we can verify its called later
@@ -183,7 +183,7 @@ class OAuth2ResponseHandlerTest extends \PHPUnit_Framework_TestCase
                 $this->equalTo('authCode')
             );
 
-        SimpleSAML\Session::getSessionFromRequest()->setData('SimpleSAML\Auth\State', 'validStateId', $stateValue);
+        Session::getSessionFromRequest()->setData('\SimpleSAML\Auth\State', 'validStateId', $stateValue);
         // when: handling the response
         $this->responseHandler->handleResponseFromRequest($request);
 
@@ -223,12 +223,12 @@ class OAuth2ResponseHandlerTest extends \PHPUnit_Framework_TestCase
         ];
 
         $stateValue = serialize([
-            SimpleSAML\Auth\State::ID => 'validStateId',
-            SimpleSAML\Auth\State::STAGE => 'authouath2:init',
+            State::ID => 'validStateId',
+            State::STAGE => 'authouath2:init',
             'authouath2:AuthId' => 'mockAuthSource',
         ]);
 
-        SimpleSAML\Session::getSessionFromRequest()->setData('SimpleSAML\Auth\State', 'validStateId', $stateValue);
+        Session::getSessionFromRequest()->setData('\SimpleSAML\Auth\State', 'validStateId', $stateValue);
         try {
             $this->responseHandler->handleResponseFromRequest($request);
             $this->fail("Redirect expected");
