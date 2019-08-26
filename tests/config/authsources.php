@@ -77,6 +77,43 @@ $config = array(
         'clientId' => '685947170891-0fcfnkkt6q0veqhvlpbr7a98i29p8rlf.apps.googleusercontent.com',
         'clientSecret' => 'wV0FdFs_KEF1oY7XcBGq2TzM',
     ),
+    //OpenID Connect provider https://accounts.google.com
+    'https://accounts.google.com' => array(
+        'authoauth2:OpenIDConnect',
+
+        // Scopes to request, should include openid
+        'scopes' => ['openid', 'profile'],
+
+        // Configured client id and secret
+        'clientId' => '685947170891-0fcfnkkt6q0veqhvlpbr7a98i29p8rlf.apps.googleusercontent.com',
+        'clientSecret' => 'wV0FdFs_KEF1oY7XcBGq2TzM',
+
+        'scopeSeparator' => ' ',
+        'issuer' => 'https://accounts.google.com',
+        'urlAuthorize' => 'https://accounts.google.com/o/oauth2/v2/auth',
+        'urlAccessToken' => 'https://oauth2.googleapis.com/token',
+        'urlResourceOwnerDetails' => 'https://openidconnect.googleapis.com/v1/userinfo',
+        'keys' => array (
+  'df8d9ee403bcc7185ad51041194bd3433742d9aa' => '-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnQgOafNApTMwKerFuGXD
+j8HZ7hUSFPUV4/SzYj79SF5giP0IfF6Ksnb5Jy0pQ/MXQ6XNuh6eZqCfAPXUwHto
+xE29jpe6L6DGKPLTr8RTbNhdIsorc1yXiPcail58gftq1fmegZw0KO6QtBpKYnBW
+oZw4PJkuP8ZdGanA0btsZRRRYVmSOKuYDNHfVJlcrD4cqAOL3BPjWQIrZszwTVmw
+0FjiU9KfGtU0rDYnas+mZv1qfetZkTA3YPTqSspCNZDbGCVXpJnr4pai0E7lxFgD
+NDN2IDk955Pf8eG8oNCfqkHXfnWDrTlXP7SSrYmEaBPcmMKOHdjyrYPk0lWI8+ur
+XwIDAQAB
+-----END PUBLIC KEY-----',
+  'f6f80f37f21c23e61f2be4231e27d269d6695329' => '-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA8Q+bsTm7MfrGQsnigd+0
+ix9EYUesUEJWGpK6jRjArdphVkE7xHqrHbIGQcFrRKOeatHDCXtBKDWTbVOJugCc
+5EC8CeH+q54VU5YxunooUCK4jTQW1piLq0BpOKM0dbHxpEQtGRwA6Yu52ZKafswG
+64BYo44kX0pPgi4sssUSn0dz0fIrcA8MSa8iffICPKfe757I3en7XTypKFs5BCPo
+PAhYHoCqrQnOoRh7ieVvAQUeiaKASjngGSo+5GWpsMzQO05+2J3vId01f0oRUTJY
+trKppNS8LxXr8BXSp66SBwgXZEhFLOcmnM9zZEAPt/DMd3IQZUaOF3w5h3ZUHMXc
+zwIDAQAB
+-----END PUBLIC KEY-----',
+)
+    ),
 
     // This is a authentication source which handles admin authentication.
     'admin' => array(
