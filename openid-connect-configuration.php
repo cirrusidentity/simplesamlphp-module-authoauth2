@@ -1,11 +1,45 @@
 <?php
 
+require_once('./vendor/autoload.php');
+
 const CONFIGURATION_PATH = '.well-known/openid-configuration';
 $configurationPathLength = strlen(CONFIGURATION_PATH);
 
 function usage() {
     echo "Usage: $argv[0] <provider url>\n";
     exit;
+}
+
+function base64url_decode($input) {
+    return base64_decode(strtr($input, '-_', '+/'));
+}
+
+function process_jwks($url) {
+    $jwksData = file_get_contents($url);
+    if (!$jwksData) {
+        error_log("Failed to get jwks data from $url");
+        return;
+    }
+    $jwks = json_decode($jwksData, true);
+    if (!$jwks) {
+        error_log("Failed to json decode jwks data: " . $jwksData);
+        return;
+    }
+    $keys = [];
+    foreach ($jwks['keys'] as $key) {
+        $kid = $key['kid'];
+        if (array_key_exists('x5c', $key)) {
+            $x5c = $key['x5c'];
+            $keys[$kid] = "-----BEGIN CERTIFICATE-----\n" . $x5c[0] . "\n-----END CERTIFICATE-----";
+        } else if (class_exists('\phpseclib\Math\BigInteger') && $key['kty'] === 'RSA') {
+            $e = new \phpseclib\Math\BigInteger(base64url_decode($key['e']), 256);
+            $n = new \phpseclib\Math\BigInteger(base64url_decode($key['n']), 256);
+            $keys[$kid] = \phpseclib\Crypt\RSA\Formats\Keys\PKCS8::savePublicKey($n, $e);
+        } else {
+            error_log("Failed to load key data for key id: " . $kid);
+        }
+    }
+    return $keys;
 }
 
 if (sizeof($argv) < 2) {
@@ -26,12 +60,12 @@ if (substr($url, -$configurationPathLength) !== CONFIGURATION_PATH) {
 
 $data = file_get_contents($url);
 if (!$data) {
-    echo "Failed to get configuration data from $url\n";
+    error_log("Failed to get configuration data from $url");
     exit;
 }
 $conf = json_decode($data);
 if (!$conf) {
-    echo "Failed to json decode configuration data: " . $data;
+    error_log("Failed to json decode configuration data: " . $data);
     exit;
 }
 
@@ -57,23 +91,12 @@ SNIP1;
 if (isset($conf->end_session_endpoint)) {
     echo "        'urlEndSession' => '$conf->end_session_endpoint',\n";
 }
-$jwksData = file_get_contents($conf->jwks_uri);
-if (!$jwksData) {
-    echo "Failed to get jwks data from $conf->jwks_uri\n";
-    exit;
+$keys = process_jwks($conf->jwks_uri);
+if ($keys) {
+    echo "        'keys' => " . var_export($keys, true);
+} else {
+    error_log("Couldn't get or parse jwks data, generated config without id token verification");
 }
-$jwks = json_decode($jwksData, true);
-if (!$jwks) {
-    echo "Failed to json decode jwks data: " . $jwksData;
-    exit;
-}
-$keys = [];
-foreach ($jwks['keys'] as $key) {
-    $kid = $key['kid'];
-    $x5c = $key['x5c'];
-    $keys[$kid] = "-----BEGIN CERTIFICATE-----\n" . $x5c[0] . "\n-----END CERTIFICATE-----";
-}
-echo "        'keys' => " . var_export($keys, true);
 echo <<<SNIP2
 
     ),
