@@ -111,6 +111,10 @@ class OpenIDConnect extends \SimpleSAML\Module\authoauth2\Auth\Source\OAuth2
     public function logout(&$state)
     {
         $providerLabel = $this->getLabel();
+        if (array_key_exists('oidc:localLogout', $state) && $state['oidc:localLogout'] === true) {
+            Logger::debug("authoauth2: $providerLabel OP initiated logout");
+            return;
+        }
         $endSessionEndpoint = $this->config->getString('urlEndSession', null);
         if (!$endSessionEndpoint) {
             Logger::debug("authoauth2: $providerLabel No urlEndSession configured, not doing anything for logout");
