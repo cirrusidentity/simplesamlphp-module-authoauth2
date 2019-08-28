@@ -31,10 +31,10 @@ function process_jwks($url) {
         if (array_key_exists('x5c', $key)) {
             $x5c = $key['x5c'];
             $keys[$kid] = "-----BEGIN CERTIFICATE-----\n" . $x5c[0] . "\n-----END CERTIFICATE-----";
-        } else if (class_exists('\phpseclib\Math\BigInteger') && $key['kty'] === 'RSA') {
-            $e = new \phpseclib\Math\BigInteger(base64url_decode($key['e']), 256);
-            $n = new \phpseclib\Math\BigInteger(base64url_decode($key['n']), 256);
-            $keys[$kid] = \phpseclib\Crypt\RSA\Formats\Keys\PKCS8::savePublicKey($n, $e);
+        } else if ($key['kty'] === 'RSA') {
+            $e = base64url_decode($key['e']);
+            $n = base64url_decode($key['n']);
+            $keys[$kid] = \RobRichards\XMLSecLibs\XMLSecurityKey::convertRSA($n, $e);
         } else {
             error_log("Failed to load key data for key id: " . $kid);
         }
