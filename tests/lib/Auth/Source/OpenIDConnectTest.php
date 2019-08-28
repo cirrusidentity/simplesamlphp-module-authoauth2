@@ -7,9 +7,9 @@ use CirrusIdentity\SSP\Test\MockHttp;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Provider\GenericResourceOwner;
 use League\OAuth2\Client\Token\AccessToken;
-use SimpleSAML\Error\AuthSource;
 use SimpleSAML\Module\authoauth2\Auth\Source\OpenIDConnect;
 use Test\SimpleSAML\MockOAuth2Provider;
+use Test\SimpleSAML\MockOpenIDConnectProvider;
 
 /**
  * Test authentication to OAuth2.
@@ -48,11 +48,16 @@ class OpenIDConnectTest extends OAuth2Test
 
 
     public function authenticateDataProvider() {
+        MockOpenIDConnectProvider::setConfig([
+            'authorization_endpoint' => 'https://example.com/auth',
+            'token_endpoint' => 'https://example.com/token',
+            'userinfo_endpoint' => 'https://example.com/userinfo',
+
+        ]);
         $config = [
-            'urlAuthorize' => 'https://example.com/auth',
-            'urlAccessToken' => 'https://example.com/token',
-            'urlResourceOwnerDetails' => 'https://example.com/userinfo',
+            'issuer' => 'https://example.com',
             'clientId' => 'test client id',
+            'providerClass' => MockOpenIDConnectProvider::class,
         ];
         return [
             [
@@ -62,7 +67,7 @@ class OpenIDConnectTest extends OAuth2Test
                     'ForceAuthn' => true,
                 ],
                 // phpcs:ignore Generic.Files.LineLength.TooLong
-                'https://example.com/auth?prompt=login&state=authoauth2%7CstateId&response_type=code&approval_prompt=auto&redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Flinkback.php&client_id=test%20client%20id'
+                'https://example.com/auth?prompt=login&state=authoauth2%7CstateId&scope=openid%20profile&response_type=code&approval_prompt=auto&redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Flinkback.php&client_id=test%20client%20id'
             ],
             [
                 $config,
@@ -71,7 +76,7 @@ class OpenIDConnectTest extends OAuth2Test
                     'isPassive' => true,
                 ],
                 // phpcs:ignore Generic.Files.LineLength.TooLong
-                'https://example.com/auth?prompt=none&state=authoauth2%7CstateId&response_type=code&approval_prompt=auto&redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Flinkback.php&client_id=test%20client%20id'
+                'https://example.com/auth?prompt=none&state=authoauth2%7CstateId&scope=openid%20profile&response_type=code&approval_prompt=auto&redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Flinkback.php&client_id=test%20client%20id'
             ],
             [
                 $config,
@@ -81,86 +86,36 @@ class OpenIDConnectTest extends OAuth2Test
                     'oidc:display' => 'popup',
                 ],
                 // phpcs:ignore Generic.Files.LineLength.TooLong
-                'https://example.com/auth?acr_values=Level4%20Level3&display=popup&state=authoauth2%7CstateId&response_type=code&approval_prompt=auto&redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Flinkback.php&client_id=test%20client%20id'
+                'https://example.com/auth?acr_values=Level4%20Level3&display=popup&state=authoauth2%7CstateId&scope=openid%20profile&response_type=code&approval_prompt=auto&redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Flinkback.php&client_id=test%20client%20id'
             ],
         ];
     }
 
-    public function idTokenErrorDataProvider() {
-        return [
-            [
-                'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im15a2V5In0.eyJzdWIiOiIxMjM0NTY3ODkwIiwiYXVkIjoiZXZpbCBjbGllbnQgaWQiLCJpYXQiOjE1MTYyMzkwMjIsImlzcyI6Im5pY2VpZHAifQ.T4JQmtmeES1r6On0KnBdJC3f7eFTPd8x_B5EM9c43RXaZHWaq_qpdcyyJzEYJ5er5YXe_hjaLmSybv0NqoVVfg',
-                "Error with authentication source 'openidconnect': ID token has incorrect audience"
-            ],
-            [
-                'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im15a2V5In0.eyJzdWIiOiIxMjM0NTY3ODkwIiwiYXVkIjoidGVzdCBjbGllbnQgaWQiLCJpYXQiOjE1MTYyMzkwMjIsImlzcyI6ImV2aWxpZHAifQ.NPAT8409vdVaQhh5OebxCPM6SxSNRdai3JoGo3cIabtYbjxf83jP-lj0thsbF_nD67QBCJhaz25Tjaw0anuhkw',
-                "Error with authentication source 'openidconnect': ID token has incorrect issuer"
-            ],
-            [
-                'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im15a2V5In0.eyJzdWIiOiIxMjM0NTY3ODkwIiwiYXVkIjoidGVzdCBjbGllbnQgaWQiLCJpYXQiOjE1MTYyMzkwMjIsImlzcyI6Im5pY2VpZHAifQ.D_g5KWCPuYMFBSFEix1zKv-hQ_QrU8LVAIzaLGn8JeCLF74DB0kCMLx0c4Clo0ZB4oc6kdVC0oCp2IeqQsGEGW',
-                "Error with authentication source 'openidconnect': ID token validation failed: Signature verification failed"
-            ],
-        ];
-    }
-
-    /**
-     * @dataProvider idTokenErrorDataProvider
-     * @param $idToken
-     * @param $expectedMessage
-     */
-    public function testIdTokenValidationFails($idToken, $expectedMessage)
-    {
-        $this->expectException(AuthSource::class);
-        $this->expectExceptionMessage($expectedMessage);
-
-        // given: A mock Oauth2 provider
-        $code = 'theCode';
-        $config = [
-            'providerClass' => MockOAuth2Provider::class,
-            'attributePrefix' => 'test.',
-            'retryOnError' => 0,
-            'clientId' => 'test client id',
-            'issuer' => 'niceidp',
-            'keys' => [ 'mykey' => file_get_contents(getenv('SIMPLESAMLPHP_CONFIG_DIR') . '/jwks-cert.pem') ],
-        ];
-        $state = [\SimpleSAML\Auth\State::ID => 'stateId'];
-
-        /** @var $mock AbstractProvider|\PHPUnit_Framework_MockObject_MockObject*/
-        $mock = $this->getMockBuilder(AbstractProvider::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $accessToken = new AccessToken([
-            'access_token' => 'stubToken',
-            'id_token' => $idToken,
-        ]);
-        $mock->method('getAccessToken')
-            ->with('authorization_code', ['code' => $code])
-            ->willReturn($accessToken);
-
-        $attributes = ['name' => 'Bob'];
-        $user = new GenericResourceOwner($attributes, 'userId');
-        $mock->method('getResourceOwner')
-            ->with($accessToken)
-            ->willReturn($user);
-
-
-        MockOAuth2Provider::setDelegate($mock);
-
-        // when: turning a code into a token and then into a resource owner attributes
-        $authOAuth2 = $this->getInstance($config);
-        $authOAuth2->finalStep($state, $code);
-    }
 
     public function testLogoutNoEndpointConfigured() {
-        $as = $this->getInstance([]);
+        MockOpenIDConnectProvider::setConfig([
+            'authorization_endpoint' => 'https://example.com/auth',
+            'token_endpoint' => 'https://example.com/token',
+            'userinfo_endpoint' => 'https://example.com/userinfo',
+        ]);
+        $as = $this->getInstance([
+            'issuer' => 'https://example.com',
+            'providerClass' => MockOpenIDConnectProvider::class,
+        ]);
         $state = [];
         $this->assertNull($as->logout($state));
     }
 
     public function testLogoutNoIDTokenInState() {
+        MockOpenIDConnectProvider::setConfig([
+            'authorization_endpoint' => 'https://example.com/auth',
+            'token_endpoint' => 'https://example.com/token',
+            'userinfo_endpoint' => 'https://example.com/userinfo',
+            'end_session_endpoint' => 'https://example.org/logout',
+        ]);
         $as = $this->getInstance([
-            'urlEndSession' => 'https://example.org/logout',
+            'issuer' => 'https://example.com',
+            'providerClass' => MockOpenIDConnectProvider::class,
         ]);
         $state = [];
         $this->assertNull($as->logout($state));
@@ -169,9 +124,17 @@ class OpenIDConnectTest extends OAuth2Test
     public function testLogoutRedirects() {
         // Override redirect behavior
         MockHttp::throwOnRedirectTrustedURL();
+        MockOpenIDConnectProvider::setConfig([
+            'authorization_endpoint' => 'https://example.com/auth',
+            'token_endpoint' => 'https://example.com/token',
+            'userinfo_endpoint' => 'https://example.com/userinfo',
+            'end_session_endpoint' => 'https://example.org/logout',
+
+        ]);
 
         $as = $this->getInstance([
-            'urlEndSession' => 'https://example.org/logout',
+            'issuer' => 'https://example.com',
+            'providerClass' => MockOpenIDConnectProvider::class,
         ]);
         $state = [
             'id_token' => 'myidtoken',
