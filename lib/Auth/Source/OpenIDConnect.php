@@ -2,6 +2,10 @@
 
 namespace SimpleSAML\Module\authoauth2\Auth\Source;
 
+use GuzzleHttp\HandlerStack;
+use Kevinrob\GuzzleCache\CacheMiddleware;
+use Kevinrob\GuzzleCache\Storage\Psr6CacheStorage;
+use Kevinrob\GuzzleCache\Strategy\PrivateCacheStrategy;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
 use SimpleSAML\Auth;
@@ -9,6 +13,7 @@ use SimpleSAML\Logger;
 use SimpleSAML\Module;
 use SimpleSAML\Module\authoauth2\Providers\OpenIDConnectProvider;
 use SimpleSAML\Utils\HTTP;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
 /**
  * Authentication source to authenticate with a generic OpenID Connect idp
@@ -22,6 +27,38 @@ class OpenIDConnect extends \SimpleSAML\Module\authoauth2\Auth\Source\OAuth2
     const STAGE_LOGOUT = 'authouath2:logout';
     protected static $defaultProviderClass = OpenIDConnectProvider::class;
 
+    /**
+     * Get the provider to use to talk to the OAuth2 server.
+     * Only visible for testing
+     *
+     * Since SSP may serialize Auth modules we don't assign the potentially unserializable provider to a field.
+     * @param \SimpleSAML\Configuration $config
+     * @return \League\OAuth2\Client\Provider\AbstractProvider
+     */
+    public function getProvider(\SimpleSAML\Configuration $config)
+    {
+        $provider = parent::getProvider($config);
+        $httpClient = $provider->getHttpClient();
+        $handler = $httpClient->getConfig('handler');
+        if (!($handler instanceof HandlerStack)) {
+            $newhandler = HandlerStack::create();
+            $newhandler->push($handler);
+            $httpClieng->getConfig()['handler'] = $newhandler;
+            $handler = $newhandler;
+        }
+        $cacheDir = \SimpleSAML\Configuration::getInstance()->getString('tempdir') . "/oidc-cache";
+        $handler->push(
+            new CacheMiddleware(
+                new PrivateCacheStrategy(
+                    new Psr6CacheStorage(
+                        new FilesystemAdapter('', 0, $cacheDir)
+                    )
+                ),
+                'cache'
+            )
+        );
+        return $provider;
+    }
 
     /**
      * Convert values from the state parameter of the authenticate call into options to the authorization request.
