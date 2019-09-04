@@ -126,6 +126,26 @@ Generic usage provides enough configuration parameters to use with any OAuth2 or
           ),
 ```
 
+## OpenID Connect Usage
+
+For providers that support OpenID Connect discovery protocol the configuration can be simplified a bit. Only the issuer url, client id and client secret are required..
+```php
+       'openidconnect' => array(
+              'authoauth2:OpenIDConnect',
+              // *** Required for all integrations ***
+              'issuer' => 'https://www.example.com', # e.g https://accounts.google.com
+              'clientId' => '133972730583345',
+              'clientSecret' => '36aefb235314bad5df075363b79cbbcd',
+
+              // Most Optional settings for OAuth2 above can be used
+              // *** New Optional ***
+              // Customize post logout redirect, if you don't want to use the standard /module.php/authoauth2/loggedout.php
+              'postLogoutRedirectUri' => 'https://myapp.example.com/loggedout'
+          ),
+```
+
+If your OP supports front channel single logout, you can configure `https://hostname/SSP_PATH/module.php/authoauth2/logout.php?authSource=AUTHSOURCE` where `AUTHSOURCE` is the id of your authsource in the authsources configuration (`openidconnect` in the example above)
+
 ## Provider Specific Usage
 
 There are numerous [Offical](http://oauth2-client.thephpleague.com/providers/league/) and [Third-Party](http://oauth2-client.thephpleague.com/providers/thirdparty/) providers

@@ -41,6 +41,8 @@ class OAuth2 extends \SimpleSAML\Auth\Source
      */
     const DEBUG_LOG_FORMAT = "{method} {uri} {code} {req_headers_Authorization} >>>>'{req_body}' <<<<'{res_body}'";
 
+    protected static $defaultProviderClass = AdjustableGenericProvider::class;
+
     /**
      * @var \SimpleSAML\Configuration
      */
@@ -168,7 +170,7 @@ class OAuth2 extends \SimpleSAML\Auth\Source
                 throw new \InvalidArgumentException("No OAuth2 provider class found for '$providerClass'.");
             }
         }
-        return new AdjustableGenericProvider($config->toArray(), $collaborators);
+        return new static::$defaultProviderClass($config->toArray(), $collaborators);
     }
 
     /**

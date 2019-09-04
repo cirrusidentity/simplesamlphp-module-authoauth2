@@ -70,4 +70,21 @@ class OIDCLogoutHandler
         \SimpleSAML\Auth\Source::completeLogout($state);
         // @codeCoverageIgnoreStart
     }
+
+    public function handleRequest()
+    {
+        $this->handleRequestFromRequest($_REQUEST);
+    }
+
+    public function handleRequestFromRequest(array $request)
+    {
+        Logger::debug('authoauth2: logout request=' . var_export($request, true));
+        $config = \SimpleSAML\Configuration::getInstance();
+        $sourceId = $request['authSource'];
+        $as = new \SimpleSAML\Auth\Simple($sourceId);
+        $as->logout([
+            'oidc:localLogout' => true,
+            'ReturnTo' => $config->getBasePath().'logout.php',
+        ]);
+    }
 }

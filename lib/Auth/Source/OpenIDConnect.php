@@ -2,13 +2,18 @@
 
 namespace SimpleSAML\Module\authoauth2\Auth\Source;
 
-use Firebase\JWT;
+use GuzzleHttp\HandlerStack;
+use Kevinrob\GuzzleCache\CacheMiddleware;
+use Kevinrob\GuzzleCache\Storage\Psr6CacheStorage;
+use Kevinrob\GuzzleCache\Strategy\PrivateCacheStrategy;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
 use SimpleSAML\Auth;
 use SimpleSAML\Logger;
 use SimpleSAML\Module;
+use SimpleSAML\Module\authoauth2\Providers\OpenIDConnectProvider;
 use SimpleSAML\Utils\HTTP;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
 /**
  * Authentication source to authenticate with a generic OpenID Connect idp
@@ -20,7 +25,40 @@ class OpenIDConnect extends \SimpleSAML\Module\authoauth2\Auth\Source\OAuth2
 
     /** String used to identify our states. */
     const STAGE_LOGOUT = 'authouath2:logout';
+    protected static $defaultProviderClass = OpenIDConnectProvider::class;
 
+    /**
+     * Get the provider to use to talk to the OAuth2 server.
+     * Only visible for testing
+     *
+     * Since SSP may serialize Auth modules we don't assign the potentially unserializable provider to a field.
+     * @param \SimpleSAML\Configuration $config
+     * @return \League\OAuth2\Client\Provider\AbstractProvider
+     */
+    public function getProvider(\SimpleSAML\Configuration $config)
+    {
+        $provider = parent::getProvider($config);
+        $httpClient = $provider->getHttpClient();
+        $handler = $httpClient->getConfig('handler');
+        if (!($handler instanceof HandlerStack)) {
+            $newhandler = HandlerStack::create();
+            $newhandler->push($handler);
+            $httpClieng->getConfig()['handler'] = $newhandler;
+            $handler = $newhandler;
+        }
+        $cacheDir = \SimpleSAML\Configuration::getInstance()->getString('tempdir') . "/oidc-cache";
+        $handler->push(
+            new CacheMiddleware(
+                new PrivateCacheStrategy(
+                    new Psr6CacheStorage(
+                        new FilesystemAdapter('', 0, $cacheDir)
+                    )
+                ),
+                'cache'
+            )
+        );
+        return $provider;
+    }
 
     /**
      * Convert values from the state parameter of the authenticate call into options to the authorization request.
@@ -49,38 +87,6 @@ class OpenIDConnect extends \SimpleSAML\Module\authoauth2\Auth\Source\OAuth2
         return $result;
     }
 
-    /**
-     * Do any required verification of the id token and return an array of decoded claims
-     *
-     * @param string $id_token Raw id token as string
-     * @return array associative array of claims decoded from the id token
-     */
-    protected function verifyIdToken($id_token, $state)
-    {
-        $keys = $this->config->getArray('keys', null);
-        if ($keys) {
-            try {
-                JWT\JWT::decode($id_token, $keys, ['RS256']);
-            } catch (\UnexpectedValueException $e) {
-                $e2 = new \SimpleSAML\Error\AuthSource(
-                    $this->getAuthId(),
-                    "ID token validation failed: " . $e->getMessage()
-                );
-                \SimpleSAML\Auth\State::throwException($state, $e2);
-            }
-        }
-        $id_token_claims = $this->extraIdTokenAttributes($id_token);
-        if ($id_token_claims['aud'] !== $this->config->getString('clientId')) {
-            $e = new \SimpleSAML\Error\AuthSource($this->getAuthId(), "ID token has incorrect audience");
-            \SimpleSAML\Auth\State::throwException($state, $e);
-        }
-        $issuer = $this->config->getString('issuer', null);
-        if ($issuer && $id_token_claims['iss'] !== $issuer) {
-            $e = new \SimpleSAML\Error\AuthSource($this->getAuthId(), "ID token has incorrect issuer");
-            \SimpleSAML\Auth\State::throwException($state, $e);
-        }
-        return $id_token_claims;
-    }
 
     /**
      * This method is overriding the default empty implementation to parse attributes received in the id_token, and
@@ -92,7 +98,7 @@ class OpenIDConnect extends \SimpleSAML\Module\authoauth2\Auth\Source\OAuth2
     {
         $prefix = $this->getAttributePrefix();
         $id_token = $accessToken->getValues()['id_token'];
-        $id_token_claims = $this->verifyIdToken($id_token, $state);
+        $id_token_claims = $this->extraIdTokenAttributes($id_token);
         $state['Attributes'] = array_merge($this->convertResourceOwnerAttributes(
             $id_token_claims,
             $prefix . 'id_token' . '.'
@@ -111,9 +117,14 @@ class OpenIDConnect extends \SimpleSAML\Module\authoauth2\Auth\Source\OAuth2
     public function logout(&$state)
     {
         $providerLabel = $this->getLabel();
-        $endSessionEndpoint = $this->config->getString('urlEndSession', null);
+        if (array_key_exists('oidc:localLogout', $state) && $state['oidc:localLogout'] === true) {
+            Logger::debug("authoauth2: $providerLabel OP initiated logout");
+            return;
+        }
+        $endSessionEndpoint = $this->getProvider($this->config)->getEndSessionEndpoint();
         if (!$endSessionEndpoint) {
-            Logger::debug("authoauth2: $providerLabel No urlEndSession configured, not doing anything for logout");
+            Logger::debug("authoauth2: $providerLabel OP does not provide an 'end_session_endpoint',".
+                          " not doing anything for logout");
             return;
         }
 
