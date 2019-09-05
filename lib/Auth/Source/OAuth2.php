@@ -104,7 +104,7 @@ class OAuth2 extends \SimpleSAML\Auth\Source
         // We are going to need the authId in order to retrieve this authentication source later, in the callback
         $state[self::AUTHID] = $this->getAuthId();
 
-        $stateID = \SimpleSAML\Auth\State::saveState($state, self::STAGE_INIT);
+        $stateID = \SimpleSAML\Auth\State::saveState($state, self::STAGE_INIT, true);
 
         $providerLabel = $this->getLabel();
         Logger::debug("authoauth2: $providerLabel saved state with stateID=$stateID");
