@@ -110,7 +110,7 @@ class OpenIDConnectProvider extends AbstractProvider
             return $this->openIdConfiguration;
         }
 
-        $config = $this->getParsedResponse($this->getRequest('GET', $this->issuer . self::CONFIGURATION_PATH));
+        $config = $this->getParsedResponse($this->getRequest('GET', rtrim($this->issuer, '/') . self::CONFIGURATION_PATH));
         $requiredEndPoints = [ "authorization_endpoint", "token_endpoint", "jwks_uri", "issuer", "userinfo_endpoint" ];
         foreach ($requiredEndPoints as $key) {
             if (!array_key_exists($key, $config)) {
