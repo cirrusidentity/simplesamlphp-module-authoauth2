@@ -43,7 +43,7 @@ class OpenIDConnect extends \SimpleSAML\Module\authoauth2\Auth\Source\OAuth2
         if (!($handler instanceof HandlerStack)) {
             $newhandler = HandlerStack::create();
             $newhandler->push($handler);
-            $httpClieng->getConfig()['handler'] = $newhandler;
+            $httpClient->getConfig()['handler'] = $newhandler;
             $handler = $newhandler;
         }
         $cacheDir = \SimpleSAML\Configuration::getInstance()->getString('tempdir') . "/oidc-cache";
