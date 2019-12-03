@@ -15,7 +15,6 @@ use SimpleSAML\Module;
 use SimpleSAML\Module\authoauth2\AttributeManipulator;
 use SimpleSAML\Module\authoauth2\ConfigTemplate;
 use SimpleSAML\Module\authoauth2\Providers\AdjustableGenericProvider;
-use SimpleSAML\Module\authoauth2\PsrLogBridge;
 use SimpleSAML\Utils\HTTP;
 
 /**
@@ -150,7 +149,7 @@ class OAuth2 extends \SimpleSAML\Auth\Source
             Logger::debug('authoauth2: Enable traffic logging');
             $handlerStack = HandlerStack::create();
             $handlerStack->push(
-                Middleware::log(new PsrLogBridge(), new MessageFormatter("authoauth2: $providerLabel $format")),
+                Middleware::log(new \SAML2\Compat\Ssp\Logger(), new MessageFormatter("authoauth2: $providerLabel $format")),
                 'logHttpTraffic'
             );
             $clientConfig = $config->toArray();
