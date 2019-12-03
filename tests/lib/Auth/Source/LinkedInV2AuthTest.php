@@ -5,6 +5,7 @@ namespace Test\SimpleSAML\Auth\Source;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
 use Psr\Http\Message\RequestInterface;
+use SimpleSAML\Configuration;
 use SimpleSAML\Module\authoauth2\Auth\Source\LinkedInV2Auth;
 
 class LinkedInV2AuthTest extends \PHPUnit_Framework_TestCase
@@ -12,6 +13,9 @@ class LinkedInV2AuthTest extends \PHPUnit_Framework_TestCase
     public static function setUpBeforeClass()
     {
         putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(dirname(dirname(__DIR__))) . '/config');
+         // When all tests are run at once, sometimes a Configuration is created prior to us
+        // setting the one we want to use for the test.
+        Configuration::clearInternalState();
     }
 
     /**

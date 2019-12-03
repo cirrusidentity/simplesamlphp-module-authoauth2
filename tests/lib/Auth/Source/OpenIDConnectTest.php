@@ -7,6 +7,7 @@ use CirrusIdentity\SSP\Test\MockHttp;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Provider\GenericResourceOwner;
 use League\OAuth2\Client\Token\AccessToken;
+use SimpleSAML\Configuration;
 use SimpleSAML\Module\authoauth2\Auth\Source\OpenIDConnect;
 use Test\SimpleSAML\MockOAuth2Provider;
 use Test\SimpleSAML\MockOpenIDConnectProvider;
@@ -21,6 +22,14 @@ class OpenIDConnectTest extends OAuth2Test
     {
         $info = ['AuthId' => self::AUTH_ID];
         return new OpenIDConnect($info, $config);
+    }
+
+    public static function setUpBeforeClass()
+    {
+        putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(dirname(dirname(__DIR__))) . '/config');
+        // Some of the constructs in this test cause a Configuration to be created prior to us
+        // setting the one we want to use for the test.
+        Configuration::clearInternalState();
     }
 
     public function finalStepsDataProvider() {
