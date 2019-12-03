@@ -5,6 +5,15 @@
 _Release: 2019-?
 * Nothing yet!
 
+## v3.0.0
+
+_Release: 2019-12-03
+* Bumb min SSP version to 1.17
+* Better OIDC support
+** Logout
+** Query .well-known endpoint
+* Bitbucket
+
 ## v2.1.0
 
 _Release: 2019-01-29
