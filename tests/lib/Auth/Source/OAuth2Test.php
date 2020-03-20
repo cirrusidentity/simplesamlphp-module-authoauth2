@@ -98,7 +98,8 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function authenticateDataProvider() {
+    public function authenticateDataProvider()
+    {
         return [
             [
                 [
@@ -142,7 +143,8 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
         $this->assertEquals(static::AUTH_ID, $state[OAuth2::AUTHID], 'Ensure authsource name is presevered in state');
     }
 
-    public function finalStepsDataProvider() {
+    public function finalStepsDataProvider()
+    {
         return [
             [
                 [
@@ -191,6 +193,70 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expectedAttributes, $state['Attributes']);
     }
 
+    public function finalStepsDataProviderWithAuthenticatedApiRequest()
+    {
+        return [
+            [
+                [
+                    'providerClass' => MockOAuth2Provider::class,
+                    'attributePrefix' => 'test.',
+                    'retryOnError' => 1,
+                    'authenticatedApiRequests' => ['https://mock.com/v1.0/me/memberOf'],
+
+                ],
+                new AccessToken(['access_token' => 'stubToken']),
+                ['test.name' => ['Bob'], 'test.additionalResource' => ['info']],
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider finalStepsDataProviderWithAuthenticatedApiRequest
+     * @param $config
+     * @param $accessToken
+     * @param $expectedAttributes
+     */
+    public function testFinalStepsWithAuthenticatedApiRequest($config, $accessToken, $expectedAttributes)
+    {
+        // given: A mock Oauth2 provider
+        $code = 'theCode';
+        $state = [\SimpleSAML\Auth\State::ID => 'stateId'];
+
+        $mock = $this->getMockBuilder(AbstractProvider::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $mock->method('getAccessToken')
+            ->with('authorization_code', ['code' => $code])
+            ->willReturn($accessToken);
+
+        $attributes = ['name' => 'Bob'];
+        $user = new GenericResourceOwner($attributes, 'userId');
+        $mock->method('getResourceOwner')
+            ->with($accessToken)
+            ->willReturn($user);
+
+        $authenticatedRequestAttributes = [
+            'additionalResource' => ['info']
+        ];
+        $mockRequest = $this->createMock(RequestInterface::class);
+        $mock->method('getAuthenticatedRequest')
+            ->with('GET', 'https://mock.com/v1.0/me/memberOf', $accessToken)
+            ->willReturn($mockRequest);
+
+        $mock->method('getParsedResponse')
+            ->with($mockRequest)
+            ->willReturn($authenticatedRequestAttributes);
+
+        MockOAuth2Provider::setDelegate($mock);
+
+        // when: turning a code into a token and then into a resource owner attributes
+        $authOAuth2 = $this->getInstance($config);
+        $authOAuth2->finalStep($state, $code);
+
+        // then: The attributes should be returned based on the getResourceOwner call
+        $this->assertEquals($expectedAttributes, $state['Attributes']);
+    }
+
     /**
      * @dataProvider finalStepsDataProvider
      * @param $config
@@ -203,12 +269,12 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
         $code = 'theCode';
         $state = [\SimpleSAML\Auth\State::ID => 'stateId'];
 
-        /** @var $mock AbstractProvider|\PHPUnit_Framework_MockObject_MockObject*/
+        /** @var $mock AbstractProvider|\PHPUnit_Framework_MockObject_MockObject */
         $mock = $this->getMockBuilder(AbstractProvider::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        /** @var $mockRequest RequestInterface|\PHPUnit_Framework_MockObject_MockObject*/
+        /** @var $mockRequest RequestInterface|\PHPUnit_Framework_MockObject_MockObject */
         $mockRequest = $this->getMockBuilder(RequestInterface::class)
             ->getMock();
 
@@ -237,6 +303,57 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expectedAttributes, $state['Attributes']);
     }
 
+    /**
+     * @dataProvider finalStepsDataProviderWithAuthenticatedApiRequest
+     * @param $config
+     * @param $accessToken
+     * @param $expectedAttributes
+     */
+    public function testFinalStepsWithAuthenticatedApiRequestWithNetworkErrors($config, $accessToken, $expectedAttributes)
+    {
+        // given: A mock Oauth2 provider
+        $code = 'theCode';
+        $state = [\SimpleSAML\Auth\State::ID => 'stateId'];
+
+        $mock = $this->getMockBuilder(AbstractProvider::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $mock->method('getAccessToken')
+            ->with('authorization_code', ['code' => $code])
+            ->willReturn($accessToken);
+
+        $attributes = ['name' => 'Bob'];
+        $user = new GenericResourceOwner($attributes, 'userId');
+        $mock->method('getResourceOwner')
+            ->with($accessToken)
+            ->willReturn($user);
+
+        $authenticatedRequestAttributes = [
+            'additionalResource' => ['info']
+        ];
+        $mockRequest = $this->createMock(RequestInterface::class);
+        $mockRequestAuthenticatedRequest = $this->createMock(RequestInterface::class);
+        $mock->method('getAuthenticatedRequest')
+            ->with('GET', 'https://mock.com/v1.0/me/memberOf', $accessToken)
+            ->will($this->onConsecutiveCalls(
+                $this->throwException(new ConnectException('getAuthenticatedRequest', $mockRequestAuthenticatedRequest)),
+                $mockRequest
+            ));
+
+        $mock->method('getParsedResponse')
+            ->with($mockRequest)
+            ->willReturn($authenticatedRequestAttributes);
+
+        MockOAuth2Provider::setDelegate($mock);
+
+        // when: turning a code into a token and then into a resource owner attributes
+        $authOAuth2 = $this->getInstance($config);
+        $authOAuth2->finalStep($state, $code);
+
+        // then: The attributes should be returned based on the getResourceOwner call
+        $this->assertEquals($expectedAttributes, $state['Attributes']);
+    }
+
     public function testTooManyErrorsForRetry()
     {
         // Exception expected on the 3rd attempt
@@ -252,12 +369,12 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
         ];
         $state = [\SimpleSAML\Auth\State::ID => 'stateId'];
 
-        /** @var $mock AbstractProvider|\PHPUnit_Framework_MockObject_MockObject*/
+        /** @var $mock AbstractProvider|\PHPUnit_Framework_MockObject_MockObject */
         $mock = $this->getMockBuilder(AbstractProvider::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        /** @var $mockRequest RequestInterface|\PHPUnit_Framework_MockObject_MockObject*/
+        /** @var $mockRequest RequestInterface|\PHPUnit_Framework_MockObject_MockObject */
         $mockRequest = $this->getMockBuilder(RequestInterface::class)
             ->getMock();
 
