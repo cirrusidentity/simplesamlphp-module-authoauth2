@@ -10,6 +10,7 @@ use GuzzleHttp\Middleware;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 use League\OAuth2\Client\Token\AccessToken;
+use League\OAuth2\Client\Token\AccessTokenInterface;
 use SimpleSAML\Logger;
 use SimpleSAML\Module;
 use SimpleSAML\Module\authoauth2\AttributeManipulator;
@@ -186,6 +187,9 @@ class OAuth2 extends \SimpleSAML\Auth\Source
 
         $provider = $this->getProvider($this->config);
 
+        /**
+         * @var AccessTokenInterface $accessToken
+         */
         $accessToken = $this->retry(
             function () use ($provider, $oauth2Code) {
                 return $provider->getAccessToken('authorization_code', [
@@ -213,6 +217,34 @@ class OAuth2 extends \SimpleSAML\Auth\Source
         );
 
         $attributes = $resourceOwner->toArray();
+
+        $authenticatedApiRequests = $this->config->getArray('authenticatedApiRequests', []);
+        foreach ($authenticatedApiRequests as $apiUrl) {
+            try {
+                $apiAttributes = $this->retry(function () use ($provider, $accessToken, $apiUrl) {
+
+                    /** @var Psr\Http\Message\RequestInterface $request */
+                    $apiRequest = $provider->getAuthenticatedRequest(
+                        'GET',
+                        $apiUrl,
+                        $accessToken
+                    );
+                    return $provider->getParsedResponse($apiRequest);
+                },
+                    $this->config->getInteger('retryOnError', 1)
+                );
+                if (!empty($apiAttributes)) {
+                    $attributes = array_replace_recursive($attributes, $apiAttributes);
+                }
+
+            } catch (\Exception $e) {
+                // not retrieving additional resources, should not fail the authentication
+                Logger::error(
+                    'OAuth2: ' . $this->getLabel() . ' exception authenticatedApiRequests ' . $e->getMessage()
+                );
+            }
+        }
+
         $prefix = $this->getAttributePrefix();
         $state['Attributes'] = $this->convertResourceOwnerAttributes($attributes, $prefix);
         $this->postFinalStep($accessToken, $provider, $state);
