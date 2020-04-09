@@ -4,8 +4,6 @@ namespace Test\SimpleSAML\Auth\Source;
 
 use CirrusIdentity\SSP\Test\Capture\RedirectException;
 use CirrusIdentity\SSP\Test\MockHttp;
-use League\OAuth2\Client\Provider\AbstractProvider;
-use League\OAuth2\Client\Provider\GenericResourceOwner;
 use League\OAuth2\Client\Token\AccessToken;
 use SimpleSAML\Configuration;
 use SimpleSAML\Module\authoauth2\Auth\Source\OpenIDConnect;
@@ -27,10 +25,10 @@ class OpenIDConnectTest extends OAuth2Test
     public static function setUpBeforeClass()
     {
         putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(dirname(dirname(__DIR__))) . '/config');
-        // Some of the constructs in this test cause a Configuration to be created prior to us
-        // setting the one we want to use for the test.
-        Configuration::clearInternalState();
-    }
+            // Some of the constructs in this test cause a Configuration to be created prior to us
+            // setting the one we want to use for the test.
+            Configuration::clearInternalState();
+        }
 
     public function finalStepsDataProvider() {
         return [
@@ -55,6 +53,32 @@ class OpenIDConnectTest extends OAuth2Test
         ];
     }
 
+    public function finalStepsDataProviderWithAuthenticatedApiRequest()
+    {
+        return [
+            [
+                [
+                    'providerClass' => MockOAuth2Provider::class,
+                    'attributePrefix' => 'test.',
+                    'retryOnError' => 1,
+                    'authenticatedApiRequests' => ['https://mock.com/v1.0/me/memberOf'],
+
+                ],
+                new AccessToken([
+                    'access_token' => 'stubToken',
+                    'id_token' => 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiYXVkIjoidGVzdCBjbGllbnQgaWQiLCJpYXQiOjE1MTYyMzkwMjJ9.emHrAifV1IyvmTXh3lYX0oAFqqZInhDlclIlTUumut0',
+
+                ]),
+                [
+                    'test.name' => ['Bob'],
+                    'test.additionalResource' => ['info'],
+                    'test.id_token.sub' => ['1234567890'],
+                    'test.id_token.iat' => [1516239022],
+                    'test.id_token.aud' => ['test client id'],
+                ],
+            ]
+        ];
+    }
 
     public function authenticateDataProvider() {
         MockOpenIDConnectProvider::setConfig([

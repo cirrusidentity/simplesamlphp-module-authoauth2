@@ -204,7 +204,9 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
                     'authenticatedApiRequests' => ['https://mock.com/v1.0/me/memberOf'],
 
                 ],
-                new AccessToken(['access_token' => 'stubToken']),
+                new AccessToken([
+                    'access_token' => 'stubToken',
+                ]),
                 ['test.name' => ['Bob'], 'test.additionalResource' => ['info']],
             ]
         ];
