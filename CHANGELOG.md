@@ -2,8 +2,14 @@
 
 ## Unreleased
 
-_Release: 2019-?
+_Release: 2020-?
 * Nothing yet!
+
+## v3.1.0
+
+_Release: 2020-04-09
+* Allow additional authenticated urls to be queried for attributes
+* Update dependencies
 
 ## v3.0.0
 
