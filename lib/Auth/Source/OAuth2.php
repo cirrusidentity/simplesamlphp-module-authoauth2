@@ -231,12 +231,10 @@ class OAuth2 extends \SimpleSAML\Auth\Source
                     );
                     return $provider->getParsedResponse($apiRequest);
                 },
-                    $this->config->getInteger('retryOnError', 1)
-                );
+                    $this->config->getInteger('retryOnError', 1));
                 if (!empty($apiAttributes)) {
                     $attributes = array_replace_recursive($attributes, $apiAttributes);
                 }
-
             } catch (\Exception $e) {
                 // not retrieving additional resources, should not fail the authentication
                 Logger::error(

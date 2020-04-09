@@ -112,7 +112,7 @@ PAhYHoCqrQnOoRh7ieVvAQUeiaKASjngGSo+5GWpsMzQO05+2J3vId01f0oRUTJY
 trKppNS8LxXr8BXSp66SBwgXZEhFLOcmnM9zZEAPt/DMd3IQZUaOF3w5h3ZUHMXc
 zwIDAQAB
 -----END PUBLIC KEY-----',
-)
+    )
     ),
 
     // This is a authentication source which handles admin authentication.

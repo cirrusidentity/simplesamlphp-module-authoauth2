@@ -110,11 +110,11 @@ $config = array(
      * Logging.
      *
      * define the minimum log level to log
-     *		SimpleSAML\Logger::ERR		No statistics, only errors
-     *		SimpleSAML\Logger::WARNING	No statistics, only warnings/errors
-     *		SimpleSAML\Logger::NOTICE	Statistics and errors
-     *		SimpleSAML\Logger::INFO		Verbose logs
-     *		SimpleSAML\Logger::DEBUG	Full debug logs - not recommended for production
+     *      SimpleSAML\Logger::ERR      No statistics, only errors
+     *      SimpleSAML\Logger::WARNING  No statistics, only warnings/errors
+     *      SimpleSAML\Logger::NOTICE   Statistics and errors
+     *      SimpleSAML\Logger::INFO     Verbose logs
+     *      SimpleSAML\Logger::DEBUG    Full debug logs - not recommended for production
      *
      * Choose logging handler.
      *
@@ -274,12 +274,12 @@ $config = array(
      * Example:
      *
      * 'module.enable' => array(
-     * 	// Setting to TRUE enables.
-     * 	'exampleauth' => TRUE,
-     * 	// Setting to FALSE disables.
-     * 	'saml' => FALSE,
-     * 	// Unset or NULL uses default.
-     * 	'core' => NULL,
+     *  // Setting to TRUE enables.
+     *  'exampleauth' => TRUE,
+     *  // Setting to FALSE disables.
+     *  'saml' => FALSE,
+     *  // Unset or NULL uses default.
+     *  'core' => NULL,
      * ),
      *
      */

@@ -28,9 +28,10 @@ class OpenIDConnectTest extends OAuth2Test
             // Some of the constructs in this test cause a Configuration to be created prior to us
             // setting the one we want to use for the test.
             Configuration::clearInternalState();
-        }
+    }
 
-    public function finalStepsDataProvider() {
+    public function finalStepsDataProvider()
+    {
         return [
             [
                 [
@@ -80,7 +81,8 @@ class OpenIDConnectTest extends OAuth2Test
         ];
     }
 
-    public function authenticateDataProvider() {
+    public function authenticateDataProvider()
+    {
         MockOpenIDConnectProvider::setConfig([
             'authorization_endpoint' => 'https://example.com/auth',
             'token_endpoint' => 'https://example.com/token',
@@ -125,7 +127,8 @@ class OpenIDConnectTest extends OAuth2Test
     }
 
 
-    public function testLogoutNoEndpointConfigured() {
+    public function testLogoutNoEndpointConfigured()
+    {
         MockOpenIDConnectProvider::setConfig([
             'authorization_endpoint' => 'https://example.com/auth',
             'token_endpoint' => 'https://example.com/token',
@@ -139,7 +142,8 @@ class OpenIDConnectTest extends OAuth2Test
         $this->assertNull($as->logout($state));
     }
 
-    public function testLogoutNoIDTokenInState() {
+    public function testLogoutNoIDTokenInState()
+    {
         MockOpenIDConnectProvider::setConfig([
             'authorization_endpoint' => 'https://example.com/auth',
             'token_endpoint' => 'https://example.com/token',
@@ -154,7 +158,8 @@ class OpenIDConnectTest extends OAuth2Test
         $this->assertNull($as->logout($state));
     }
 
-    public function testLogoutRedirects() {
+    public function testLogoutRedirects()
+    {
         // Override redirect behavior
         MockHttp::throwOnRedirectTrustedURL();
         MockOpenIDConnectProvider::setConfig([
