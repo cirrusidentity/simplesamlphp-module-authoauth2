@@ -63,9 +63,9 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
         ]);
 
         $expectedConfig = [
-            'urlAuthorize' => 'https://accounts.google.com/o/oauth2/auth',
-            'urlAccessToken' => 'https://accounts.google.com/o/oauth2/token',
-            'urlResourceOwnerDetails' => 'https://www.googleapis.com/oauth2/v3/userinfo',
+            'urlAuthorize' => 'https://accounts.google.com/o/oauth2/v2/auth',
+            'urlAccessToken' => 'https://oauth2.googleapis.com/token',
+            'urlResourceOwnerDetails' => 'https://openidconnect.googleapis.com/v1/userinfo',
             'scopes' => array(
                 'openid',
                 'email',
