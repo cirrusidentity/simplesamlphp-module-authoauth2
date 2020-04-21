@@ -164,5 +164,18 @@ class ConfigTemplate
         // Improve log lines
         'label' => 'bitbucket'
     ];
+
+    const Apple = [
+        'authoauth2:AppleAuth',
+        'issuer' => 'https://appleid.apple.com',
+        'urlAuthorize' => 'https://appleid.apple.com/auth/authorize',
+        'urlAccessToken' => 'https://appleid.apple.com/auth/token',
+        //scopes are the default ones configured for your application
+        'attributePrefix' => 'apple.',
+        'scopes' => ['email'],
+        'scopeSeparator' => ' ',
+        // Improve log lines
+        'label' => 'apple'
+    ];
 }
 // phpcs:enable

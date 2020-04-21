@@ -276,6 +276,22 @@ View [full Google](/docs/GOOGLE.md) instructions.
     ),
 ```
 
+### Generic Apple
+
+View [full Apple](/docs/APPLE.md) instructions.
+
+
+```php
+'apple' => array(
+        'authoauth2:AppleAuth',
+        'clientId' => 'CLIENT_ID',
+        'clientSecret' => 'CLIENT_SECRET',
+        'redirectUri' => 'REDIRECT_URI',
+        //scopes: Only email is available
+    ),
+ ```
+
+
 # Debugging
 
 ## HTTP Logging
