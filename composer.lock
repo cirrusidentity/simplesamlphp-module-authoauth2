@@ -1,7 +1,7 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
     "content-hash": "e474ab9163c87e63f6e29b0562b02983",
@@ -490,14 +490,14 @@
             "authors": [
                 {
                     "name": "Alex Bilbie",
-                    "role": "Developer",
                     "email": "hello@alexbilbie.com",
-                    "homepage": "http://www.alexbilbie.com"
+                    "homepage": "http://www.alexbilbie.com",
+                    "role": "Developer"
                 },
                 {
                     "name": "Woody Gilk",
-                    "role": "Contributor",
-                    "homepage": "https://github.com/shadowhand"
+                    "homepage": "https://github.com/shadowhand",
+                    "role": "Contributor"
                 }
             ],
             "description": "OAuth 2.0 Client Library",
@@ -926,16 +926,16 @@
         },
         {
             "name": "robrichards/xmlseclibs",
-            "version": "3.0.4",
+            "version": "3.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/robrichards/xmlseclibs.git",
-                "reference": "0a53d3c3aa87564910cae4ed01416441d3ae0db5"
+                "reference": "8d8e56ca7914440a8c60caff1a865e7dff1d9a5a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/robrichards/xmlseclibs/zipball/0a53d3c3aa87564910cae4ed01416441d3ae0db5",
-                "reference": "0a53d3c3aa87564910cae4ed01416441d3ae0db5",
+                "url": "https://api.github.com/repos/robrichards/xmlseclibs/zipball/8d8e56ca7914440a8c60caff1a865e7dff1d9a5a",
+                "reference": "8d8e56ca7914440a8c60caff1a865e7dff1d9a5a",
                 "shasum": ""
             },
             "require": {
@@ -960,7 +960,7 @@
                 "xml",
                 "xmldsig"
             ],
-            "time": "2019-11-05T11:44:22+00:00"
+            "time": "2020-04-22T17:19:51+00:00"
         },
         {
             "name": "simplesamlphp/composer-module-installer",
@@ -1050,16 +1050,16 @@
         },
         {
             "name": "simplesamlphp/simplesamlphp",
-            "version": "v1.18.5",
+            "version": "v1.18.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/simplesamlphp/simplesamlphp.git",
-                "reference": "a837c73a04c9964585bd75d1917b490fad90b114"
+                "reference": "9fd1c3c5e5f9e6fed8de3c36e14ccdcce31e3dc7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/simplesamlphp/simplesamlphp/zipball/a837c73a04c9964585bd75d1917b490fad90b114",
-                "reference": "a837c73a04c9964585bd75d1917b490fad90b114",
+                "url": "https://api.github.com/repos/simplesamlphp/simplesamlphp/zipball/9fd1c3c5e5f9e6fed8de3c36e14ccdcce31e3dc7",
+                "reference": "9fd1c3c5e5f9e6fed8de3c36e14ccdcce31e3dc7",
                 "shasum": ""
             },
             "require": {
@@ -1171,7 +1171,7 @@
                 "sp",
                 "ws-federation"
             ],
-            "time": "2020-03-23T13:44:30+00:00"
+            "time": "2020-04-16T13:40:56+00:00"
         },
         {
             "name": "simplesamlphp/simplesamlphp-module-adfs",
@@ -2179,16 +2179,16 @@
         },
         {
             "name": "simplesamlphp/simplesamlphp-module-preprodwarning",
-            "version": "v0.9.1",
+            "version": "v0.9.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/simplesamlphp/simplesamlphp-module-preprodwarning.git",
-                "reference": "925ef60b51a7230286b390c0abc0e815d8b9768e"
+                "reference": "8e032de33a75eb44857dc06d886ad94ee3af4638"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/simplesamlphp/simplesamlphp-module-preprodwarning/zipball/925ef60b51a7230286b390c0abc0e815d8b9768e",
-                "reference": "925ef60b51a7230286b390c0abc0e815d8b9768e",
+                "url": "https://api.github.com/repos/simplesamlphp/simplesamlphp-module-preprodwarning/zipball/8e032de33a75eb44857dc06d886ad94ee3af4638",
+                "reference": "8e032de33a75eb44857dc06d886ad94ee3af4638",
                 "shasum": ""
             },
             "require": {
@@ -2208,7 +2208,7 @@
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "LGPL-3.0-or-later"
+                "LGPL-2.1-or-later"
             ],
             "authors": [
                 {
@@ -2221,7 +2221,7 @@
                 "preprodwarning",
                 "simplesamlphp"
             ],
-            "time": "2019-12-03T09:17:47+00:00"
+            "time": "2020-04-09T13:05:27+00:00"
         },
         {
             "name": "simplesamlphp/simplesamlphp-module-radius",
@@ -4956,8 +4956,8 @@
             "authors": [
                 {
                     "name": "Sebastian Bergmann",
-                    "role": "lead",
-                    "email": "sb@sebastian-bergmann.de"
+                    "email": "sb@sebastian-bergmann.de",
+                    "role": "lead"
                 }
             ],
             "description": "Library that provides collection, processing, and rendering functionality for PHP code coverage information.",
@@ -5224,8 +5224,8 @@
             "authors": [
                 {
                     "name": "Sebastian Bergmann",
-                    "role": "lead",
-                    "email": "sebastian@phpunit.de"
+                    "email": "sebastian@phpunit.de",
+                    "role": "lead"
                 }
             ],
             "description": "The PHP Unit Testing framework.",
