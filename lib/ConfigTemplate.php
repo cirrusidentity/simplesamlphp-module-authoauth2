@@ -5,6 +5,18 @@ namespace SimpleSAML\Module\authoauth2;
 // phpcs:disable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
 class ConfigTemplate
 {
+    const Amazon = [
+        'authoauth2:OAuth2',
+        // *** Amazon endpoints ***
+        'urlAuthorize' => 'https://www.amazon.com/ap/oa',
+        'urlAccessToken' => 'https://api.amazon.com/auth/o2/token',
+        'urlResourceOwnerDetails' => 'https://api.amazon.com/user/profile',
+        'scopes' => 'profile',
+        // Prefix attributes so we can use the amazon2name
+        'attributePrefix' => 'amazon.',
+        // Improve log lines
+        'label' => 'amazon'
+    ];
 
     const Facebook = [
         'authoauth2:OAuth2',

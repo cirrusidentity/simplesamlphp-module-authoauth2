@@ -3,7 +3,7 @@
 ## Unreleased
 
 _Release: 2020-?
-* Nothing yet!
+* Amazon template
 
 ## v3.1.0
 
