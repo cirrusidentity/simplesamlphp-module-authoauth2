@@ -4,13 +4,15 @@ namespace Test\SimpleSAML\Auth\Source;
 
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 use SimpleSAML\Configuration;
 use SimpleSAML\Module\authoauth2\Auth\Source\LinkedInV2Auth;
 
-class LinkedInV2AuthTest extends \PHPUnit_Framework_TestCase
+class LinkedInV2AuthTest extends TestCase
 {
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(dirname(dirname(__DIR__))) . '/config');
          // When all tests are run at once, sometimes a Configuration is created prior to us
@@ -59,7 +61,7 @@ class LinkedInV2AuthTest extends \PHPUnit_Framework_TestCase
         $linkedInAuth = new LinkedInV2Auth(['AuthId' => 'linked'], ['scopes' => ['r_liteprofile']]);
         $state = [];
         /**
-         * @var $mock AbstractProvider|\PHPUnit_Framework_MockObject_MockObject
+         * @var $mock AbstractProvider|MockObject
          */
         $mock = $this->getMockBuilder(AbstractProvider::class)
             ->disableOriginalConstructor()
@@ -87,7 +89,7 @@ class LinkedInV2AuthTest extends \PHPUnit_Framework_TestCase
 
         $token = new AccessToken(['access_token' => 'abc']);
         /**
-         * @var $mock AbstractProvider|\PHPUnit_Framework_MockObject_MockObject
+         * @var $mock AbstractProvider|MockObject
          */
         $mock = $this->getMockBuilder(AbstractProvider::class)
             ->disableOriginalConstructor()

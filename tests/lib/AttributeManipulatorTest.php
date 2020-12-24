@@ -8,13 +8,14 @@
 
 namespace Test\SimpleSAML;
 
+use PHPUnit\Framework\TestCase;
 use SimpleSAML\Module\authoauth2\AttributeManipulator;
 use SimpleSAML\Utils\Attributes;
 
-class AttributeManipulatorTest extends \PHPUnit_Framework_TestCase
+class AttributeManipulatorTest extends TestCase
 {
 
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(__DIR__) . '/config');
     }

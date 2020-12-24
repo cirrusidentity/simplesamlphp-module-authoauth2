@@ -6,19 +6,21 @@ use AspectMock\Test as test;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Provider\GenericResourceOwner;
 use League\OAuth2\Client\Token\AccessToken;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 use SimpleSAML\Module\authoauth2\Auth\Source\MicrosoftHybridAuth;
 use Test\SimpleSAML\MockOAuth2Provider;
 
-class MicrosoftHybridAuthTest extends \PHPUnit_Framework_TestCase
+class MicrosoftHybridAuthTest extends TestCase
 {
 
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(dirname(dirname(__DIR__))) . '/config');
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         test::clean(); // remove all registered test doubles
     }
@@ -41,7 +43,7 @@ class MicrosoftHybridAuthTest extends \PHPUnit_Framework_TestCase
         $state = [\SimpleSAML\Auth\State::ID => 'stateId'];
 
         /**
-         * @var $mock AbstractProvider|\PHPUnit_Framework_MockObject_MockObject
+         * @var $mock AbstractProvider|MockObject
          */
         $mock = $this->getMockBuilder(AbstractProvider::class)
             ->disableOriginalConstructor()

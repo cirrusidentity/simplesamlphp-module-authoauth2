@@ -22,7 +22,7 @@ class OpenIDConnectTest extends OAuth2Test
         return new OpenIDConnect($info, $config);
     }
 
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(dirname(dirname(__DIR__))) . '/config');
             // Some of the constructs in this test cause a Configuration to be created prior to us

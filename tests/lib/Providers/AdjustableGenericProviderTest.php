@@ -3,9 +3,10 @@
 namespace Test\SimpleSAML\Providers;
 
 use League\OAuth2\Client\Token\AccessToken;
+use PHPUnit\Framework\TestCase;
 use SimpleSAML\Module\authoauth2\Providers\AdjustableGenericProvider;
 
-class AdjustableGenericProviderTest extends \PHPUnit_Framework_TestCase
+class AdjustableGenericProviderTest extends TestCase
 {
     private $requiredProviderConifg = [
         'urlAuthorize' => 'https://www.facebook.com/dialog/oauth',
@@ -13,7 +14,7 @@ class AdjustableGenericProviderTest extends \PHPUnit_Framework_TestCase
         'urlResourceOwnerDetails' => 'https://graph.facebook.com/me?fields=123',
     ];
 
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(dirname(__DIR__)) . '/config');
     }

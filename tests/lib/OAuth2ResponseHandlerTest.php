@@ -5,7 +5,8 @@ namespace Test\SimpleSAML;
 use CirrusIdentity\SSP\Test\Auth\MockAuthSource;
 use CirrusIdentity\SSP\Test\Capture\RedirectException;
 use CirrusIdentity\SSP\Test\MockHttp;
-use PHPUnit_Framework_MockObject_MockObject;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
 use SimpleSAML\Module\authoauth2\OAuth2ResponseHandler;
 use SimpleSAML\Auth\State;
@@ -15,7 +16,7 @@ use SimpleSAML\Session;
 
 use AspectMock\Test as test;
 
-class OAuth2ResponseHandlerTest extends \PHPUnit_Framework_TestCase
+class OAuth2ResponseHandlerTest extends TestCase
 {
     /**
      * @var OAuth2ResponseHandler
@@ -25,16 +26,16 @@ class OAuth2ResponseHandlerTest extends \PHPUnit_Framework_TestCase
     private $validStateValue = 'authoauth2|validStateId';
 
     /**
-     * @var PHPUnit_Framework_MockObject_MockObject|OAuth2
+     * @var MockObject|OAuth2
      */
     private $mockAuthSource;
 
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(__DIR__) . '/config');
     }
 
-    protected function setUp()
+    protected function setUp(): void
     {
         test::clean();
         MockAuthSource::clearInternalState();

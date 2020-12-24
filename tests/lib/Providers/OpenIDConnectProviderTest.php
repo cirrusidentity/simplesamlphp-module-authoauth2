@@ -4,12 +4,13 @@ namespace Test\SimpleSAML\Providers;
 
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Token\AccessToken;
+use PHPUnit\Framework\TestCase;
 use SimpleSAML\Module\authoauth2\Providers\OpenIDConnectProvider;
 use Test\SimpleSAML\MockOpenIDConnectProvider;
 
-class OpenIDConnectProviderTest extends \PHPUnit_Framework_TestCase
+class OpenIDConnectProviderTest extends TestCase
 {
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(dirname(__DIR__)) . '/config');
     }

@@ -2,11 +2,12 @@
 
 use AspectMock\Test as test;
 use CirrusIdentity\SSP\Test\SanityChecker;
+use PHPUnit\Framework\TestCase;
 
-class AspectMockConfiguredTest extends \PHPUnit_Framework_TestCase
+class AspectMockConfiguredTest extends TestCase
 {
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         test::clean(); // remove all registered test doubles
     }
@@ -22,5 +23,7 @@ class AspectMockConfiguredTest extends \PHPUnit_Framework_TestCase
 
         // We can also validate the that a method was called.
         $httpDouble->verifyInvokedOnce('getAcceptLanguage');
+
+        $this->assertTrue(true, 'No exception thrown above');
     }
 }

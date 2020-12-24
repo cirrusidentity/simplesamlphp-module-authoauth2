@@ -10,6 +10,7 @@ use GuzzleHttp\HandlerStack;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Provider\GenericResourceOwner;
 use League\OAuth2\Client\Token\AccessToken;
+use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
 use Test\SimpleSAML\MockOAuth2Provider;
@@ -17,18 +18,18 @@ use Test\SimpleSAML\MockOAuth2Provider;
 /**
  * Test authentication to OAuth2.
  */
-class OAuth2Test extends \PHPUnit_Framework_TestCase
+class OAuth2Test extends TestCase
 {
     const AUTH_ID = 'oauth2';
 
     public $module_config;
 
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(dirname(dirname(__DIR__))) . '/config');
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         test::clean(); // remove all registered test doubles
     }
@@ -415,6 +416,6 @@ class OAuth2Test extends \PHPUnit_Framework_TestCase
         // annoyingly the handlerStack doesn't let us check for middleware by name,
         // so we need to convert to a string and then see if it contains the named middleware
         $strHandler = (string)$handlerStack;
-        $this->assertContains('logHttpTraffic', $strHandler);
+        $this->assertStringContainsString('logHttpTraffic', $strHandler);
     }
 }
