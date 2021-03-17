@@ -1,3 +1,15 @@
+[![Build Status](https://travis-ci.org/cirrusidentity/simplesamlphp-module-authoauth2.svg?branch=master)](https://travis-ci.org/cirrusidentity/simplesamlphp-module-authoauth2)
+
+# SimpleSAMLphp OAuth2 Authentication Source Module
+
+This is a generic module for authentication against an OAuth2 or OIDC server. It performs the `authorization_code` flow
+and then uses the resulting access token to query an endpoint to get the user's attributes. It is a wrapper around the
+excellent [PHP League OAuth2 Client](http://oauth2-client.thephpleague.com/).
+
+## SSP as an OIDC server
+
+If you are interested in using SSP as an OIDC OP see the [OIDC module](https://github.com/rediris-es/simplesamlphp-module-oidc).
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
@@ -8,6 +20,7 @@
   - [Redirect URI](#redirect-uri)
   - [Provider specific Tips](#provider-specific-tips)
   - [Generic Usage](#generic-usage)
+  - [OpenID Connect Usage](#openid-connect-usage)
   - [Provider Specific Usage](#provider-specific-usage)
   - [Template Specific Usage](#template-specific-usage)
   - [Samples](#samples)
@@ -25,12 +38,6 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-[![Build Status](https://travis-ci.org/cirrusidentity/simplesamlphp-module-authoauth2.svg?branch=master)](https://travis-ci.org/cirrusidentity/simplesamlphp-module-authoauth2)
-SimpleSAMLphp OAuth2 Authentication Source Module
-
-This is a generic module for authentication against an OAuth2 or OIDC server. It performs the `authorization_code` flow
-and then uses the resulting access token to query an endpoint to get the user's attributes. It is a wrapper around the
-excellent [PHP League OAuth2 Client](http://oauth2-client.thephpleague.com/).
 
 # Installation
 
