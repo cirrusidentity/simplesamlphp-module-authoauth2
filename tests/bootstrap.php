@@ -5,21 +5,28 @@ require_once($projectRoot . '/vendor/autoload.php');
 
 new \SimpleSAML\Error\ConfigurationError('Load to prevent some exception class resolution issues with aspectMock');
 
+$aopCacheDir = sys_get_temp_dir(). '/aop-cache/' . (new DateTime())->getTimestamp();
+if (!file_exists($aopCacheDir)) {
+    mkdir($aopCacheDir, 0777, true);
+   echo "Using aop cache $aopCacheDir";
+}
+
+$sspInstall= $projectRoot . '/vendor/simplesamlphp/simplesamlphp/';
 
 // Enable AspectMock. This allows us to stub/double out static methods.
 $kernel = \AspectMock\Kernel::getInstance();
 $kernel->init([
     'debug' => true,
+    'cacheDir'     => $aopCacheDir, // Cache directory
     // Any class that we want to stub/mock needs to be in included paths
     'includePaths' => [
-        $projectRoot . '/vendor/simplesamlphp/simplesamlphp/',
         $projectRoot . '/lib',
+       // Need to explicitly list any classes we want to mock.
+        // Mocking all classes results in weird syntax errors in config files or missing dependencies
+       $sspInstall . '/lib/'
     ]
 ]);
 
-// AspectMock seems to have trouble with SSP's custom class loader. We must explicitly load them
-// In addition you need to load a class hiearchy from parent down to child, otherwise it can get confused
-$kernel->loadFile($projectRoot . '/vendor/simplesamlphp/simplesamlphp/lib/SimpleSAML/Auth/Source.php');
 
 // Symlink module into ssp vendor lib so that templates and urls can resolve correctly
 $linkPath = $projectRoot . '/vendor/simplesamlphp/simplesamlphp/modules/authoauth2';
