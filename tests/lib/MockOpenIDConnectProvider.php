@@ -9,7 +9,9 @@ class MockOpenIDConnectProvider extends OpenIDConnectProvider
     /**
      * @var array
      */
-    private static $config, $keys;
+    private static $config;
+
+    private static $keys;
 
     public static function setConfig(array $config)
     {

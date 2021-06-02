@@ -13,7 +13,6 @@ use SimpleSAML\Auth\State;
 use SimpleSAML\Error\AuthSource;
 use SimpleSAML\Error\UserAborted;
 use SimpleSAML\Session;
-
 use AspectMock\Test as test;
 
 class OAuth2ResponseHandlerTest extends TestCase

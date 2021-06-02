@@ -1,5 +1,7 @@
 <?php
 
+namespace Test\SimpleSAML;
+
 use AspectMock\Test as test;
 use CirrusIdentity\SSP\Test\SanityChecker;
 use PHPUnit\Framework\TestCase;

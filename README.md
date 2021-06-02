@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/cirrusidentity/simplesamlphp-module-authoauth2.svg?branch=master)](https://travis-ci.org/cirrusidentity/simplesamlphp-module-authoauth2)
+![Build Status](https://github.com/cirrusidentity/simplesamlphp-module-authoauth2/workflows/CI/badge.svg?branch=master)
 
 # SimpleSAMLphp OAuth2 Authentication Source Module
 
@@ -382,4 +382,4 @@ The generic amazon one requires `https`. You can run use it and when Amazon redi
 
 Run `phpcs` to check code style
 
-    ./vendor/bin/phpcs --standard=PSR2 lib/
+    php vendor/bin/phpcs --standard=PSR12 --ignore=authsources.php,config.php lib/ tests/

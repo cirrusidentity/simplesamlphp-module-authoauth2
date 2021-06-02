@@ -24,7 +24,7 @@ class OpenIDConnect extends \SimpleSAML\Module\authoauth2\Auth\Source\OAuth2
 {
 
     /** String used to identify our states. */
-    const STAGE_LOGOUT = 'authouath2:logout';
+    public const STAGE_LOGOUT = 'authouath2:logout';
     protected static $defaultProviderClass = OpenIDConnectProvider::class;
 
     /**
@@ -123,7 +123,7 @@ class OpenIDConnect extends \SimpleSAML\Module\authoauth2\Auth\Source\OAuth2
         }
         $endSessionEndpoint = $this->getProvider($this->config)->getEndSessionEndpoint();
         if (!$endSessionEndpoint) {
-            Logger::debug("authoauth2: $providerLabel OP does not provide an 'end_session_endpoint',".
+            Logger::debug("authoauth2: $providerLabel OP does not provide an 'end_session_endpoint'," .
                           " not doing anything for logout");
             return;
         }

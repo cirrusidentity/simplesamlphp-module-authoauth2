@@ -27,19 +27,20 @@ class OAuth2 extends \SimpleSAML\Auth\Source
 
 
     /** String used to identify our states. */
-    const STAGE_INIT = 'authouath2:init';
+    public const STAGE_INIT = 'authouath2:init';
 
     /** Key of AuthId field in state. */
-    const AUTHID = 'authouath2:AuthId';
+    public const AUTHID = 'authouath2:AuthId';
 
     /** Used to aid migrating other Oauth2 SSP libraries to this one */
-    const STATE_PREFIX = 'authoauth2';
+    public const STATE_PREFIX = 'authoauth2';
 
     /**
      *  The Guzzle log message formatter to use.
      * @see MessageFormatter
      */
-    const DEBUG_LOG_FORMAT = "{method} {uri} {code} {req_headers_Authorization} >>>>'{req_body}' <<<<'{res_body}'";
+    // phpcs:ignore
+    public const DEBUG_LOG_FORMAT = "{method} {uri} {code} {req_headers_Authorization} >>>>'{req_body}' <<<<'{res_body}'";
 
     protected static $defaultProviderClass = AdjustableGenericProvider::class;
 
@@ -150,7 +151,10 @@ class OAuth2 extends \SimpleSAML\Auth\Source
             Logger::debug('authoauth2: Enable traffic logging');
             $handlerStack = HandlerStack::create();
             $handlerStack->push(
-                Middleware::log(new \SAML2\Compat\Ssp\Logger(), new MessageFormatter("authoauth2: $providerLabel $format")),
+                Middleware::log(
+                    new \SAML2\Compat\Ssp\Logger(),
+                    new MessageFormatter("authoauth2: $providerLabel $format")
+                ),
                 'logHttpTraffic'
             );
             $clientConfig = $config->toArray();
@@ -199,8 +203,10 @@ class OAuth2 extends \SimpleSAML\Auth\Source
             $this->config->getInteger('retryOnError', 1)
         );
 
-        if ($this->config->getBoolean('logIdTokenJson', false) &&
-            array_key_exists('id_token', $accessToken->getValues())) {
+        if (
+            $this->config->getBoolean('logIdTokenJson', false) &&
+            array_key_exists('id_token', $accessToken->getValues())
+        ) {
             $idToken = $accessToken->getValues()['id_token'];
             $decodedIdToken = base64_decode(
                 explode('.', $idToken)[1]

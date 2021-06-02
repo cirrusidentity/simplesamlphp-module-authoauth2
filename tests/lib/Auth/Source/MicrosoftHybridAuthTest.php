@@ -30,8 +30,11 @@ class MicrosoftHybridAuthTest extends TestCase
      * @param string $idToken The id_token response from the server
      * @param array $expectedAttributes The expected attributes
      */
-    public function testCombineOidcAndGraphProfile($idToken, array $authenticatedRequestAttributes, array $expectedAttributes)
-    {
+    public function testCombineOidcAndGraphProfile(
+        $idToken,
+        array $authenticatedRequestAttributes,
+        array $expectedAttributes
+    ) {
         // given: A mock Oauth2 provider
         $code = 'theCode';
         $info = ['AuthId' => 'oauth2'];

@@ -16,8 +16,8 @@ class OpenIDConnectProvider extends AbstractProvider
 {
     use BearerAuthorizationTrait;
 
-    const CONFIGURATION_PATH = '/.well-known/openid-configuration';
-    const ERROR_FIELD = 'error';
+    public const CONFIGURATION_PATH = '/.well-known/openid-configuration';
+    public const ERROR_FIELD = 'error';
 
     /**
      * @var string
@@ -110,7 +110,8 @@ class OpenIDConnectProvider extends AbstractProvider
             return $this->openIdConfiguration;
         }
 
-        $config = $this->getParsedResponse($this->getRequest('GET', rtrim($this->issuer, '/') . self::CONFIGURATION_PATH));
+        $req = $this->getRequest('GET', rtrim($this->issuer, '/') . self::CONFIGURATION_PATH);
+        $config = $this->getParsedResponse($req);
         $requiredEndPoints = [ "authorization_endpoint", "token_endpoint", "jwks_uri", "issuer", "userinfo_endpoint" ];
         foreach ($requiredEndPoints as $key) {
             if (!array_key_exists($key, $config)) {
