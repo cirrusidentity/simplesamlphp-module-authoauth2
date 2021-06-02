@@ -133,14 +133,6 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-progress --prefer-dist --optimize-autoloader
 
-      - uses: actions/download-artifact@v1
-        with:
-          name: build-data
-          path: ${{ github.workspace }}/build
-
-      - name: Codecov
-        uses: codecov/codecov-action@v1
-
       - name: PHP Code Sniffer
         continue-on-error: true
         run: php vendor/bin/phpcs --standard=PSR12 --ignore=authsources.php,config.php lib/ tests/
