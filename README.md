@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/cirrusidentity/simplesamlphp-module-authoauth2.svg?branch=master)](https://travis-ci.org/cirrusidentity/simplesamlphp-module-authoauth2)
+![Build Status](https://github.com/cirrusidentity/simplesamlphp-module-authoauth2/workflows/CI/badge.svg?branch=master)
 
 # SimpleSAMLphp OAuth2 Authentication Source Module
 
