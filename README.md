@@ -382,4 +382,4 @@ The generic amazon one requires `https`. You can run use it and when Amazon redi
 
 Run `phpcs` to check code style
 
-    ./vendor/bin/phpcs --standard=PSR2 lib/
+    php vendor/bin/phpcs --standard=PSR12 --ignore=authsources.php,config.php lib/ tests/
