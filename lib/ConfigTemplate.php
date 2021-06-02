@@ -5,7 +5,7 @@ namespace SimpleSAML\Module\authoauth2;
 // phpcs:disable Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
 class ConfigTemplate
 {
-    const Amazon = [
+    public const Amazon = [
         'authoauth2:OAuth2',
         // *** Amazon endpoints ***
         'urlAuthorize' => 'https://www.amazon.com/ap/oa',
@@ -18,7 +18,7 @@ class ConfigTemplate
         'label' => 'amazon'
     ];
 
-    const Facebook = [
+    public const Facebook = [
         'authoauth2:OAuth2',
         // *** Facebook endpoints ***
         'urlAuthorize' => 'https://www.facebook.com/dialog/oauth',
@@ -36,7 +36,7 @@ class ConfigTemplate
         'label' => 'facebook'
     ];
 
-    const GoogleOIDC = [
+    public const GoogleOIDC = [
         'authoauth2:OAuth2',
         // *** Google Endpoints ***
         'urlAuthorize' => 'https://accounts.google.com/o/oauth2/v2/auth',
@@ -57,7 +57,7 @@ class ConfigTemplate
     ];
 
     // Deprecated
-    const LinkedIn = [
+    public const LinkedIn = [
         'authoauth2:OAuth2',
         // *** LinkedIn Endpoints ***
         'urlAuthorize' => 'https://www.linkedin.com/oauth/v2/authorization',
@@ -71,7 +71,7 @@ class ConfigTemplate
         'label' => 'linkedin'
     ];
 
-    const LinkedInV2 = [
+    public const LinkedInV2 = [
         'authoauth2:LinkedInV2Auth',
         // *** LinkedIn Endpoints ***
         'urlAuthorize' => 'https://www.linkedin.com/oauth/v2/authorization',
@@ -95,7 +95,7 @@ class ConfigTemplate
     // WARNING: The OIDC user resource endpoint only returns sub, which is a targeted id.
     // You must decode the id token instead to determine user attributes. There you will
     // find oid which is the ID you are probably expecting if you are moving from the live apis.
-    const MicrosoftOIDC = [
+    public const MicrosoftOIDC = [
         'authoauth2:OAuth2',
         // *** Microsoft oidc Endpoints ***
         'urlAuthorize' => 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
@@ -109,7 +109,7 @@ class ConfigTemplate
         'label' => 'microsoft'
     ];
 
-    const MicrosoftGraphV1 = [
+    public const MicrosoftGraphV1 = [
         'authoauth2:MicrosoftHybridAuth',
         // *** Microsoft graph Endpoints ***
         'urlAuthorize' => 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
@@ -124,7 +124,7 @@ class ConfigTemplate
         'label' => 'microsoft'
     ];
 
-    const YahooOIDC = [
+    public const YahooOIDC = [
         'authoauth2:OAuth2',
         // *** Yahoo Endpoints ***
         'urlAuthorize' => 'https://api.login.yahoo.com/oauth2/request_auth',
@@ -148,7 +148,7 @@ class ConfigTemplate
     ];
 
     // TODO: weibo is work in progress
-    const Weibo = [
+    public const Weibo = [
         'authoauth2:OAuth2',
         // *** Weibo Endpoints ***
         'urlAuthorize' => 'https://api.weibo.com/oauth2/authorize',
@@ -162,7 +162,7 @@ class ConfigTemplate
         'tokenFieldsToUserDetailsUrl' => ['uid' => 'uid', 'access_token' => 'access_token'],
     ];
 
-    const Bitbucket = [
+    public const Bitbucket = [
         'authoauth2:BitbucketAuth',
         // *** Bitbucket Endpoints ***
         'urlAuthorize' => 'https://bitbucket.org/site/oauth2/authorize',

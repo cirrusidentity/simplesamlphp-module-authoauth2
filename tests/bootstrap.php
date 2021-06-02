@@ -5,13 +5,13 @@ require_once($projectRoot . '/vendor/autoload.php');
 
 new \SimpleSAML\Error\ConfigurationError('Load to prevent some exception class resolution issues with aspectMock');
 
-$aopCacheDir = sys_get_temp_dir(). '/aop-cache/' . (new DateTime())->getTimestamp();
+$aopCacheDir = sys_get_temp_dir() . '/aop-cache/' . (new DateTime())->getTimestamp();
 if (!file_exists($aopCacheDir)) {
     mkdir($aopCacheDir, 0777, true);
-   echo "Using aop cache $aopCacheDir";
+    echo "Using aop cache $aopCacheDir";
 }
 
-$sspInstall= $projectRoot . '/vendor/simplesamlphp/simplesamlphp/';
+$sspInstall = $projectRoot . '/vendor/simplesamlphp/simplesamlphp/';
 
 // Enable AspectMock. This allows us to stub/double out static methods.
 $kernel = \AspectMock\Kernel::getInstance();

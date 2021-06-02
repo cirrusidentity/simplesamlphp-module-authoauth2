@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: patrick
@@ -84,7 +85,7 @@ class OIDCLogoutHandler
         $as = new \SimpleSAML\Auth\Simple($sourceId);
         $as->logout([
             'oidc:localLogout' => true,
-            'ReturnTo' => $config->getBasePath().'logout.php',
+            'ReturnTo' => $config->getBasePath() . 'logout.php',
         ]);
     }
 }

@@ -15,7 +15,7 @@ use Test\SimpleSAML\MockOpenIDConnectProvider;
  */
 class OpenIDConnectTest extends OAuth2Test
 {
-    const AUTH_ID = 'openidconnect';
+    public const AUTH_ID = 'openidconnect';
     protected function getInstance(array $config)
     {
         $info = ['AuthId' => self::AUTH_ID];
@@ -40,10 +40,12 @@ class OpenIDConnectTest extends OAuth2Test
                     'retryOnError' => 1,
                     'clientId' => 'test client id',
                 ],
+                // phpcs:disable
                 new AccessToken([
                     'access_token' => 'stubToken',
                     'id_token' => 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiYXVkIjoidGVzdCBjbGllbnQgaWQiLCJpYXQiOjE1MTYyMzkwMjJ9.emHrAifV1IyvmTXh3lYX0oAFqqZInhDlclIlTUumut0',
                 ]),
+                // phpcs:enable
                 [
                     'test.name' => ['Bob'],
                     'test.id_token.sub' => ['1234567890'],
@@ -65,11 +67,13 @@ class OpenIDConnectTest extends OAuth2Test
                     'authenticatedApiRequests' => ['https://mock.com/v1.0/me/memberOf'],
 
                 ],
+                // phpcs:disable
                 new AccessToken([
                     'access_token' => 'stubToken',
                     'id_token' => 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiYXVkIjoidGVzdCBjbGllbnQgaWQiLCJpYXQiOjE1MTYyMzkwMjJ9.emHrAifV1IyvmTXh3lYX0oAFqqZInhDlclIlTUumut0',
 
                 ]),
+                // phpcs:enable
                 [
                     'test.name' => ['Bob'],
                     'test.additionalResource' => ['info'],
@@ -183,11 +187,13 @@ class OpenIDConnectTest extends OAuth2Test
             $this->fail("Redirect expected");
         } catch (RedirectException $e) {
             $this->assertEquals('redirectTrustedURL', $e->getMessage());
+            // phpcs:disable
             $this->assertEquals(
                 'https://example.org/logout?id_token_hint=myidtoken&post_logout_redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Floggedout.php&state=authoauth2-stateId',
                 $e->getUrl(),
                 "First argument should be the redirect url"
             );
+            // phpcs:enable
             $this->assertEquals([], $e->getParams(), "query params are already added into url");
         }
     }

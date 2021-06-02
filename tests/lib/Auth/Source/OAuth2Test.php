@@ -20,7 +20,7 @@ use Test\SimpleSAML\MockOAuth2Provider;
  */
 class OAuth2Test extends TestCase
 {
-    const AUTH_ID = 'oauth2';
+    public const AUTH_ID = 'oauth2';
 
     public $module_config;
 
@@ -312,8 +312,11 @@ class OAuth2Test extends TestCase
      * @param $accessToken
      * @param $expectedAttributes
      */
-    public function testFinalStepsWithAuthenticatedApiRequestWithNetworkErrors($config, $accessToken, $expectedAttributes)
-    {
+    public function testFinalStepsWithAuthenticatedApiRequestWithNetworkErrors(
+        $config,
+        $accessToken,
+        $expectedAttributes
+    ) {
         // given: A mock Oauth2 provider
         $code = 'theCode';
         $state = [\SimpleSAML\Auth\State::ID => 'stateId'];
@@ -339,7 +342,10 @@ class OAuth2Test extends TestCase
         $mock->method('getAuthenticatedRequest')
             ->with('GET', 'https://mock.com/v1.0/me/memberOf', $accessToken)
             ->will($this->onConsecutiveCalls(
-                $this->throwException(new ConnectException('getAuthenticatedRequest', $mockRequestAuthenticatedRequest)),
+                $this->throwException(new ConnectException(
+                    'getAuthenticatedRequest',
+                    $mockRequestAuthenticatedRequest
+                )),
                 $mockRequest
             ));
 

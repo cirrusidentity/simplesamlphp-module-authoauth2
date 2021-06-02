@@ -134,5 +134,4 @@ jobs:
         run: composer install --no-progress --prefer-dist --optimize-autoloader
 
       - name: PHP Code Sniffer
-        continue-on-error: true
         run: php vendor/bin/phpcs --standard=PSR12 --ignore=authsources.php,config.php lib/ tests/
