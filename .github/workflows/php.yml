@@ -61,13 +61,6 @@ jobs:
         run: |
           echo $NO_COVERAGE
           ./vendor/bin/phpunit $NO_COVERAGE
-      - name: Save coverage data
-        if: ${{ matrix.php-versions == '7.4' && matrix.operating-system == 'ubuntu-latest' }}
-        uses: actions/upload-artifact@v1
-        with:
-            name: build-data
-            path: ${{ github.workspace }}/build
-
   security:
     name: Security checks
     runs-on: [ubuntu-latest]
