@@ -19,6 +19,7 @@ If you are interested in using SSP as an OIDC OP see the [OIDC module](https://g
 - [Usage](#usage)
   - [Redirect URI](#redirect-uri)
   - [Provider specific Tips](#provider-specific-tips)
+  - [scope or scopes: What parameters can be passed?](#scope-or-scopes-what-parameters-can-be-passed)
   - [Generic Usage](#generic-usage)
   - [OpenID Connect Usage](#openid-connect-usage)
   - [Provider Specific Usage](#provider-specific-usage)
@@ -79,6 +80,16 @@ Almost all OAuth2/OIDC providers will require you to register a redirect URI. Us
  * [LinkedIn](/docs/LINKEDIN.md)
  * [Microsoft](/docs/MICROSOFT.md)
 
+## scope or scopes: What parameters can be passed?
+
+The majority of configuration items are passed through to the `provider` implementation so it will depend on
+the provider you choose. If you use the authsource `authoauth2:OAuth2` without overriding the `providerClass` then
+the options from "Generic Usage" will work. If you use `authoauth2:OpenIDConnect` then a different set of
+configuration options are available.
+
+**scope vs scopes**: The default provider used by `authoauth2:OAuth2` supports setting `'scopes' => ['email']` or by setting
+`scope` in `urlAuthorizeOptions`. Other providers may only support the latter (setting in `urlAuthorizeOptions`).
+
 ## Generic Usage
 
 Generic usage provides enough configuration parameters to use with any OAuth2 or OIDC server.
@@ -93,7 +104,7 @@ Generic usage provides enough configuration parameters to use with any OAuth2 or
               'urlResourceOwnerOptions' => [
                  'fields' => 'id,name,first_name,last_name,email'
               ],
-              // allow fields from token response to be query params on resource owne details request
+              // allow fields from token response to be query params on resource owner details request
               'tokenFieldsToUserDetailsUrl' => [
                    'fieldName' => 'queryParamName',
                    'access_token' => 'access_token',
@@ -107,8 +118,10 @@ Generic usage provides enough configuration parameters to use with any OAuth2 or
               // Custom query parameters to add to authorize request
               'urlAuthorizeOptions' => [
                   'prompt' => 'always',
+                  // The underlying OAuth2 library also supports overriding requested scopes
+                  //'scope' => ['other']
               ],
-              // Scopes to request
+              // Default scopes to request
               'scopes' = ['email', 'profile'],
               'scopeSeparator' => ' ',
               // Customize redirect, if you don't want to use the standard /module.php/authoauth2/linkback.php
@@ -136,6 +149,8 @@ Generic usage provides enough configuration parameters to use with any OAuth2 or
 ## OpenID Connect Usage
 
 For providers that support OpenID Connect discovery protocol the configuration can be simplified a bit. Only the issuer url, client id and client secret are required..
+
+Not all configuration options from `authoauth2:OAuth2` are supported in `OpenIDConnect`
 ```php
        'openidconnect' => array(
               'authoauth2:OpenIDConnect',
@@ -148,6 +163,11 @@ For providers that support OpenID Connect discovery protocol the configuration c
               // *** New Optional ***
               // Customize post logout redirect, if you don't want to use the standard /module.php/authoauth2/loggedout.php
               'postLogoutRedirectUri' => 'https://myapp.example.com/loggedout'
+
+              // Earlier version OpenIDConnect authsource doesn't support using `scopes` for overriding scope
+              //'urlAuthorizeOptions' => [
+              //    'scope' => 'openid'
+              //]
           ),
 ```
 

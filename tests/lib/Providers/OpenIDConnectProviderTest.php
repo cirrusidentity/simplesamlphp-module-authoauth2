@@ -6,6 +6,7 @@ use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Token\AccessToken;
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\Module\authoauth2\Providers\OpenIDConnectProvider;
+use Symfony\Component\HttpFoundation\Request;
 use Test\SimpleSAML\MockOpenIDConnectProvider;
 
 class OpenIDConnectProviderTest extends TestCase
@@ -53,5 +54,29 @@ class OpenIDConnectProviderTest extends TestCase
             'clientId' => 'test client id',
         ]);
         $provider->verifyIDToken($idToken);
+    }
+
+    /**
+     * Confirm scope can be set with scopes or authoricationUrl.scope
+     */
+    public function testSetScopes()
+    {
+        $provider = new OpenIDConnectProvider(
+            ['issuer' => 'https://accounts.google.com']
+        );
+        $url = $provider->getAuthorizationUrl();
+        $request = Request::create($url);
+        $this->assertEquals('openid profile', $request->query->get('scope'));
+
+        $url = $provider->getAuthorizationUrl(['scope' => 'otherscope']);
+        $request = Request::create($url);
+        $this->assertEquals('otherscope', $request->query->get('scope'));
+
+        $provider = new OpenIDConnectProvider(
+            ['issuer' => 'https://accounts.google.com', 'scopes' => ['openid']]
+        );
+        $url = $provider->getAuthorizationUrl();
+        $request = Request::create($url);
+        $this->assertEquals('openid', $request->query->get('scope'));
     }
 }

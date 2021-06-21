@@ -34,6 +34,11 @@ class OpenIDConnectProvider extends AbstractProvider
      */
     private $responseError = 'error';
 
+    /**
+     * @var array
+     */
+    private $defaultScopes = [];
+
     public function __construct(array $options = [], array $collaborators = [])
     {
         parent::__construct($options, $collaborators);
@@ -44,6 +49,7 @@ class OpenIDConnectProvider extends AbstractProvider
             );
         }
         $this->issuer = $options['issuer'];
+        $this->defaultScopes = $options['scopes'] ?? ['openid', 'profile'];
     }
 
     protected function getScopeSeparator()
@@ -53,7 +59,7 @@ class OpenIDConnectProvider extends AbstractProvider
 
     protected function getDefaultScopes()
     {
-        return 'openid profile';
+        return $this->defaultScopes;
     }
 
     protected function checkResponse(ResponseInterface $response, $data)

@@ -5,6 +5,8 @@ namespace Test\SimpleSAML\Providers;
 use League\OAuth2\Client\Token\AccessToken;
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\Module\authoauth2\Providers\AdjustableGenericProvider;
+use SimpleSAML\Module\authoauth2\Providers\OpenIDConnectProvider;
+use Symfony\Component\HttpFoundation\Request;
 
 class AdjustableGenericProviderTest extends TestCase
 {
@@ -61,5 +63,26 @@ class AdjustableGenericProviderTest extends TestCase
         $token = new AccessToken(['access_token' => 'abc', 'someid' => 123]);
         $url = $provider->getResourceOwnerDetailsUrl($token);
         $this->assertEquals('https://graph.facebook.com/me?fields=123', $url);
+    }
+
+    /**
+     * Confirm scope can be set with scopes or authoricationUrl.scope
+     */
+    public function testSetScopes()
+    {
+        $provider = new AdjustableGenericProvider($this->requiredProviderConifg);
+        $url = $provider->getAuthorizationUrl();
+        $request = Request::create($url);
+        $this->assertFalse($request->query->has('scope'), 'no default scopes');
+
+        $url = $provider->getAuthorizationUrl(['scope' => 'otherscope']);
+        $request = Request::create($url);
+        $this->assertEquals('otherscope', $request->query->get('scope'));
+
+        $provider = new AdjustableGenericProvider($this->requiredProviderConifg + ['scopes' => ['openid']]);
+
+        $url = $provider->getAuthorizationUrl();
+        $request = Request::create($url);
+        $this->assertEquals('openid', $request->query->get('scope'));
     }
 }
