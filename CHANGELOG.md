@@ -4,6 +4,9 @@
 
 _Release: 2020-?
 * Amazon template
+* OIDC auth source now supports `scopes` setting
+* Move to phpunit 8
+* Increase min php version
 
 ## v3.1.0
 
