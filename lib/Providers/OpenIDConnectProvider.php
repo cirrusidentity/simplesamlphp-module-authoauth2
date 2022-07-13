@@ -92,7 +92,9 @@ class OpenIDConnectProvider extends AbstractProvider
         try {
             $keys = $this->getSigningKeys();
             $claims = JWT\JWT::decode($id_token, $keys, ['RS256']);
-            if ($claims->aud !== $this->clientId) {
+            $aud = is_array($claims->aud) ? $claims->aud : [$claims->aud];
+
+            if (!in_array($this->clientId, $aud)) {
                 throw new IdentityProviderException("ID token has incorrect audience", 0, $claims->aud);
             }
             if ($claims->iss !== $this->issuer) {
