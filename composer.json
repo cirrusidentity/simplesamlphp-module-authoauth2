@@ -27,5 +27,10 @@
         "psr-4": {
             "Test\\SimpleSAML\\": "tests/lib/"
         }
+    },
+    "config": {
+        "allow-plugins": {
+            "simplesamlphp/composer-module-installer": true
+        }
     }
 }
