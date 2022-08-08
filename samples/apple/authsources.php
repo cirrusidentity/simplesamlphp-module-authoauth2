@@ -5,9 +5,13 @@ $config = array(
     'appleTest' => array(
         // Must install correct provider with: composer require patrickbussmann/oauth2-apple
         'authoauth2:OAuth2',
+        'attributePrefix' => 'apple.',
+        // Improve log lines
+        'label' => 'apple',
         // Logging http traffic causes the provider to see a blank body when it tries to read json response
         // since the body stream doesn't get reset correctly
         // 'logHttpTraffic' => true,
+        'logIdTokenJson' => true,
         'providerClass' => 'League\OAuth2\Client\Provider\Apple',
         'teamId'            => 'UPV4CB4H6W', // // 1A234BFK46 https://developer.apple.com/account/#/membership/ (Team ID)
         'clientId' => 'edu.illinois.idpproxy.apple',
@@ -25,3 +29,4 @@ $config = array(
     ),
 
 );
+
