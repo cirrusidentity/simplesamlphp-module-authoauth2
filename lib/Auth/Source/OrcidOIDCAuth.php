@@ -6,13 +6,11 @@ use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
 use SimpleSAML\Logger;
 
-
 /**
  * ORCID api requires a 2nd call to determine email address.
  */
 class OrcidOIDCAuth extends OpenIDConnect
 {
-
     public function __construct(array $info, array $config)
     {
         // Set some defaults
@@ -35,11 +33,11 @@ class OrcidOIDCAuth extends OpenIDConnect
         parent::postFinalStep($accessToken, $provider, $state);
 
         $prefix = $this->getAttributePrefix();
-        
+
         $emailUrl = $this->getConfig()->getString('urlResourceOwnerEmail');
         $request = $provider->getAuthenticatedRequest(
             'GET',
-            strtr($emailUrl,['@orcid' => $state['Attributes'][$prefix . 'sub'][0]]),
+            strtr($emailUrl, ['@orcid' => $state['Attributes'][$prefix . 'sub'][0]]),
             $accessToken,
             ['headers' => ['Accept' => 'application/json']]
         );
@@ -122,10 +120,10 @@ class OrcidOIDCAuth extends OpenIDConnect
              * } ],
              * "path" : "/0000-0002-0385-1674/email"
              * }
-             * 
+             *
              * ORCID allows multiple email addresses, with only one being marked as "primary". Email addresses
              * can also me restricted from public visibility -- so the "primary" email address may not be released.
-             * Use the first email address in array marked primary (if any), else use first email address.                                                                                                             
+             * Use the first email address in array marked primary (if any), else use first email address.
              */
             $email = null;
             foreach ($response["email"] as $e) {
