@@ -176,5 +176,15 @@ class ConfigTemplate
         // Improve log lines
         'label' => 'bitbucket'
     ];
+
+    public const OrcidOIDC = [
+        'authoauth2:OrcidOIDCAuth',
+        // *** ORCID support OpenID Connect discovery protocol ***
+        'issuer' => 'https://orcid.org',
+        // email requires a separate API call
+        'urlResourceOwnerEmail' => 'https://pub.orcid.org/v3.0/@orcid/email',
+        // Prefix attributes so we can use the standard oidc2name attributemap
+        'attributePrefix' => 'oidc.',
+    ];
 }
 // phpcs:enable
