@@ -21,41 +21,14 @@ class OrcidOIDCAuth extends OpenIDConnect
     }
 
     /**
-     * Query ORCID's email endpoint and add it to the attributes
+     * Parse ORCID's email lookup endpoint response and return email or null
      * Public for testing
-     * @param AccessToken $accessToken
-     * @param AbstractProvider $provider
-     * @param array $state
+     * @param mixed $response
+     * @return string returns email address or null if not found
      */
-    public function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, &$state)
+    public function parseEmailLookupResponse($response)
     {
-        // initialize attributes from id token
-        parent::postFinalStep($accessToken, $provider, $state);
-
-        $prefix = $this->getAttributePrefix();
-
-        $emailUrl = $this->getConfig()->getString('urlResourceOwnerEmail');
-        $request = $provider->getAuthenticatedRequest(
-            'GET',
-            strtr($emailUrl, ['@orcid' => $state['Attributes'][$prefix . 'sub'][0]]),
-            $accessToken,
-            ['headers' => ['Accept' => 'application/json']]
-        );
-        try {
-            $response = $this->retry(
-                function () use ($provider, $request) {
-                    return $provider->getParsedResponse($request);
-                },
-                $this->config->getInteger('retryOnError', 1)
-            );
-        } catch (\Exception $e) {
-            // not getting email shouldn't fail the authentication
-            Logger::error(
-                'OrcidOIDCAuth: ' . $this->getLabel() . ' exception email query response ' . $e->getMessage()
-            );
-            return;
-        }
-
+        $email = null;
         if (is_array($response) && isset($response["email"])) {
             /**
              * A valid response for email lookups is:
@@ -125,15 +98,55 @@ class OrcidOIDCAuth extends OpenIDConnect
              * can also me restricted from public visibility -- so the "primary" email address may not be released.
              * Use the first email address in array marked primary (if any), else use first email address.
              */
-            $email = null;
             foreach ($response["email"] as $e) {
                 if ($email === null || $e["primary"] === true) {
                     $email = $e["email"];
                 }
+                if ($e["primary"] === true) {
+                    break;
+                }
             }
-            if ($email !== null) {
-                $state['Attributes'][$prefix . 'email'] = [$email];
-            }
+        }
+        return $email;
+    }
+
+    /**
+     * Query ORCID's email endpoint and add it to the attributes
+     * @param AccessToken $accessToken
+     * @param AbstractProvider $provider
+     * @param array $state
+     */
+    protected function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, &$state)
+    {
+        // initialize attributes from id token
+        parent::postFinalStep($accessToken, $provider, $state);
+
+        $prefix = $this->getAttributePrefix();
+
+        $emailUrl = $this->getConfig()->getString('urlResourceOwnerEmail');
+        $request = $provider->getAuthenticatedRequest(
+            'GET',
+            strtr($emailUrl, ['@orcid' => $state['Attributes'][$prefix . 'sub'][0]]),
+            $accessToken,
+            ['headers' => ['Accept' => 'application/json']]
+        );
+        try {
+            $response = $this->retry(
+                function () use ($provider, $request) {
+                    return $provider->getParsedResponse($request);
+                },
+                $this->config->getInteger('retryOnError', 1)
+            );
+        } catch (\Exception $e) {
+            // not getting email shouldn't fail the authentication
+            Logger::error(
+                'OrcidOIDCAuth: ' . $this->getLabel() . ' exception email query response ' . $e->getMessage()
+            );
+            return;
+        }
+        $email = $this->parseEmailLookupResponse($response);
+        if ($email !== null) {
+            $state['Attributes'][$prefix . 'email'] = [$email];
         } else {
             Logger::error(
                 'OrcidOIDCAuth: ' . $this->getLabel() . ' invalid email query response ' . var_export($response, true)
