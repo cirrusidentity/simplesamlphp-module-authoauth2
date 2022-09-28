@@ -190,35 +190,6 @@ class OrcidOIDCAuthTest extends TestCase
     public function testEmailResolution(array $emailResponse, ?string $expectedEmail)
     {
         $orcidAuth = new OrcidOIDCAuth(['AuthId' => 'orcid'], []);
-        $state = [
-            'Attributes' => [
-                'oidc.sub' => ['abc']
-            ]
-        ];
-        $token = new AccessToken(['access_token' => 'abc']);
-        /**
-         * @var $mock AbstractProvider|MockObject
-         */
-        $mock = $this->getMockBuilder(AbstractProvider::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $mockRequest = $this->createMock(RequestInterface::class);
-        $mock->method('getAuthenticatedRequest')
-            ->with(
-                'GET',
-                strtr(
-                    'https://pub.orcid.org/v3.0/@orcid/email',
-                    ['@orcid' => $state['Attributes']['oidc.sub'][0]]
-                ),
-                $token,
-                ['headers' => ['Accept' => 'application/json']]
-            )
-            ->willReturn($mockRequest);
-
-        $mock->method('getParsedResponse')
-            ->with($mockRequest)
-            ->willReturn($emailResponse);
         $email = $orcidAuth->parseEmailLookupResponse($emailResponse);
 
         $this->assertEquals(
