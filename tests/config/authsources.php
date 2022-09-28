@@ -115,6 +115,15 @@ zwIDAQAB
     )
     ),
 
+    // ORCID OpenID Connect Provider
+    'orcidOIDCTest' => array_merge(\SimpleSAML\Module\authoauth2\ConfigTemplate::OrcidOIDC, [
+        'clientId' => 'APP-PRIZEPSDX1RMMI34',
+        'clientSecret' => '7a91a2a0-f118-447d-8401-71ba07815eb7',
+        // *** Optional ***
+        // Allow changing the default redirectUri
+        'redirectUri' => 'https://abc.tutorial.stack-dev.cirrusidentity.com:8732/module.php/authoauth2/linkback.php',
+    ]),
+
     // This is a authentication source which handles admin authentication.
     'admin' => array(
         // The default is to use core:AdminPassword, but it can be replaced with
