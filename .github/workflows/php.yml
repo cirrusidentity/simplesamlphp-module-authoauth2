@@ -10,7 +10,7 @@ jobs:
       fail-fast: false
       matrix:
         operating-system: [ubuntu-latest]
-	# current tests make use of goaop/framework which requires php 7
+#  current tests make use of goaop/framework which requires php 7
         php-versions: ['7.3', '7.4']
 
     steps:
@@ -94,13 +94,13 @@ jobs:
         run: composer install --no-progress --prefer-dist --optimize-autoloader
 
       - name: Security check for locked dependencies
-        uses: symfonycorp/security-checker-action@v2
+        uses: symfonycorp/security-checker-action@v3
 
       - name: Update Composer dependencies
         run: composer update --no-progress --prefer-dist --optimize-autoloader
 
       - name: Security check for updated dependencies
-        uses: symfonycorp/security-checker-action@v2
+        uses: symfonycorp/security-checker-action@v3
 
   quality:
     name: Quality control

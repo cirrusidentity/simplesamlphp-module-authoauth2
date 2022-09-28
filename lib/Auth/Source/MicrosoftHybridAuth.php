@@ -20,7 +20,6 @@ use SimpleSAML\Module\authoauth2\ConfigTemplate;
  */
 class MicrosoftHybridAuth extends OAuth2
 {
-
     /**
      * MicrosoftHybridAuth constructor.
      */

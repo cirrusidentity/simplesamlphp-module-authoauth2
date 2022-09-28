@@ -19,7 +19,6 @@ use SimpleSAML\Module\authoauth2\ConfigTemplate;
  */
 class LinkedInV2Auth extends OAuth2
 {
-
     public function __construct(array $info, array $config)
     {
         // Set some defaults
