@@ -24,8 +24,6 @@ use SimpleSAML\Utils\HTTP;
  */
 class OAuth2 extends \SimpleSAML\Auth\Source
 {
-
-
     /** String used to identify our states. */
     public const STAGE_INIT = 'authouath2:init';
 

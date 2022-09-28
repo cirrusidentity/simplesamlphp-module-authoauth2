@@ -11,7 +11,6 @@ namespace SimpleSAML\Module\authoauth2;
  */
 class AttributeManipulator
 {
-
     /**
      * Take the attributes from an OAuth2 provider and convert them into the structure used by SSP.
      * @param array $array the attributes to flatten and prefix
