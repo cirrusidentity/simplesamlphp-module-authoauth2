@@ -8,7 +8,6 @@ use PHPUnit\Framework\TestCase;
 
 class AspectMockConfiguredTest extends TestCase
 {
-
     protected function tearDown(): void
     {
         test::clean(); // remove all registered test doubles

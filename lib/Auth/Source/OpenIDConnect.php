@@ -22,7 +22,6 @@ use Symfony\Component\Cache\Adapter\FilesystemAdapter;
  */
 class OpenIDConnect extends \SimpleSAML\Module\authoauth2\Auth\Source\OAuth2
 {
-
     /** String used to identify our states. */
     public const STAGE_LOGOUT = 'authouath2:logout';
     protected static $defaultProviderClass = OpenIDConnectProvider::class;

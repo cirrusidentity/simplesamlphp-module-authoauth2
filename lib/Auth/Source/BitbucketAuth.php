@@ -15,7 +15,6 @@ use SimpleSAML\Module\authoauth2\ConfigTemplate;
  */
 class BitbucketAuth extends OAuth2
 {
-
     public function __construct(array $info, array $config)
     {
         // Set some defaults
