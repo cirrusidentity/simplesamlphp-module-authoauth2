@@ -32,5 +32,8 @@
         "allow-plugins": {
             "simplesamlphp/composer-module-installer": true
         }
+    },
+    "suggest": {
+        "patrickbussmann/oauth2-apple": "Used to provide Apple sign in functionality"
     }
 }
