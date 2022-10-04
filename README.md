@@ -175,7 +175,7 @@ If your OP supports front channel single logout, you can configure `https://host
 
 ## Provider Specific Usage
 
-There are numerous [Offical](http://oauth2-client.thephpleague.com/providers/league/) and [Third-Party](http://oauth2-client.thephpleague.com/providers/thirdparty/) providers
+There are numerous [Official](http://oauth2-client.thephpleague.com/providers/league/) and [Third-Party](http://oauth2-client.thephpleague.com/providers/thirdparty/) providers
 that you can use instead of the generic OAuth2 provider. Using one of those providers can simplify the configurations.
 
 To use a provider you must first install it `composer require league/oauth2-some-provider`
