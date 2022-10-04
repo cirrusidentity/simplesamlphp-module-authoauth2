@@ -2,7 +2,7 @@
 # Apple:
 * only returns name on first login
 * includes email in the id_token
-** Apple for School accounts may not have email at all.
+  * Apple for School accounts may not have email at all.
 * `sub` (user id) is tied to your application (or the apps you group together in Apple's developer console)
 
 # Testing with Apple
