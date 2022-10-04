@@ -1,12 +1,11 @@
 
-# Testing with Apple
-
-Apple:
+# Apple:
 * only returns name on first login
 * includes email in the id_token
 ** Apple for School accounts may not have email at all.
 * `sub` (user id) is tied to your application (or the apps you group together in Apple's developer console)
 
+# Testing with Apple
 To test authenticating as if it is your first login:
 1. Visit https://appleid.apple.com/account/manage
 2. Click 'Sign in with Apple'
@@ -14,9 +13,39 @@ To test authenticating as if it is your first login:
 4. On your next login to that app you will be prompted to choose what email to release and your name
 will be release on initial login.
 
+# Configuration
+
+Apple integration uses the provider from this package `patrickbussmann/oauth2-apple:~0.2.10`.
+You must install it, and provide these 4 settings
+
+```php
+        'authoauth2:OAuth2',
+        'template' => 'AppleLeague',
+        'teamId' => $appleTeamId,
+        'clientId' => $apiKey,
+        'keyFileId' => $privateKeyId,
+        'keyFilePath' => $privateKeyPath,
+
+        // Other settings that are provider specific (like logging) may or may not work on the Apple provider
+```
+
+If you are using this with a SAML IdP then you can map the Apple attributes to regular friendly names in your `authproc` section of `saml20-idp-hosted.php`.
+
+```php
+    // saml20-idp-hosted.php
+$metadata['myEntityId'] = array(
+    'authproc' => array(
+        // Convert oidc names to ldap friendly names
+        90 => array('class' => 'core:AttributeMap',  'authoauth2:apple2name'),
+    ),
+   // other IdP config options
+)
+```
+
+
 # POC Testing
 
-Testing locally with a docker image
+Testing locally with a docker image to prove out configuration. You won't need this for your setup.
 
 ```
 # Run ssp image

@@ -18,6 +18,21 @@ class ConfigTemplate
         'label' => 'amazon'
     ];
 
+    public const AppleLeague = [
+        'authoauth2:OAuth2',
+        'attributePrefix' => 'apple.',
+        // Improve log lines
+        'label' => 'apple',
+        'logIdTokenJson' => true,
+        // You must install composer require patrickbussmann/oauth2-apple:~0.2.10
+        'providerClass' => 'League\OAuth2\Client\Provider\Apple',
+        // You must set these four settings
+        //'teamId' => $appleTeamId,
+        //'clientId' => $apiKey,
+        // 'keyFileId' => $privateKeyId,
+        // 'keyFilePath' => $privateKeyPath
+    ];
+
     public const Facebook = [
         'authoauth2:OAuth2',
         // *** Facebook endpoints ***
