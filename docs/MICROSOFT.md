@@ -13,7 +13,8 @@
 # Microsoft as an AuthSource
 
 Microsoft has provided several login methods over the years, and the correct way to integrated depends on what sort
-of backwards compatability you need, and if you want global or pari-wise identifiers
+of backwards compatability you need, if you want global or pari-wise identifiers, and lasty if your client app will
+authenticate with certificates or with username and password.
 
 ## Microsoft Attributes
 
@@ -45,6 +46,10 @@ of backwards compatability you need, and if you want global or pari-wise identif
 
 
 # Usage
+
+TODO: need to redo this section. Azure recommends apps use certificates (really to sign an authn jwt)
+for authentication and the `OpenIDConnect` class doesn't support that directly (and even if it did,
+how the jwt is populated is Azure specific)
 
 ## Pair-wise ids
 
