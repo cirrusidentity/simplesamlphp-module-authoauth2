@@ -1,9 +1,11 @@
 # simplesamlphp-module-authoauth2  Changelog
 
-## Unreleased
+## v3.2.0
 
 _Release: 2020-?
 * Amazon template
+* Apple template
+* Orcid auth source
 * OIDC auth source now supports `scopes` setting
 * Move to phpunit 8
 * Increase min php version
