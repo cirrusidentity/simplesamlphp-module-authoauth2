@@ -30,5 +30,15 @@
     },
     "suggest": {
         "patrickbussmann/oauth2-apple": "Used to provide Apple sign in functionality"
-    }
+    },
+  "scripts": {
+    "validate": [
+      "vendor/bin/phpunit --no-coverage",
+      "vendor/bin/phpcs -p",
+      "vendor/bin/psalm"
+    ],
+    "tests": [
+      "vendor/bin/phpunit --no-coverage"
+    ]
+  }
 }
