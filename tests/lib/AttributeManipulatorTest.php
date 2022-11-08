@@ -57,6 +57,6 @@ class AttributeManipulatorTest extends TestCase
         ];
         $this->assertEquals($expectedAttributes, $flattenAttributes);
 
-        $this->assertEquals($expectedAttributes, Attributes::normalizeAttributesArray($flattenAttributes));
+        $this->assertEquals($expectedAttributes, (new Attributes())->normalizeAttributesArray($flattenAttributes));
     }
 }

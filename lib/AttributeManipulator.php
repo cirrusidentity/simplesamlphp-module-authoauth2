@@ -18,7 +18,7 @@ class AttributeManipulator
      *
      * @return array the array with the new concatenated keys and all values in an array
      */
-    public function prefixAndFlatten($array, $prefix = '')
+    public function prefixAndFlatten(array $array, string $prefix = ''): array
     {
         $result = array();
         foreach ($array as $key => $value) {
@@ -67,9 +67,9 @@ class AttributeManipulator
      * Determine if the array is a sequential [ 'a', 'b'] or [ 0 => 'a', 1 => 'b'] array with all values being
      * simple types
      * @param array $array The array to check
-     * @return bool true if is is sequential and values are simple (not array)
+     * @return bool true if is sequential and values are simple (not array)
      */
-    private function isSimpleSequentialArray(array $array)
+    private function isSimpleSequentialArray(array $array): bool
     {
         foreach ($array as $key => $value) {
             if (!is_int($key) || is_array($value)) {

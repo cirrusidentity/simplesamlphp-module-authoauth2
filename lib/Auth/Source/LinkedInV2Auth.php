@@ -9,10 +9,10 @@
 
 namespace SimpleSAML\Module\authoauth2\Auth\Source;
 
+use Exception;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
 use SimpleSAML\Logger;
-use SimpleSAML\Module\authoauth2\ConfigTemplate;
 
 /**
  * LinkedIn's v2 api requires a 2nd call to determine email address.
@@ -28,7 +28,7 @@ class LinkedInV2Auth extends OAuth2
         parent::__construct($info, $config);
     }
 
-    public function convertResourceOwnerAttributes(array $resourceOwnerAttributes, $prefix)
+    public function convertResourceOwnerAttributes(array $resourceOwnerAttributes, string $prefix): array
     {
         /** Sample response from LinkedIn
          * {
@@ -75,7 +75,7 @@ class LinkedInV2Auth extends OAuth2
      * @param array $attributes All the linkedIn attributes
      * @return string|false|null Return the first value or null/false if there is no value
      */
-    private function getFirstValueFromMultiLocaleString($attributeName, array $attributes)
+    private function getFirstValueFromMultiLocaleString(string $attributeName, array $attributes)
     {
         if (isset($attributes[$attributeName]['localized'])) {
             // reset gives us the first value from the multi valued associate localized array
@@ -92,7 +92,7 @@ class LinkedInV2Auth extends OAuth2
      * @param AbstractProvider $provider
      * @param array $state
      */
-    public function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, &$state)
+    public function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, array &$state)
     {
         if (!in_array('r_emailaddress', $this->config->getArray('scopes'))) {
             // We didn't request email scope originally
@@ -104,10 +104,9 @@ class LinkedInV2Auth extends OAuth2
             $response = $this->retry(
                 function () use ($provider, $request) {
                     return $provider->getParsedResponse($request);
-                },
-                $this->config->getInteger('retryOnError', 1)
+                }
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // not getting email shouldn't fail the authentication
             Logger::error(
                 'linkedInv2Auth: ' . $this->getLabel() . ' exception email query response ' . $e->getMessage()

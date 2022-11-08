@@ -8,7 +8,8 @@ use Kevinrob\GuzzleCache\Storage\Psr6CacheStorage;
 use Kevinrob\GuzzleCache\Strategy\PrivateCacheStrategy;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
-use SimpleSAML\Auth;
+use SimpleSAML\Auth\State;
+use SimpleSAML\Configuration;
 use SimpleSAML\Logger;
 use SimpleSAML\Module;
 use SimpleSAML\Module\authoauth2\Providers\OpenIDConnectProvider;
@@ -20,21 +21,21 @@ use Symfony\Component\Cache\Adapter\FilesystemAdapter;
  *
  * @package SimpleSAML\Module\authoauth2
  */
-class OpenIDConnect extends \SimpleSAML\Module\authoauth2\Auth\Source\OAuth2
+class OpenIDConnect extends OAuth2
 {
     /** String used to identify our states. */
     public const STAGE_LOGOUT = 'authouath2:logout';
-    protected static $defaultProviderClass = OpenIDConnectProvider::class;
+    protected static string $defaultProviderClass = OpenIDConnectProvider::class;
 
     /**
      * Get the provider to use to talk to the OAuth2 server.
      * Only visible for testing
      *
      * Since SSP may serialize Auth modules we don't assign the potentially unserializable provider to a field.
-     * @param \SimpleSAML\Configuration $config
-     * @return \League\OAuth2\Client\Provider\AbstractProvider
+     * @param Configuration $config
+     * @return AbstractProvider
      */
-    public function getProvider(\SimpleSAML\Configuration $config)
+    public function getProvider(Configuration $config): AbstractProvider
     {
         $provider = parent::getProvider($config);
         $httpClient = $provider->getHttpClient();
@@ -45,7 +46,7 @@ class OpenIDConnect extends \SimpleSAML\Module\authoauth2\Auth\Source\OAuth2
             $httpClient->getConfig()['handler'] = $newhandler;
             $handler = $newhandler;
         }
-        $cacheDir = \SimpleSAML\Configuration::getInstance()->getString('tempdir') . "/oidc-cache";
+        $cacheDir = Configuration::getInstance()->getString('tempdir') . "/oidc-cache";
         $handler->push(
             new CacheMiddleware(
                 new PrivateCacheStrategy(
@@ -69,7 +70,7 @@ class OpenIDConnect extends \SimpleSAML\Module\authoauth2\Auth\Source\OAuth2
      * @param array $state
      * @return array
      */
-    protected function getAuthorizeOptionsFromState(&$state)
+    protected function getAuthorizeOptionsFromState(array &$state): array
     {
         $result = [];
         foreach ($state as $key => $value) {
@@ -93,7 +94,7 @@ class OpenIDConnect extends \SimpleSAML\Module\authoauth2\Auth\Source\OAuth2
      *
      * @inheritdoc
      */
-    protected function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, &$state)
+    protected function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, array &$state)
     {
         $prefix = $this->getAttributePrefix();
         $id_token = $accessToken->getValues()['id_token'];
@@ -113,7 +114,7 @@ class OpenIDConnect extends \SimpleSAML\Module\authoauth2\Auth\Source\OAuth2
      * @param array &$state Information about the current logout operation.
      * @return void
      */
-    public function logout(&$state)
+    public function logout(array &$state): void
     {
         $providerLabel = $this->getLabel();
         if (array_key_exists('oidc:localLogout', $state) && $state['oidc:localLogout'] === true) {
@@ -133,7 +134,7 @@ class OpenIDConnect extends \SimpleSAML\Module\authoauth2\Auth\Source\OAuth2
         }
         $id_token = $state['id_token'];
 
-        $postLogoutUrl = $this->config->getString('postLogoutRedirectUri', null);
+        $postLogoutUrl = $this->config->getOptionalString('postLogoutRedirectUri', null);
         if (!$postLogoutUrl) {
             $postLogoutUrl = Module::getModuleURL('authoauth2/loggedout.php');
         }
@@ -141,13 +142,13 @@ class OpenIDConnect extends \SimpleSAML\Module\authoauth2\Auth\Source\OAuth2
         // We are going to need the authId in order to retrieve this authentication source later, in the callback
         $state[self::AUTHID] = $this->getAuthId();
 
-        $stateID = \SimpleSAML\Auth\State::saveState($state, self::STAGE_LOGOUT);
-        $endSessionURL = HTTP::addURLParameters($endSessionEndpoint, [
+        $stateID = State::saveState($state, self::STAGE_LOGOUT);
+        $endSessionURL = $this->http->addURLParameters($endSessionEndpoint, [
             'id_token_hint' => $id_token,
             'post_logout_redirect_uri' => $postLogoutUrl,
             'state' => self::STATE_PREFIX . '-' . $stateID,
         ]);
-        HTTP::redirectTrustedURL($endSessionURL);
+        $this->http->redirectTrustedURL($endSessionURL);
         // @codeCoverageIgnoreStart
     }
 }

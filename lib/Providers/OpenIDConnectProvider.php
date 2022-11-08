@@ -22,22 +22,22 @@ class OpenIDConnectProvider extends AbstractProvider
     /**
      * @var string
      */
-    protected $issuer;
+    protected string $issuer;
 
     /**
      * @var array
      */
-    private $openIdConfiguration;
+    private array $openIdConfiguration;
 
     /**
      * @var string
      */
-    private $responseError = 'error';
+    private string $responseError = 'error';
 
     /**
      * @var array
      */
-    private $defaultScopes = [];
+    private array $defaultScopes = [];
 
     public function __construct(array $options = [], array $collaborators = [])
     {
@@ -85,9 +85,8 @@ class OpenIDConnectProvider extends AbstractProvider
      * Do any required verification of the id token and return an array of decoded claims
      *
      * @param string $id_token Raw id token as string
-     * @return array associative array of claims decoded from the id token
      */
-    public function verifyIdToken($id_token)
+    public function verifyIdToken(string $id_token): void
     {
         try {
             $keys = $this->getSigningKeys();

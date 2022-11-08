@@ -12,7 +12,8 @@
         "firebase/php-jwt": "^5.0",
         "kevinrob/guzzle-cache-middleware": "^3.2",
         "psr/cache": "^1.0",
-        "symfony/cache": "^5.0|^4.3|^3.4"
+        "symfony/cache": "^5.0|^4.3|^3.4",
+      "ext-json": "*"
     },
     "require-dev": {
         "simplesamlphp/simplesamlphp-test-framework": "dev-master",

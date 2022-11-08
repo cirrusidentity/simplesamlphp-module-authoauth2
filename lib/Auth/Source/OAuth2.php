@@ -2,15 +2,21 @@
 
 namespace SimpleSAML\Module\authoauth2\Auth\Source;
 
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\MessageFormatter;
 use GuzzleHttp\Middleware;
+use InvalidArgumentException;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 use League\OAuth2\Client\Token\AccessToken;
 use League\OAuth2\Client\Token\AccessTokenInterface;
+use Psr\Http\Message\RequestInterface;
+use SimpleSAML\Auth\Source;
+use SimpleSAML\Auth\State;
+use SimpleSAML\Configuration;
 use SimpleSAML\Logger;
 use SimpleSAML\Module;
 use SimpleSAML\Module\authoauth2\AttributeManipulator;
@@ -22,7 +28,7 @@ use SimpleSAML\Utils\HTTP;
  * Authenticate using Oauth2.
  *
  */
-class OAuth2 extends \SimpleSAML\Auth\Source
+class OAuth2 extends Source
 {
     /** String used to identify our states. */
     public const STAGE_INIT = 'authouath2:init';
@@ -40,12 +46,11 @@ class OAuth2 extends \SimpleSAML\Auth\Source
     // phpcs:ignore
     public const DEBUG_LOG_FORMAT = "{method} {uri} {code} {req_headers_Authorization} >>>>'{req_body}' <<<<'{res_body}'";
 
-    protected static $defaultProviderClass = AdjustableGenericProvider::class;
+    protected static string $defaultProviderClass = AdjustableGenericProvider::class;
 
-    /**
-     * @var \SimpleSAML\Configuration
-     */
-    protected $config;
+    protected Configuration $config;
+
+    protected HTTP $http;
 
 
     /**
@@ -59,6 +64,7 @@ class OAuth2 extends \SimpleSAML\Auth\Source
 
         // Call the parent constructor first, as required by the interface
         parent::__construct($info, $config);
+        $this->http = new HTTP();
         if (array_key_exists('template', $config)) {
             $template = $config['template'];
             if (is_string($template)) {
@@ -76,19 +82,22 @@ class OAuth2 extends \SimpleSAML\Auth\Source
         }
         // adjust config to add resource owner query parameters.
         if (array_key_exists('urlResourceOwnerOptions', $config)) {
-            $newUrl = HTTP::addURLParameters($config['urlResourceOwnerDetails'], $config['urlResourceOwnerOptions']);
+            $newUrl = $this->http->addURLParameters(
+                $config['urlResourceOwnerDetails'],
+                $config['urlResourceOwnerOptions']
+            );
             $config['urlResourceOwnerDetails'] = $newUrl;
         }
-        $this->config = \SimpleSAML\Configuration::loadFromArray($config, 'authsources:oauth2');
+        $this->config = Configuration::loadFromArray($config, 'authsources:oauth2');
     }
 
     /**
      * Return a label for the OAuth2 provider that can be used in log statements, etc
      * @return string
      */
-    protected function getLabel()
+    protected function getLabel(): string
     {
-        return $this->config->getString('label', '');
+        return $this->config->getOptionalString('label', '');
     }
 
     /**
@@ -96,26 +105,26 @@ class OAuth2 extends \SimpleSAML\Auth\Source
      *
      * @param array $state
      */
-    public function authenticate(&$state)
+    public function authenticate(array &$state): void
     {
         $provider = $this->getProvider($this->config);
 
         // We are going to need the authId in order to retrieve this authentication source later, in the callback
         $state[self::AUTHID] = $this->getAuthId();
 
-        $stateID = \SimpleSAML\Auth\State::saveState($state, self::STAGE_INIT);
+        $stateID = State::saveState($state, self::STAGE_INIT);
 
         $providerLabel = $this->getLabel();
         Logger::debug("authoauth2: $providerLabel saved state with stateID=$stateID");
 
-        $options = $this->config->getArray('urlAuthorizeOptions', []);
+        $options = $this->config->getOptionalArray('urlAuthorizeOptions', []);
         $options = array_merge($options, $this->getAuthorizeOptionsFromState($state));
         // Add a prefix to tell we are the intended recipient for a redirect URI if the redirect URI was customized
         $options['state'] = self::STATE_PREFIX . '|' . $stateID;
         $authorizeURL = $provider->getAuthorizationUrl($options);
         Logger::debug("authoauth2: $providerLabel redirecting to authorizeURL=$authorizeURL");
 
-        HTTP::redirectTrustedURL($authorizeURL);
+        $this->http->redirectTrustedURL($authorizeURL);
     }
 
     /**
@@ -126,7 +135,7 @@ class OAuth2 extends \SimpleSAML\Auth\Source
      * @param array $state
      * @return array
      */
-    protected function getAuthorizeOptionsFromState(&$state)
+    protected function getAuthorizeOptionsFromState(array &$state): array
     {
         return [];
     }
@@ -136,16 +145,16 @@ class OAuth2 extends \SimpleSAML\Auth\Source
      * Only visible for testing
      *
      * Since SSP may serialize Auth modules we don't assign the potentially unserializable provider to a field.
-     * @param \SimpleSAML\Configuration $config
-     * @return \League\OAuth2\Client\Provider\AbstractProvider
+     * @param Configuration $config
+     * @return AbstractProvider
      */
-    public function getProvider(\SimpleSAML\Configuration $config)
+    public function getProvider(Configuration $config): AbstractProvider
     {
         $providerLabel = $this->getLabel();
 
         $collaborators = [];
-        if ($config->getBoolean('logHttpTraffic', false) === true) {
-            $format = $config->getString('logMessageFormat', self::DEBUG_LOG_FORMAT);
+        if ($config->getOptionalBoolean('logHttpTraffic', false) === true) {
+            $format = $config->getOptionalString('logMessageFormat', self::DEBUG_LOG_FORMAT);
             Logger::debug('authoauth2: Enable traffic logging');
             $handlerStack = HandlerStack::create();
             $handlerStack->push(
@@ -165,11 +174,11 @@ class OAuth2 extends \SimpleSAML\Auth\Source
             if (class_exists($providerClass)) {
                 if (!is_subclass_of($providerClass, AbstractProvider::class)) {
                     // phpcs:ignore Generic.Files.LineLength.TooLong
-                    throw new \InvalidArgumentException("The OAuth2 provider '$providerClass' does not extend " . AbstractProvider::class);
+                    throw new InvalidArgumentException("The OAuth2 provider '$providerClass' does not extend " . AbstractProvider::class);
                 }
                 return new $providerClass($config->toArray(), $collaborators);
             } else {
-                throw new \InvalidArgumentException("No OAuth2 provider class found for '$providerClass'.");
+                throw new InvalidArgumentException("No OAuth2 provider class found for '$providerClass'.");
             }
         }
         return new static::$defaultProviderClass($config->toArray(), $collaborators);
@@ -182,7 +191,7 @@ class OAuth2 extends \SimpleSAML\Auth\Source
      * @param string $oauth2Code
      *
      */
-    public function finalStep(array &$state, $oauth2Code)
+    public function finalStep(array &$state, string $oauth2Code)
     {
         $start = microtime(true);
         $providerLabel = $this->getLabel();
@@ -197,12 +206,11 @@ class OAuth2 extends \SimpleSAML\Auth\Source
                 return $provider->getAccessToken('authorization_code', [
                     'code' => $oauth2Code
                 ]);
-            },
-            $this->config->getInteger('retryOnError', 1)
+            }
         );
 
         if (
-            $this->config->getBoolean('logIdTokenJson', false) &&
+            $this->config->getOptionalBoolean('logIdTokenJson', false) &&
             array_key_exists('id_token', $accessToken->getValues())
         ) {
             $idToken = $accessToken->getValues()['id_token'];
@@ -216,30 +224,28 @@ class OAuth2 extends \SimpleSAML\Auth\Source
         $resourceOwner = $this->retry(
             function () use ($provider, $accessToken) {
                 return $provider->getResourceOwner($accessToken);
-            },
-            $this->config->getInteger('retryOnError', 1)
+            }
         );
 
         $attributes = $resourceOwner->toArray();
 
-        $authenticatedApiRequests = $this->config->getArray('authenticatedApiRequests', []);
+        $authenticatedApiRequests = $this->config->getOptionalArray('authenticatedApiRequests', []);
         foreach ($authenticatedApiRequests as $apiUrl) {
             try {
                 $apiAttributes = $this->retry(function () use ($provider, $accessToken, $apiUrl) {
 
-                    /** @var Psr\Http\Message\RequestInterface $request */
+                    /** @var RequestInterface $request */
                     $apiRequest = $provider->getAuthenticatedRequest(
                         'GET',
                         $apiUrl,
                         $accessToken
                     );
                     return $provider->getParsedResponse($apiRequest);
-                },
-                    $this->config->getInteger('retryOnError', 1));
+                });
                 if (!empty($apiAttributes)) {
                     $attributes = array_replace_recursive($attributes, $apiAttributes);
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // not retrieving additional resources, should not fail the authentication
                 Logger::error(
                     'OAuth2: ' . $this->getLabel() . ' exception authenticatedApiRequests ' . $e->getMessage()
@@ -265,7 +271,7 @@ class OAuth2 extends \SimpleSAML\Auth\Source
      * @param string $prefix A string to put in front of all attribute names
      * @return array The SSP attributes, in form suitable to assign to $state['Attributes']
      */
-    protected function convertResourceOwnerAttributes(array $resourceOwnerAttributes, $prefix)
+    protected function convertResourceOwnerAttributes(array $resourceOwnerAttributes, string $prefix): array
     {
         $attributeManipulator = new AttributeManipulator();
         return $attributeManipulator->prefixAndFlatten($resourceOwnerAttributes, $prefix);
@@ -274,12 +280,15 @@ class OAuth2 extends \SimpleSAML\Auth\Source
     /**
      * Retry token and user info endpoints in event of network errors.
      * @param callable $function the function to try
-     * @param int $retries number of attempts to try
+     * @param ?int $retries number of attempts to try
      * @param int $delay The time to delay between tries.
      * @return mixed the result of the function
      */
-    protected function retry(callable $function, $retries = 1, $delay = 1)
+    protected function retry(callable $function, ?int $retries = null, int $delay = 1)
     {
+        if ($retries == null) {
+            $retries = $this->config->getOptionalInteger('retryOnError', 1);
+        }
         $providerLabel = $this->getLabel();
         try {
             return $function();
@@ -297,10 +306,10 @@ class OAuth2 extends \SimpleSAML\Auth\Source
     }
 
     /**
-     * @param $idToken
+     * @param string $idToken
      * @return string[] id token attributes
      */
-    protected function extraIdTokenAttributes($idToken)
+    protected function extraIdTokenAttributes(string $idToken): array
     {
         // We don't need to verify the signature on the id token since it was the token returned directly from
         // the OP over TLS
@@ -317,7 +326,7 @@ class OAuth2 extends \SimpleSAML\Auth\Source
         return $data;
     }
 
-    protected function extraAndDecodeJwtPayload($jwt)
+    protected function extraAndDecodeJwtPayload(string $jwt): ?string
     {
         $parts = explode('.', $jwt);
         if ($parts === false || count($parts) < 3) {
@@ -339,21 +348,21 @@ class OAuth2 extends \SimpleSAML\Auth\Source
      * @param AbstractProvider $provider The Oauth2 provider
      * @param array $state The current state
      */
-    protected function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, &$state)
+    protected function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, array &$state)
     {
     }
 
     /**
      * Get the configuration used for this filter
-     * @return \SimpleSAML\Configuration
+     * @return Configuration
      */
-    public function getConfig()
+    public function getConfig(): Configuration
     {
         return $this->config;
     }
 
-    protected function getAttributePrefix()
+    protected function getAttributePrefix(): string
     {
-        return $this->config->getString('attributePrefix', '');
+        return $this->config->getOptionalString('attributePrefix', '');
     }
 }

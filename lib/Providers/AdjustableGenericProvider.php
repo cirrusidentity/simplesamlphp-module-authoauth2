@@ -15,7 +15,7 @@ class AdjustableGenericProvider extends GenericProvider
      * the token response json as the query param 'user' to the resource owner details endpoint
      * @var array[]
      */
-    protected $tokenFieldsToUserDetailsUrl;
+    protected array $tokenFieldsToUserDetailsUrl = [];
 
     protected function getConfigurableOptions()
     {
@@ -42,7 +42,7 @@ class AdjustableGenericProvider extends GenericProvider
             }
         }
         if ($toAdd) {
-            $url = HTTP::addURLParameters($url, $toAdd);
+            $url = (new HTTP())->addURLParameters($url, $toAdd);
         }
         return $url;
     }
