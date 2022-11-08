@@ -6,6 +6,9 @@ This is a generic module for authentication against an OAuth2 or OIDC server. It
 and then uses the resulting access token to query an endpoint to get the user's attributes. It is a wrapper around the
 excellent [PHP League OAuth2 Client](http://oauth2-client.thephpleague.com/).
 
+## SSP 2
+
+Compatability work for SSP2 will happen in the [ssp2](https://github.com/cirrusidentity/simplesamlphp-module-authoauth2/tree/ssp2) branch.
 ## SSP as an OIDC server
 
 If you are interested in using SSP as an OIDC OP see the [OIDC module](https://github.com/rediris-es/simplesamlphp-module-oidc).
