@@ -2,11 +2,11 @@
 
 namespace Test\SimpleSAML\Auth\Source;
 
-use CirrusIdentity\SSP\Test\Capture\RedirectException;
-use CirrusIdentity\SSP\Test\MockHttp;
 use League\OAuth2\Client\Token\AccessToken;
+use SimpleSAML\Auth\State;
 use SimpleSAML\Configuration;
 use SimpleSAML\Module\authoauth2\Auth\Source\OpenIDConnect;
+use SimpleSAML\Utils\HTTP;
 use Test\SimpleSAML\MockOAuth2Provider;
 use Test\SimpleSAML\MockOpenIDConnectProvider;
 
@@ -16,7 +16,7 @@ use Test\SimpleSAML\MockOpenIDConnectProvider;
 class OpenIDConnectTest extends OAuth2Test
 {
     public const AUTH_ID = 'openidconnect';
-    protected function getInstance(array $config)
+    protected function getInstance(array $config): OpenIDConnect
     {
         $info = ['AuthId' => self::AUTH_ID];
         return new OpenIDConnect($info, $config);
@@ -24,13 +24,13 @@ class OpenIDConnectTest extends OAuth2Test
 
     public static function setUpBeforeClass(): void
     {
-        putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(dirname(dirname(__DIR__))) . '/config');
+        putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(__DIR__, 3) . '/config');
             // Some of the constructs in this test cause a Configuration to be created prior to us
             // setting the one we want to use for the test.
             Configuration::clearInternalState();
     }
 
-    public function finalStepsDataProvider()
+    public function finalStepsDataProvider(): array
     {
         return [
             [
@@ -56,7 +56,7 @@ class OpenIDConnectTest extends OAuth2Test
         ];
     }
 
-    public function finalStepsDataProviderWithAuthenticatedApiRequest()
+    public function finalStepsDataProviderWithAuthenticatedApiRequest(): array
     {
         return [
             [
@@ -85,7 +85,7 @@ class OpenIDConnectTest extends OAuth2Test
         ];
     }
 
-    public function authenticateDataProvider()
+    public function authenticateDataProvider(): array
     {
         MockOpenIDConnectProvider::setConfig([
             'authorization_endpoint' => 'https://example.com/auth',
@@ -102,7 +102,7 @@ class OpenIDConnectTest extends OAuth2Test
             [
                 $config,
                 [
-                    \SimpleSAML\Auth\State::ID => 'stateId',
+                    State::ID => 'stateId',
                     'ForceAuthn' => true,
                 ],
                 // phpcs:ignore Generic.Files.LineLength.TooLong
@@ -111,7 +111,7 @@ class OpenIDConnectTest extends OAuth2Test
             [
                 $config,
                 [
-                    \SimpleSAML\Auth\State::ID => 'stateId',
+                    State::ID => 'stateId',
                     'isPassive' => true,
                 ],
                 // phpcs:ignore Generic.Files.LineLength.TooLong
@@ -120,7 +120,7 @@ class OpenIDConnectTest extends OAuth2Test
             [
                 $config,
                 [
-                    \SimpleSAML\Auth\State::ID => 'stateId',
+                    State::ID => 'stateId',
                     'oidc:acr_values' => 'Level4 Level3',
                     'oidc:display' => 'popup',
                 ],
@@ -164,8 +164,15 @@ class OpenIDConnectTest extends OAuth2Test
 
     public function testLogoutRedirects()
     {
+        $expectedUrl = 'https://example.org/logout?id_token_hint=myidtoken&post_logout_redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Floggedout.php&state=authoauth2-stateId';
         // Override redirect behavior
-        MockHttp::throwOnRedirectTrustedURL();
+        $http = $this->createMock(HTTP::class);
+        $http->method('redirectTrustedURL')
+            ->with($expectedUrl)
+            ->willThrowException(
+                new \Exception('redirectTrustedURL')
+            );
+
         MockOpenIDConnectProvider::setConfig([
             'authorization_endpoint' => 'https://example.com/auth',
             'token_endpoint' => 'https://example.com/token',
@@ -178,23 +185,24 @@ class OpenIDConnectTest extends OAuth2Test
             'issuer' => 'https://example.com',
             'providerClass' => MockOpenIDConnectProvider::class,
         ]);
+        $as->setHttp($http);
         $state = [
             'id_token' => 'myidtoken',
-            \SimpleSAML\Auth\State::ID => 'stateId',
+            State::ID => 'stateId',
         ];
         try {
             $this->assertNull($as->logout($state));
             $this->fail("Redirect expected");
-        } catch (RedirectException $e) {
+        } catch (\Exception $e) {
             $this->assertEquals('redirectTrustedURL', $e->getMessage());
-            // phpcs:disable
-            $this->assertEquals(
-                'https://example.org/logout?id_token_hint=myidtoken&post_logout_redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Floggedout.php&state=authoauth2-stateId',
-                $e->getUrl(),
-                "First argument should be the redirect url"
-            );
-            // phpcs:enable
-            $this->assertEquals([], $e->getParams(), "query params are already added into url");
+//            // phpcs:disable
+//            $this->assertEquals(
+//                'https://example.org/logout?id_token_hint=myidtoken&post_logout_redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Floggedout.php&state=authoauth2-stateId',
+//                $e->getUrl(),
+//                "First argument should be the redirect url"
+//            );
+//            // phpcs:enable
+//            $this->assertEquals([], $e->getParams(), "query params are already added into url");
         }
     }
 }

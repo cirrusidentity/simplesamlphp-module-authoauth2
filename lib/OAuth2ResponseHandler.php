@@ -17,14 +17,17 @@ use SimpleSAML\Error\BadRequest;
 use SimpleSAML\Logger;
 use SimpleSAML\Module;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
-use SimpleSAML\Utils\HTTP;
 
 class OAuth2ResponseHandler
 {
+    use HTTPLocator;
+
     private string $expectedStageState = OAuth2::STAGE_INIT;
     private string $expectedStateAuthId = OAuth2::AUTHID;
 
     private string $expectedPrefix = OAuth2::STATE_PREFIX . '|';
+
+    private ?Source $authSource;
 
     /**
      * 'access_denied' is OAuth2 standard. Some AS made up their own codes, so support the common ones.
@@ -83,7 +86,7 @@ class OAuth2ResponseHandler
         /**
          * @var OAuth2 $source
          */
-        $source = Source::getById($sourceId, OAuth2::class);
+        $source = $this->getAuthSource($sourceId);
         if ($source === null) {
             throw new BadRequest('Could not find authentication source with id ' . $sourceId);
         }
@@ -120,7 +123,7 @@ class OAuth2ResponseHandler
             Logger::debug("authoauth2: Authsource '" . $source->getAuthId() . "' User denied access: $error. Msg: " .  @$request['error_description']);
             if ($source->getConfig()->getOptionalBoolean('useConsentErrorPage', true)) {
                 $consentErrorPageUrl = Module::getModuleURL('authoauth2/errors/consent.php');
-                (new HTTP())->redirectTrustedURL($consentErrorPageUrl);
+                $this->getHttp()->redirectTrustedURL($consentErrorPageUrl);
             } else {
                 $e = new \SimpleSAML\Error\UserAborted();
                 State::throwException($state, $e);
@@ -132,4 +135,28 @@ class OAuth2ResponseHandler
         $e = new AuthSource($source->getAuthId(), $errorMsg);
         State::throwException($state, $e);
     }
+
+
+
+    /**
+     * used to make testing easier
+     * @return ?Source
+     */
+    public function getAuthSource(string $sourceId): ?Source
+    {
+        if (!isset($this->authSource)) {
+            $this->authSource = Source::getById($sourceId, OAuth2::class);
+        }
+        return $this->authSource;
+    }
+
+    /**
+     * @param Source $authSource
+     */
+    public function setAuthSource(Source $authSource): void
+    {
+        $this->authSource = $authSource;
+    }
+
+
 }

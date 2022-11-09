@@ -2,28 +2,23 @@
 
 namespace Test\SimpleSAML;
 
-use CirrusIdentity\SSP\Test\Auth\MockAuthSource;
-use CirrusIdentity\SSP\Test\Capture\RedirectException;
-use CirrusIdentity\SSP\Test\MockHttp;
+
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use PHPUnit_Framework_MockObject_MockObject;
 use SimpleSAML\Module\authoauth2\Auth\Source\OpenIDConnect;
 use SimpleSAML\Module\authoauth2\OIDCLogoutHandler;
 use SimpleSAML\Auth\State;
-use SimpleSAML\Error\AuthSource;
-use SimpleSAML\Error\UserAborted;
+
 use SimpleSAML\Session;
-use AspectMock\Test as test;
 
 class OIDCLogoutHandlerTest extends TestCase
 {
     /**
      * @var OIDCLogoutHandler
      */
-    private $logoutHandler;
+    private OIDCLogoutHandler $logoutHandler;
 
-    private $validStateValue = 'authoauth2-validStateId';
+    private string $validStateValue = 'authoauth2-validStateId';
 
     /**
      * @var MockObject|OpenIDConnect
@@ -37,13 +32,11 @@ class OIDCLogoutHandlerTest extends TestCase
 
     protected function setUp(): void
     {
-        test::clean();
-        MockAuthSource::clearInternalState();
+
         $this->logoutHandler = new OIDCLogoutHandler();
 
         $this->mockAuthSource = $this->createMock(OpenIDConnect::class);
         $this->mockAuthSource->method('getAuthId')->willReturn('mockAuthSource');
-        MockAuthSource::getById($this->mockAuthSource, 'mockAuthSource');
     }
 
     /**

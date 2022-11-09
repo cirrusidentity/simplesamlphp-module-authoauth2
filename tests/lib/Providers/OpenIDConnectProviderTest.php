@@ -13,10 +13,10 @@ class OpenIDConnectProviderTest extends TestCase
 {
     public static function setUpBeforeClass(): void
     {
-        putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(dirname(__DIR__)) . '/config');
+        putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(__DIR__, 2) . '/config');
     }
 
-    public function idTokenErrorDataProvider()
+    public function idTokenErrorDataProvider(): array
     {
         // phpcs:disable
         return [
@@ -41,7 +41,7 @@ class OpenIDConnectProviderTest extends TestCase
      * @param $idToken
      * @param $expectedMessage
      */
-    public function testIdTokenValidationFails($idToken, $expectedMessage)
+    public function testIdTokenValidationFails($idToken, $expectedMessage): void
     {
         $this->expectException(IdentityProviderException::class);
         $this->expectExceptionMessage($expectedMessage);
@@ -59,7 +59,7 @@ class OpenIDConnectProviderTest extends TestCase
     /**
      * Confirm scope can be set with scopes or authoricationUrl.scope
      */
-    public function testSetScopes()
+    public function testSetScopes(): void
     {
         $provider = new OpenIDConnectProvider(
             ['issuer' => 'https://accounts.google.com']

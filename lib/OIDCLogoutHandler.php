@@ -18,16 +18,16 @@ use SimpleSAML\Utils\HTTP;
 
 class OIDCLogoutHandler
 {
-    private $expectedStageState = OpenIDConnect::STAGE_LOGOUT;
-    private $expectedStateAuthId = OAuth2::AUTHID;
+    private string $expectedStageState = OpenIDConnect::STAGE_LOGOUT;
+    private string $expectedStateAuthId = OAuth2::AUTHID;
 
-    private $expectedPrefix = OAuth2::STATE_PREFIX . '-';
+    private string $expectedPrefix = OAuth2::STATE_PREFIX . '-';
 
     /**
      * Look at the state parameter returned by the OpenID Connect server and determine if we can handle it;
      * @return bool true if response can be handled by this module
      */
-    public function canHandleResponseFromRequest(array $request)
+    public function canHandleResponseFromRequest(array $request): bool
     {
         return strpos(@$request['state'], $this->expectedPrefix) === 0;
     }

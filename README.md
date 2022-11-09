@@ -35,6 +35,8 @@ If you are interested in using SSP as an OIDC OP see the [OIDC module](https://g
 - [Migrating from an existing auth module](#migrating-from-an-existing-auth-module)
   - [Calling OAuth2ResponseHandler](#calling-oauth2responsehandler)
 - [Development](#development)
+  - [Docker](#docker)
+    - [Facebook test user](#facebook-test-user)
   - [Code style](#code-style)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -229,6 +231,12 @@ You can use the Facebook template `'template' => 'Facebook',` and then provide j
 have a cleaner looking config
 
 ```php
+    'templateFacebook' => [
+       'authoauth2:OAuth2',
+       'template' => 'Facebook',
+        'clientId' => '13397273example',
+        'clientSecret' => '36aefb235314baexample',
+    ],
     'genericFacebookTest' => array(
         'authoauth2:OAuth2',
         // *** Facebook endpoints ***
@@ -379,24 +387,31 @@ if ($handler->canHandleResponse()) {
 
 # Development
 
-To perform some integration tests you can run the embedded
-webserver. You may need to run `composer install` and then `phpunit` one time first to correctly
-link the project into SSP's modules directory
-
-```bash
-export SIMPLESAMLPHP_CONFIG_DIR=$PWD/tests/config/
-mkdir -p /tmp/ssp-log/
-php -S 0.0.0.0:8732 -t $PWD/vendor/simplesamlphp/simplesamlphp/www &
+## Docker
 
 ```
+docker run --name ssp-oauth2-dev \
+   --mount type=bind,source="$(pwd)",target=/var/simplesamlphp/staging-modules/authoauth2,readonly \
+  -e STAGINGCOMPOSERREPOS=authoauth2 \
+  -e COMPOSER_REQUIRE="cirrusidentity/simplesamlphp-module-authoauth2:dev-$(git rev-parse --abbrev-ref HEAD)" \
+  -e SSP_ADMIN_PASSWORD=secret1 \
+  -e SSP_ENABLED_MODULES="authoauth2" \
+  --mount type=bind,source="$(pwd)/docker/config/authsources.php",target=/var/simplesamlphp/config/authsources.php,readonly \
+  --mount type=bind,source="$(pwd)/docker/config/config-override.php",target=/var/simplesamlphp/config/config-override.php,readonly \
+  -p 443:443 cirrusid/simplesamlphp:v2.0.0-rc2.20221109T222122
+```
 
-Then visit http://abc.tutorial.stack-dev.cirrusidentity.com:8732/
+and visit (which resolves to localhost, and the docker container) the [test authsource page](https://oauth2-validation.local.stack-dev.cirrusidentity.com/simplesaml/module.php/admin/test)
+to test some pre-configured social integrations (yes, you can see the app passwords, these apps are only used for this demo).
 
-Note: `*.tutorial.stack-dev.cirrusidentity.com` resolves to your local host.
+### Facebook test user
 
-`authsources.php` contains some preconfigured clients. The generic facebook and google ones should work as is.
-The generic amazon one requires `https`. You can run use it and when Amazon redirects back to `https` change the url to
-`http` to proceed. The google provider authsource requires you to install the google auth module first.
+The pre-configured Facebook apps can only be accessed with a test account. You must be signed out of Facebook,
+otherwise you will get an error saying the application is not active.
+
+* email: open_nzwvghb_user@tfbnw.net
+* password: SSPisMyFavorite2022
+
 
 ## Code style
 
