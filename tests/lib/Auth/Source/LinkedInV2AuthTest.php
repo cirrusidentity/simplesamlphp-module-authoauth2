@@ -14,7 +14,7 @@ class LinkedInV2AuthTest extends TestCase
 {
     public static function setUpBeforeClass(): void
     {
-        putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(dirname(dirname(__DIR__))) . '/config');
+        putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(__DIR__, 3) . '/config');
          // When all tests are run at once, sometimes a Configuration is created prior to us
         // setting the one we want to use for the test.
         Configuration::clearInternalState();
@@ -33,7 +33,7 @@ class LinkedInV2AuthTest extends TestCase
         $this->assertEquals($expectedAttributes, $attributes);
     }
 
-    public function attributeConversionProvider()
+    public function attributeConversionProvider(): array
     {
         return [
             [["id" => "abc"], ["linkedin.id" => ["abc"]]],
@@ -56,7 +56,7 @@ class LinkedInV2AuthTest extends TestCase
         ];
     }
 
-    public function testNoEmailCallIfNotRequested()
+    public function testNoEmailCallIfNotRequested(): void
     {
         $linkedInAuth = new LinkedInV2Auth(['AuthId' => 'linked'], ['scopes' => ['r_liteprofile']]);
         $state = [];

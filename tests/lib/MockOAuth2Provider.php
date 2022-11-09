@@ -4,9 +4,11 @@ namespace Test\SimpleSAML;
 
 use League\OAuth2\Client\Provider\GenericProvider;
 use League\OAuth2\Client\Provider\AbstractProvider;
+use League\OAuth2\Client\Token\AccessToken;
 use Psr\Http\Message\RequestInterface;
+use SimpleSAML\Utils\ClearableState;
 
-class MockOAuth2Provider extends GenericProvider implements \SimpleSAML\Utils\ClearableState
+class MockOAuth2Provider extends GenericProvider implements ClearableState
 {
     /**
      * @var AbstractProvider
@@ -32,7 +34,7 @@ class MockOAuth2Provider extends GenericProvider implements \SimpleSAML\Utils\Cl
         return self::$delegate->getAccessToken($grant, $options);
     }
 
-    public function getResourceOwner(\League\OAuth2\Client\Token\AccessToken $token)
+    public function getResourceOwner(AccessToken $token)
     {
         return self::$delegate->getResourceOwner($token);
     }
@@ -55,7 +57,7 @@ class MockOAuth2Provider extends GenericProvider implements \SimpleSAML\Utils\Cl
     /**
      * Clear any cached internal state.
      */
-    public static function clearInternalState()
+    public static function clearInternalState(): void
     {
         self::$delegate = null;
     }

@@ -2,7 +2,6 @@
 
 namespace Test\SimpleSAML\Auth\Source;
 
-use AspectMock\Test as test;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Provider\GenericResourceOwner;
 use League\OAuth2\Client\Token\AccessToken;
@@ -16,21 +15,16 @@ class MicrosoftHybridAuthTest extends TestCase
 {
     public static function setUpBeforeClass(): void
     {
-        putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(dirname(dirname(__DIR__))) . '/config');
-    }
-
-    protected function tearDown(): void
-    {
-        test::clean(); // remove all registered test doubles
+        putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(__DIR__, 3) . '/config');
     }
 
     /**
      * @dataProvider combineOidcAndGraphProfileProvider
-     * @param string $idToken The id_token response from the server
+     * @param ?string $idToken The id_token response from the server
      * @param array $expectedAttributes The expected attributes
      */
     public function testCombineOidcAndGraphProfile(
-        $idToken,
+        ?string $idToken,
         array $authenticatedRequestAttributes,
         array $expectedAttributes
     ) {

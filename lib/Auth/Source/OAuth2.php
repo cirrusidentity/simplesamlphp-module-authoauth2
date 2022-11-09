@@ -286,7 +286,7 @@ class OAuth2 extends Source
      */
     protected function retry(callable $function, ?int $retries = null, int $delay = 1)
     {
-        if ($retries == null) {
+        if ($retries === null) {
             $retries = $this->config->getOptionalInteger('retryOnError', 1);
         }
         $providerLabel = $this->getLabel();
@@ -297,7 +297,7 @@ class OAuth2 extends Source
             Logger::info('authoauth2: ' . $providerLabel . " Connection error. Retries left $retries. error: {$e->getMessage()}");
             if ($retries > 0) {
                 sleep($delay);
-                return $this->retry($function, $retries - 1, $retries);
+                return $this->retry($function, $retries - 1, $delay);
             } else {
                 Logger::info('authoauth2: ' . $providerLabel . ". Out of retries. Rethrowing error");
                 throw $e;
@@ -306,10 +306,10 @@ class OAuth2 extends Source
     }
 
     /**
-     * @param string $idToken
+     * @param ?string $idToken
      * @return string[] id token attributes
      */
-    protected function extraIdTokenAttributes(string $idToken): array
+    protected function extraIdTokenAttributes(?string $idToken): array
     {
         // We don't need to verify the signature on the id token since it was the token returned directly from
         // the OP over TLS
@@ -326,7 +326,7 @@ class OAuth2 extends Source
         return $data;
     }
 
-    protected function extraAndDecodeJwtPayload(string $jwt): ?string
+    protected function extraAndDecodeJwtPayload(?string $jwt): ?string
     {
         $parts = explode('.', $jwt);
         if ($parts === false || count($parts) < 3) {
@@ -365,4 +365,24 @@ class OAuth2 extends Source
     {
         return $this->config->getOptionalString('attributePrefix', '');
     }
+
+    /**
+     * Used to allow testing
+     * @return HTTP
+     */
+    public function getHttp(): HTTP
+    {
+        return $this->http;
+    }
+
+    /**
+     *  Used to allow testing
+     * @param HTTP $http
+     */
+    public function setHttp(HTTP $http): void
+    {
+        $this->http = $http;
+    }
+
+
 }
