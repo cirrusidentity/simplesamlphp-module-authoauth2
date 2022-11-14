@@ -15,10 +15,6 @@ use SimpleSAML\Utils\Attributes;
 
 class AttributeManipulatorTest extends TestCase
 {
-    public static function setUpBeforeClass(): void
-    {
-        putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(__DIR__) . '/config');
-    }
 
     /**
      * Test that resource owner attributes are flattened into a SSPs attributes array format

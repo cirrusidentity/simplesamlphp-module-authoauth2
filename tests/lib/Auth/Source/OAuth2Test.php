@@ -14,6 +14,7 @@ use SimpleSAML\Auth\State;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
 use SimpleSAML\Utils\HTTP;
 use Test\SimpleSAML\MockOAuth2Provider;
+use Test\SimpleSAML\RedirectException;
 
 /**
  * Test authentication to OAuth2.
@@ -23,11 +24,6 @@ class OAuth2Test extends TestCase
     public const AUTH_ID = 'oauth2';
 
     public $module_config;
-
-    public static function setUpBeforeClass(): void
-    {
-        putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(__DIR__, 3) . '/config');
-    }
 
     protected function getInstance(array $config): OAuth2
     {
@@ -123,7 +119,7 @@ class OAuth2Test extends TestCase
         $http->method('redirectTrustedURL')
             ->with($expectedUrl)
             ->willThrowException(
-                new \Exception('redirectTrustedURL')
+                new RedirectException('redirectTrustedURL', $expectedUrl)
             );
 
         $authOAuth2 = $this->getInstance($config);
@@ -132,8 +128,9 @@ class OAuth2Test extends TestCase
         try {
             $authOAuth2->authenticate($state);
             $this->fail("Redirect expected");
-        } catch (\Exception $e) {
+        } catch (RedirectException $e) {
             $this->assertEquals('redirectTrustedURL', $e->getMessage());
+            $this->assertEquals($expectedUrl, $e->getUrl());
         }
 
         $this->assertEquals(static::AUTH_ID, $state[OAuth2::AUTHID], 'Ensure authsource name is presevered in state');

@@ -1,17 +1,17 @@
 <?php
 
-namespace SimpleSAML\Module\authoauth2;
+namespace SimpleSAML\Module\authoauth2\locators;
 
 use SimpleSAML\Utils\HTTP;
 
 /**
- * Indicates that class will use getHttp() to get an instance of
- * HTTP, allowing a mock to be used in it's place
+ * Indicates that class will use getHttp() rather than `new` to get an instance of
+ * HTTP, allowing a mock to be used in its place
  */
 trait HTTPLocator
 {
 
-    private HTTP $http;
+    private ?HTTP $http;
 
     /**
      * Used to allow tests to override
@@ -26,9 +26,9 @@ trait HTTPLocator
     }
 
     /**
-     * @param HTTP $http
+     * @param ?HTTP $http
      */
-    public function setHttp(HTTP $http): void
+    public function setHttp(?HTTP $http): void
     {
         $this->http = $http;
     }

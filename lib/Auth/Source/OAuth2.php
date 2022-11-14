@@ -21,6 +21,7 @@ use SimpleSAML\Logger;
 use SimpleSAML\Module;
 use SimpleSAML\Module\authoauth2\AttributeManipulator;
 use SimpleSAML\Module\authoauth2\ConfigTemplate;
+use SimpleSAML\Module\authoauth2\locators\HTTPLocator;
 use SimpleSAML\Module\authoauth2\Providers\AdjustableGenericProvider;
 use SimpleSAML\Utils\HTTP;
 
@@ -30,6 +31,8 @@ use SimpleSAML\Utils\HTTP;
  */
 class OAuth2 extends Source
 {
+    use HTTPLocator;
+
     /** String used to identify our states. */
     public const STAGE_INIT = 'authouath2:init';
 
@@ -49,8 +52,6 @@ class OAuth2 extends Source
     protected static string $defaultProviderClass = AdjustableGenericProvider::class;
 
     protected Configuration $config;
-
-    protected HTTP $http;
 
 
     /**
@@ -365,24 +366,5 @@ class OAuth2 extends Source
     {
         return $this->config->getOptionalString('attributePrefix', '');
     }
-
-    /**
-     * Used to allow testing
-     * @return HTTP
-     */
-    public function getHttp(): HTTP
-    {
-        return $this->http;
-    }
-
-    /**
-     *  Used to allow testing
-     * @param HTTP $http
-     */
-    public function setHttp(HTTP $http): void
-    {
-        $this->http = $http;
-    }
-
 
 }

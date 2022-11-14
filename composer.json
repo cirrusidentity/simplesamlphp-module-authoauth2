@@ -16,7 +16,7 @@
       "ext-json": "*"
     },
     "require-dev": {
-        "simplesamlphp/simplesamlphp-test-framework": "dev-master",
+        "simplesamlphp/simplesamlphp-test-framework": "^1.2",
         "phpunit/phpunit": "^9.5"
     },
     "autoload-dev": {

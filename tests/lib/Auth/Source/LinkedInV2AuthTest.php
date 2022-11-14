@@ -14,7 +14,6 @@ class LinkedInV2AuthTest extends TestCase
 {
     public static function setUpBeforeClass(): void
     {
-        putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(__DIR__, 3) . '/config');
          // When all tests are run at once, sometimes a Configuration is created prior to us
         // setting the one we want to use for the test.
         Configuration::clearInternalState();

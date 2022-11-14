@@ -6,6 +6,7 @@ namespace Test\SimpleSAML;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
+use SimpleSAML\Module\authoauth2\locators\SourceService;
 use SimpleSAML\Module\authoauth2\OAuth2ResponseHandler;
 use SimpleSAML\Auth\State;
 use SimpleSAML\Error\AuthSource;
@@ -27,10 +28,10 @@ class OAuth2ResponseHandlerTest extends TestCase
      */
     private $mockAuthSource;
 
-    public static function setUpBeforeClass(): void
-    {
-        putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(__DIR__) . '/config');
-    }
+    /**
+     * @var MockObject|SourceService
+     */
+    protected $mockSourceService;
 
     protected function setUp(): void
     {
@@ -38,7 +39,11 @@ class OAuth2ResponseHandlerTest extends TestCase
 
         $this->mockAuthSource = $this->createMock(OAuth2::class);
         $this->mockAuthSource->method('getAuthId')->willReturn('mockAuthSource');
-        $this->responseHandler->setAuthSource($this->mockAuthSource);
+        $this->mockSourceService = $this->createMock(SourceService::class);
+        $this->mockSourceService->method('getById')
+            ->with('mockAuthSource', OAuth2::class)
+            ->willReturn($this->mockAuthSource);
+        $this->responseHandler->setSourceService($this->mockSourceService);
     }
 
     /**
@@ -166,9 +171,20 @@ class OAuth2ResponseHandlerTest extends TestCase
             State::STAGE => 'authouath2:init',
             'authouath2:AuthId' => 'mockAuthSource',
         ]);
-        // Mock completeAuth so we can verify its called later
-        //TODO: how to replace this?
-       // $double = MockAuthSource::completeAuth();
+
+        // Confirm completeAuth is called later
+        $this->mockSourceService->expects($this->once())
+            ->method('completeAuth')
+            ->with(
+                $this->callback(function (array $state) {
+                    $this->assertEquals([
+                        '\SimpleSAML\Auth\State.id' => 'validStateId',
+                        '\SimpleSAML\Auth\State.stage' => 'authouath2:init',
+                        'authouath2:AuthId' => 'mockAuthSource'
+                    ], $state);
+                    return true;
+                })
+            );
 
         // phpunit mock to confirm authsource called
         $this->mockAuthSource->expects($this->once())
@@ -184,11 +200,6 @@ class OAuth2ResponseHandlerTest extends TestCase
         // when: handling the response
         $this->responseHandler->handleResponseFromRequest($request);
 
-        // then: final method should be called (base on earlier 'expects') and
-        //  then completeAuth is called
-        $double->verifyInvokedOnce('completeAuth');
-        $firstParam = $double->getCallsForMethod('completeAuth')[0][0];
-        $this->assertEquals('mockAuthSource', $firstParam['authouath2:AuthId']);
     }
 
     /**
@@ -213,7 +224,7 @@ class OAuth2ResponseHandlerTest extends TestCase
         $http->method('redirectTrustedURL')
             ->with($expectedUrl)
             ->willThrowException(
-                new \Exception('redirectTrustedURL')
+                new RedirectException('redirectTrustedURL', $expectedUrl)
             );
         $this->responseHandler->setHttp($http);
         // Use an empty config to test defaults
@@ -235,15 +246,9 @@ class OAuth2ResponseHandlerTest extends TestCase
         try {
             $this->responseHandler->handleResponseFromRequest($request);
             $this->fail("Redirect expected");
-        } catch (\Exception $e) {
+        } catch (RedirectException $e) {
             $this->assertEquals('redirectTrustedURL', $e->getMessage());
- //           $this->assertEquals(
-//            // phpcs:ignore Generic.Files.LineLength.TooLong
-//                'http://localhost/module.php/authoauth2/errors/consent.php',
-//                $e->getUrl(),
-//                "First argument should be the redirect url"
-//            );
-//            $this->assertEquals([], $e->getParams(), "query params are already added into url");
+            $this->assertEquals($expectedUrl, $e->getUrl());
         }
     }
 }

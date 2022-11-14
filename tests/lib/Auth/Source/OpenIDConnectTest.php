@@ -9,6 +9,7 @@ use SimpleSAML\Module\authoauth2\Auth\Source\OpenIDConnect;
 use SimpleSAML\Utils\HTTP;
 use Test\SimpleSAML\MockOAuth2Provider;
 use Test\SimpleSAML\MockOpenIDConnectProvider;
+use Test\SimpleSAML\RedirectException;
 
 /**
  * Test authentication to OAuth2.
@@ -24,7 +25,6 @@ class OpenIDConnectTest extends OAuth2Test
 
     public static function setUpBeforeClass(): void
     {
-        putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(__DIR__, 3) . '/config');
             // Some of the constructs in this test cause a Configuration to be created prior to us
             // setting the one we want to use for the test.
             Configuration::clearInternalState();
@@ -170,7 +170,7 @@ class OpenIDConnectTest extends OAuth2Test
         $http->method('redirectTrustedURL')
             ->with($expectedUrl)
             ->willThrowException(
-                new \Exception('redirectTrustedURL')
+                new RedirectException('redirectTrustedURL', $expectedUrl)
             );
 
         MockOpenIDConnectProvider::setConfig([
@@ -193,16 +193,9 @@ class OpenIDConnectTest extends OAuth2Test
         try {
             $this->assertNull($as->logout($state));
             $this->fail("Redirect expected");
-        } catch (\Exception $e) {
+        } catch (RedirectException $e) {
             $this->assertEquals('redirectTrustedURL', $e->getMessage());
-//            // phpcs:disable
-//            $this->assertEquals(
-//                'https://example.org/logout?id_token_hint=myidtoken&post_logout_redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Floggedout.php&state=authoauth2-stateId',
-//                $e->getUrl(),
-//                "First argument should be the redirect url"
-//            );
-//            // phpcs:enable
-//            $this->assertEquals([], $e->getParams(), "query params are already added into url");
+            $this->assertEquals($expectedUrl, $e->getUrl());
         }
     }
 }

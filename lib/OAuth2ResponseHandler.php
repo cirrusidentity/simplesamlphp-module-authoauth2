@@ -1,33 +1,26 @@
 <?php
 
-/**
- * Created by PhpStorm.
- * User: patrick
- * Date: 12/21/17
- * Time: 3:26 PM
- */
-
 namespace SimpleSAML\Module\authoauth2;
 
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
-use SimpleSAML\Auth\Source;
 use SimpleSAML\Auth\State;
 use SimpleSAML\Error\AuthSource;
 use SimpleSAML\Error\BadRequest;
 use SimpleSAML\Logger;
 use SimpleSAML\Module;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
+use SimpleSAML\Module\authoauth2\locators\HTTPLocator;
+use SimpleSAML\Module\authoauth2\locators\SourceServiceLocator;
 
 class OAuth2ResponseHandler
 {
     use HTTPLocator;
+    use SourceServiceLocator;
 
     private string $expectedStageState = OAuth2::STAGE_INIT;
     private string $expectedStateAuthId = OAuth2::AUTHID;
 
     private string $expectedPrefix = OAuth2::STATE_PREFIX . '|';
-
-    private ?Source $authSource;
 
     /**
      * 'access_denied' is OAuth2 standard. Some AS made up their own codes, so support the common ones.
@@ -86,7 +79,7 @@ class OAuth2ResponseHandler
         /**
          * @var OAuth2 $source
          */
-        $source = $this->getAuthSource($sourceId);
+        $source = $this->getSourceService()->getById($sourceId, OAuth2::class);
         if ($source === null) {
             throw new BadRequest('Could not find authentication source with id ' . $sourceId);
         }
@@ -111,7 +104,7 @@ class OAuth2ResponseHandler
             );
         }
 
-        Source::completeAuth($state);
+        $this->sourceService->completeAuth($state);
     }
 
     private function handleErrorResponse(OAuth2 $source, array $state, array $request)
@@ -135,28 +128,5 @@ class OAuth2ResponseHandler
         $e = new AuthSource($source->getAuthId(), $errorMsg);
         State::throwException($state, $e);
     }
-
-
-
-    /**
-     * used to make testing easier
-     * @return ?Source
-     */
-    public function getAuthSource(string $sourceId): ?Source
-    {
-        if (!isset($this->authSource)) {
-            $this->authSource = Source::getById($sourceId, OAuth2::class);
-        }
-        return $this->authSource;
-    }
-
-    /**
-     * @param Source $authSource
-     */
-    public function setAuthSource(Source $authSource): void
-    {
-        $this->authSource = $authSource;
-    }
-
 
 }

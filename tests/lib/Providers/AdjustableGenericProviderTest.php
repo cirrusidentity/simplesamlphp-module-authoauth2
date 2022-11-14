@@ -16,11 +16,6 @@ class AdjustableGenericProviderTest extends TestCase
         'urlResourceOwnerDetails' => 'https://graph.facebook.com/me?fields=123',
     ];
 
-    public static function setUpBeforeClass(): void
-    {
-        putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(__DIR__, 2) . '/config');
-    }
-
     /**
      * @dataProvider adjustProvider
      * @param array $tokenResponse

@@ -1,23 +1,16 @@
 <?php
 
-/**
- * Created by PhpStorm.
- * User: patrick
- * Date: 12/21/17
- * Time: 3:26 PM
- */
-
 namespace SimpleSAML\Module\authoauth2;
 
-use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use SimpleSAML\Logger;
-use SimpleSAML\Module;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
 use SimpleSAML\Module\authoauth2\Auth\Source\OpenIDConnect;
-use SimpleSAML\Utils\HTTP;
+use SimpleSAML\Module\authoauth2\locators\SourceServiceLocator;
 
 class OIDCLogoutHandler
 {
+    use SourceServiceLocator;
+
     private string $expectedStageState = OpenIDConnect::STAGE_LOGOUT;
     private string $expectedStateAuthId = OAuth2::AUTHID;
 
@@ -63,12 +56,12 @@ class OIDCLogoutHandler
         /**
          * @var OAuth2 $source
          */
-        $source = \SimpleSAML\Auth\Source::getById($sourceId, OpenIDConnect::class);
+        $source = $this->getSourceService()->getById($sourceId, OpenIDConnect::class);
         if ($source === null) {
             throw new \SimpleSAML\Error\BadRequest('Could not find authentication source with id ' . $sourceId);
         }
 
-        \SimpleSAML\Auth\Source::completeLogout($state);
+        $this->getSourceService()->completeLogout($state);
         // @codeCoverageIgnoreStart
     }
 

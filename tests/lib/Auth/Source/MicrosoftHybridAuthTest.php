@@ -13,10 +13,6 @@ use Test\SimpleSAML\MockOAuth2Provider;
 
 class MicrosoftHybridAuthTest extends TestCase
 {
-    public static function setUpBeforeClass(): void
-    {
-        putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(__DIR__, 3) . '/config');
-    }
 
     /**
      * @dataProvider combineOidcAndGraphProfileProvider

@@ -11,10 +11,6 @@ use Test\SimpleSAML\MockOpenIDConnectProvider;
 
 class OpenIDConnectProviderTest extends TestCase
 {
-    public static function setUpBeforeClass(): void
-    {
-        putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(__DIR__, 2) . '/config');
-    }
 
     public function idTokenErrorDataProvider(): array
     {

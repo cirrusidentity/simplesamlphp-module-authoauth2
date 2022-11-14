@@ -1,6 +1,7 @@
 <?php
 
 $projectRoot = dirname(__DIR__);
+putenv('SIMPLESAMLPHP_CONFIG_DIR=' . __DIR__ . '/config');
 
 
 // Symlink module into ssp vendor lib so that templates and urls can resolve correctly

@@ -143,12 +143,14 @@ class OpenIDConnect extends OAuth2
         $state[self::AUTHID] = $this->getAuthId();
 
         $stateID = State::saveState($state, self::STAGE_LOGOUT);
-        $endSessionURL = $this->http->addURLParameters($endSessionEndpoint, [
+        // We use the real HTTP class rather than the injected one to avoid having to mock/stub
+        // this method for tests
+        $endSessionURL = (new HTTP())->addURLParameters($endSessionEndpoint, [
             'id_token_hint' => $id_token,
             'post_logout_redirect_uri' => $postLogoutUrl,
             'state' => self::STATE_PREFIX . '-' . $stateID,
         ]);
-        $this->http->redirectTrustedURL($endSessionURL);
+        $this->getHttp()->redirectTrustedURL($endSessionURL);
         // @codeCoverageIgnoreStart
     }
 }
