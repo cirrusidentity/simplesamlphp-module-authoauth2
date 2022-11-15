@@ -34,7 +34,7 @@ class MicrosoftHybridAuthTest extends TestCase
         $state = [\SimpleSAML\Auth\State::ID => 'stateId'];
 
         /**
-         * @var $mock AbstractProvider|MockObject
+         * @var AbstractProvider|MockObject $mock
          */
         $mock = $this->getMockBuilder(AbstractProvider::class)
             ->disableOriginalConstructor()

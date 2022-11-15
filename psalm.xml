@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <psalm
-    errorLevel="6"
+    errorLevel="4"
     hideExternalErrors="true"
     resolveFromConfigFile="true"
     autoloader="vendor/autoload.php"

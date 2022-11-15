@@ -54,7 +54,6 @@ class OpenIDConnect extends OAuth2
                         new FilesystemAdapter('', 0, $cacheDir)
                     )
                 ),
-                'cache'
             )
         );
         return $provider;

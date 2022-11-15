@@ -60,7 +60,7 @@ class LinkedInV2AuthTest extends TestCase
         $linkedInAuth = new LinkedInV2Auth(['AuthId' => 'linked'], ['scopes' => ['r_liteprofile']]);
         $state = [];
         /**
-         * @var $mock AbstractProvider|MockObject
+         * @var AbstractProvider|MockObject $mock
          */
         $mock = $this->getMockBuilder(AbstractProvider::class)
             ->disableOriginalConstructor()
@@ -88,7 +88,7 @@ class LinkedInV2AuthTest extends TestCase
 
         $token = new AccessToken(['access_token' => 'abc']);
         /**
-         * @var $mock AbstractProvider|MockObject
+         * @var AbstractProvider|MockObject $mock
          */
         $mock = $this->getMockBuilder(AbstractProvider::class)
             ->disableOriginalConstructor()

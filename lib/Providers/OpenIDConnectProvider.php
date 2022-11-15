@@ -24,9 +24,9 @@ class OpenIDConnectProvider extends AbstractProvider
     protected string $issuer;
 
     /**
-     * @var array
+     * @var ?array
      */
-    private array $openIdConfiguration;
+    private ?array $openIdConfiguration = null;
 
     /**
      * @var string
@@ -103,6 +103,10 @@ class OpenIDConnectProvider extends AbstractProvider
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * @psalm-suppress MoreSpecificImplementedParamType superClass has phpdoc doesn't align with parameter type
+     */
     protected function prepareAccessTokenResponse(array $result)
     {
         $result = parent::prepareAccessTokenResponse($result);

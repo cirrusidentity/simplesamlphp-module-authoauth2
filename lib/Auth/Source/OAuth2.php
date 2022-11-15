@@ -330,7 +330,7 @@ class OAuth2 extends Source
     protected function extraAndDecodeJwtPayload(?string $jwt): ?string
     {
         $parts = explode('.', $jwt);
-        if ($parts === false || count($parts) < 3) {
+        if (count($parts) < 3) {
             Logger::warning("authoauth2: idToken '$jwt' is in unexpected format.");
             return null;
         }

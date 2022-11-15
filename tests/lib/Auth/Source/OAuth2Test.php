@@ -264,12 +264,12 @@ class OAuth2Test extends TestCase
         $code = 'theCode';
         $state = [State::ID => 'stateId'];
 
-        /** @var $mock AbstractProvider|MockObject */
+        /** @var AbstractProvider|MockObject $mock */
         $mock = $this->getMockBuilder(AbstractProvider::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        /** @var $mockRequest RequestInterface|MockObject */
+        /** @var RequestInterface|MockObject $mockRequest */
         $mockRequest = $this->getMockBuilder(RequestInterface::class)
             ->getMock();
 
@@ -370,12 +370,12 @@ class OAuth2Test extends TestCase
         ];
         $state = [State::ID => 'stateId'];
 
-        /** @var $mock AbstractProvider|MockObject */
+        /** @var AbstractProvider|MockObject $mock */
         $mock = $this->getMockBuilder(AbstractProvider::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        /** @var $mockRequest RequestInterface|MockObject */
+        /** @var RequestInterface|MockObject $mockRequest */
         $mockRequest = $this->getMockBuilder(RequestInterface::class)
             ->getMock();
 
