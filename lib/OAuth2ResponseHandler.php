@@ -128,5 +128,4 @@ class OAuth2ResponseHandler
         $e = new AuthSource($source->getAuthId(), $errorMsg);
         State::throwException($state, $e);
     }
-
 }

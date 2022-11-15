@@ -2,7 +2,6 @@
 
 namespace Test\SimpleSAML;
 
-
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
@@ -199,7 +198,6 @@ class OAuth2ResponseHandlerTest extends TestCase
         Session::getSessionFromRequest()->setData('\SimpleSAML\Auth\State', 'validStateId', $stateValue);
         // when: handling the response
         $this->responseHandler->handleResponseFromRequest($request);
-
     }
 
     /**

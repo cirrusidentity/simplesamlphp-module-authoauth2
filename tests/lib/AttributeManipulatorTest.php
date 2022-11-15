@@ -15,7 +15,6 @@ use SimpleSAML\Utils\Attributes;
 
 class AttributeManipulatorTest extends TestCase
 {
-
     /**
      * Test that resource owner attributes are flattened into a SSPs attributes array format
      */

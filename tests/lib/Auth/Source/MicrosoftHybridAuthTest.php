@@ -13,7 +13,6 @@ use Test\SimpleSAML\MockOAuth2Provider;
 
 class MicrosoftHybridAuthTest extends TestCase
 {
-
     /**
      * @dataProvider combineOidcAndGraphProfileProvider
      * @param ?string $idToken The id_token response from the server

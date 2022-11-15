@@ -2,7 +2,6 @@
 
 namespace Test\SimpleSAML;
 
-
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
@@ -10,7 +9,6 @@ use SimpleSAML\Module\authoauth2\Auth\Source\OpenIDConnect;
 use SimpleSAML\Module\authoauth2\locators\SourceService;
 use SimpleSAML\Module\authoauth2\OIDCLogoutHandler;
 use SimpleSAML\Auth\State;
-
 use SimpleSAML\Session;
 use SimpleSAML\Utils\HTTP;
 
@@ -111,6 +109,5 @@ class OIDCLogoutHandlerTest extends TestCase
         // when: handling the response
         $this->logoutHandler->handleResponseFromRequest($request);
         // earlier we required that the mocked completeLogout is called
-
     }
 }

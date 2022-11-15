@@ -11,7 +11,6 @@ use Test\SimpleSAML\MockOpenIDConnectProvider;
 
 class OpenIDConnectProviderTest extends TestCase
 {
-
     public function idTokenErrorDataProvider(): array
     {
         // phpcs:disable

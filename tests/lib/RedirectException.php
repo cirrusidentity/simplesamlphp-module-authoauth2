@@ -22,7 +22,4 @@ class RedirectException extends \Exception
     {
         return $this->url;
     }
-
-
-
 }

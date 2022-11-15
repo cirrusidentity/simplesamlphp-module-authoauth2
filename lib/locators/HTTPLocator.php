@@ -10,7 +10,6 @@ use SimpleSAML\Utils\HTTP;
  */
 trait HTTPLocator
 {
-
     private ?HTTP $http;
 
     /**

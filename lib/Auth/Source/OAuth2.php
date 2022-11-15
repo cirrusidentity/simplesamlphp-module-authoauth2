@@ -366,5 +366,4 @@ class OAuth2 extends Source
     {
         return $this->config->getOptionalString('attributePrefix', '');
     }
-
 }

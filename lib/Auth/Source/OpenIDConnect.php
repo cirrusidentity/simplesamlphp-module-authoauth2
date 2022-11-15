@@ -121,7 +121,12 @@ class OpenIDConnect extends OAuth2
             Logger::debug("authoauth2: $providerLabel OP initiated logout");
             return;
         }
-        $endSessionEndpoint = $this->getProvider($this->config)->getEndSessionEndpoint();
+        $provider = $this->getProvider($this->config);
+        if (!$provider instanceof OpenIDConnectProvider) {
+            Logger::warning('OIDC provider is wrong class');
+            return;
+        }
+        $endSessionEndpoint = $provider->getEndSessionEndpoint();
         if (!$endSessionEndpoint) {
             Logger::debug("authoauth2: $providerLabel OP does not provide an 'end_session_endpoint'," .
                           " not doing anything for logout");

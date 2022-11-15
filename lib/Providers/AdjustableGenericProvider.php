@@ -34,6 +34,9 @@ class AdjustableGenericProvider extends GenericProvider
         $responseValues = $token->jsonSerialize();
         if ($this->tokenFieldsToUserDetailsUrl) {
             foreach ($this->tokenFieldsToUserDetailsUrl as $field => $param) {
+                if (!is_string($param)) {
+                    throw new \Exception('Query param for field ' . $field . ' must be a string');
+                }
                 if (array_key_exists($field, $responseValues)) {
                     $toAdd[$param] = $responseValues[$field];
                 } else {

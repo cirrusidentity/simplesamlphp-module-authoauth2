@@ -2,12 +2,10 @@
 
 namespace SimpleSAML\Module\authoauth2\locators;
 
-
 use SimpleSAML\Auth\Source;
 
 class SourceService
 {
-
     /**
      * Pass through to static Source methods. Allows for easier mocking
      * @see Source::completeAuth()
@@ -34,6 +32,4 @@ class SourceService
     {
         Source::completeLogout($state);
     }
-
-
 }
