@@ -65,7 +65,6 @@ class OAuth2 extends Source
 
         // Call the parent constructor first, as required by the interface
         parent::__construct($info, $config);
-        $this->http = new HTTP();
         if (array_key_exists('template', $config)) {
             $template = $config['template'];
             if (is_string($template)) {
@@ -83,7 +82,7 @@ class OAuth2 extends Source
         }
         // adjust config to add resource owner query parameters.
         if (array_key_exists('urlResourceOwnerOptions', $config)) {
-            $newUrl = $this->http->addURLParameters(
+            $newUrl = $this->getHttp()->addURLParameters(
                 $config['urlResourceOwnerDetails'],
                 $config['urlResourceOwnerOptions']
             );
@@ -125,7 +124,7 @@ class OAuth2 extends Source
         $authorizeURL = $provider->getAuthorizationUrl($options);
         Logger::debug("authoauth2: $providerLabel redirecting to authorizeURL=$authorizeURL");
 
-        $this->http->redirectTrustedURL($authorizeURL);
+        $this->getHttp()->redirectTrustedURL($authorizeURL);
     }
 
     /**
@@ -182,6 +181,7 @@ class OAuth2 extends Source
                 throw new InvalidArgumentException("No OAuth2 provider class found for '$providerClass'.");
             }
         }
+        /** @var AbstractProvider */
         return new static::$defaultProviderClass($config->toArray(), $collaborators);
     }
 
@@ -200,7 +200,7 @@ class OAuth2 extends Source
         $provider = $this->getProvider($this->config);
 
         /**
-         * @var AccessTokenInterface $accessToken
+         * @var AccessToken $accessToken
          */
         $accessToken = $this->retry(
             function () use ($provider, $oauth2Code) {
@@ -282,13 +282,16 @@ class OAuth2 extends Source
      * Retry token and user info endpoints in event of network errors.
      * @param callable $function the function to try
      * @param ?int $retries number of attempts to try
-     * @param int $delay The time to delay between tries.
+     * @param int<0, max> $delay The time to delay between tries.
      * @return mixed the result of the function
      */
     protected function retry(callable $function, ?int $retries = null, int $delay = 1)
     {
         if ($retries === null) {
             $retries = $this->config->getOptionalInteger('retryOnError', 1);
+        }
+        if ($delay < 0) {
+            $delay = 0;
         }
         $providerLabel = $this->getLabel();
         try {
@@ -329,7 +332,7 @@ class OAuth2 extends Source
 
     protected function extraAndDecodeJwtPayload(?string $jwt): ?string
     {
-        $parts = explode('.', $jwt);
+        $parts = explode('.', $jwt ?? '');
         if (count($parts) < 3) {
             Logger::warning("authoauth2: idToken '$jwt' is in unexpected format.");
             return null;

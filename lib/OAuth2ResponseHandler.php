@@ -104,7 +104,7 @@ class OAuth2ResponseHandler
             );
         }
 
-        $this->sourceService->completeAuth($state);
+        $this->getSourceService()->completeAuth($state);
     }
 
     private function handleErrorResponse(OAuth2 $source, array $state, array $request)

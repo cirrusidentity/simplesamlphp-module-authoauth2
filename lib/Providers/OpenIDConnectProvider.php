@@ -71,7 +71,7 @@ class OpenIDConnectProvider extends AbstractProvider
             }
         }
         if ($error || $response->getStatusCode() >= 400) {
-            throw new IdentityProviderException($error, 0, $data);
+            throw new IdentityProviderException($error ?? '', 0, $data);
         }
     }
 

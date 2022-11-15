@@ -17,7 +17,8 @@
     },
     "require-dev": {
         "simplesamlphp/simplesamlphp-test-framework": "^1.2",
-        "phpunit/phpunit": "^9.5"
+        "phpunit/phpunit": "^9.5",
+        "psalm/plugin-phpunit": "^0.18.3"
     },
     "autoload-dev": {
         "psr-4": {
