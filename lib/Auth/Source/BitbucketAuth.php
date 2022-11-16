@@ -32,7 +32,7 @@ class BitbucketAuth extends OAuth2
      * @param AbstractProvider $provider
      * @param array $state
      */
-    public function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, array &$state)
+    public function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, array &$state): void
     {
         if (!in_array('email', $this->config->getArray('scopes'))) {
             // We didn't request email scope originally
@@ -42,6 +42,9 @@ class BitbucketAuth extends OAuth2
         $request = $provider->getAuthenticatedRequest('GET', $emailUrl, $accessToken);
         try {
             $response = $this->retry(
+            /**
+             * @return mixed
+             */
                 function () use ($provider, $request) {
                     return $provider->getParsedResponse($request);
                 }

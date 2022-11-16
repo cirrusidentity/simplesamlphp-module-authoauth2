@@ -2,6 +2,8 @@
 
 namespace SimpleSAML\Module\authoauth2;
 
+use SimpleSAML\Auth\Simple;
+use SimpleSAML\Configuration;
 use SimpleSAML\Logger;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
 use SimpleSAML\Module\authoauth2\Auth\Source\OpenIDConnect;
@@ -28,12 +30,12 @@ class OIDCLogoutHandler
     /**
      * Handle an OAuth2 response.
      */
-    public function handleResponse()
+    public function handleResponse(): void
     {
         $this->handleResponseFromRequest($_REQUEST);
     }
 
-    public function handleResponseFromRequest(array $request)
+    public function handleResponseFromRequest(array $request): void
     {
         Logger::debug('authoauth2: logout request=' . var_export($request, true));
 
@@ -54,7 +56,7 @@ class OIDCLogoutHandler
         $sourceId = $state[$this->expectedStateAuthId];
 
         /**
-         * @var OAuth2 $source
+         * @var ?OpenIDConnect $source
          */
         $source = $this->getSourceService()->getById($sourceId, OpenIDConnect::class);
         if ($source === null) {
@@ -65,17 +67,17 @@ class OIDCLogoutHandler
         // @codeCoverageIgnoreStart
     }
 
-    public function handleRequest()
+    public function handleRequest(): void
     {
         $this->handleRequestFromRequest($_REQUEST);
     }
 
-    public function handleRequestFromRequest(array $request)
+    public function handleRequestFromRequest(array $request): void
     {
         Logger::debug('authoauth2: logout request=' . var_export($request, true));
-        $config = \SimpleSAML\Configuration::getInstance();
+        $config = Configuration::getInstance();
         $sourceId = $request['authSource'];
-        $as = new \SimpleSAML\Auth\Simple($sourceId);
+        $as = new Simple($sourceId);
         $as->logout([
             'oidc:localLogout' => true,
             'ReturnTo' => $config->getBasePath() . 'logout.php',

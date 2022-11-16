@@ -114,7 +114,7 @@ class OpenIDConnectProvider extends AbstractProvider
         return $result;
     }
 
-    protected function getOpenIDConfiguration()
+    protected function getOpenIDConfiguration(): array
     {
         if (isset($this->openIdConfiguration)) {
             return $this->openIdConfiguration;
@@ -156,12 +156,16 @@ class OpenIDConnectProvider extends AbstractProvider
         return $config;
     }
 
-    protected static function base64urlDecode($input)
+    /**
+     * @param string $input
+     * @return false|string
+     */
+    protected static function base64urlDecode(string $input)
     {
         return base64_decode(strtr($input, '-_', '+/'));
     }
 
-    protected function getSigningKeys()
+    protected function getSigningKeys(): array
     {
         $url = $this->getOpenIDConfiguration()['jwks_uri'];
         $jwks = $this->getParsedResponse($this->getRequest('GET', $url));
@@ -174,6 +178,10 @@ class OpenIDConnectProvider extends AbstractProvider
             } elseif ($key['kty'] === 'RSA') {
                 $e = self::base64urlDecode($key['e']);
                 $n = self::base64urlDecode($key['n']);
+                if (!$n || !$e) {
+                    Logger::warning("Failed to base64 decod key data for key id: " . $kid);
+                    continue;
+                }
                 $keys[$kid] = \RobRichards\XMLSecLibs\XMLSecurityKey::convertRSA($n, $e);
             } else {
                 Logger::warning("Failed to load key data for key id: " . $kid);
@@ -218,7 +226,7 @@ class OpenIDConnectProvider extends AbstractProvider
         return $this->getOpenIDConfiguration()["userinfo_endpoint"];
     }
 
-    public function getEndSessionEndpoint()
+    public function getEndSessionEndpoint(): ?string
     {
         $config = $this->getOpenIDConfiguration();
         if (array_key_exists("end_session_endpoint", $config)) {

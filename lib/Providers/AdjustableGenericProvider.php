@@ -13,7 +13,6 @@ class AdjustableGenericProvider extends GenericProvider
      * The fields (and corresponding query param names) in the token response that should get added
      * to the resource owner query. For example ['uid' => 'user'] would add the value of 'uid' from
      * the token response json as the query param 'user' to the resource owner details endpoint
-     * @var array[]
      */
     protected array $tokenFieldsToUserDetailsUrl = [];
 

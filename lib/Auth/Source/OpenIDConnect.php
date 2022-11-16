@@ -39,10 +39,16 @@ class OpenIDConnect extends OAuth2
     {
         $provider = parent::getProvider($config);
         $httpClient = $provider->getHttpClient();
+        /**
+         * @psalm-suppress DeprecatedMethod
+         */
         $handler = $httpClient->getConfig('handler');
         if (!($handler instanceof HandlerStack)) {
             $newhandler = HandlerStack::create();
             $newhandler->push($handler);
+            /**
+             * @psalm-suppress DeprecatedMethod
+             */
             $httpClient->getConfig()['handler'] = $newhandler;
             $handler = $newhandler;
         }
@@ -93,7 +99,7 @@ class OpenIDConnect extends OAuth2
      *
      * @inheritdoc
      */
-    protected function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, array &$state)
+    protected function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, array &$state): void
     {
         $prefix = $this->getAttributePrefix();
         $id_token = $accessToken->getValues()['id_token'];

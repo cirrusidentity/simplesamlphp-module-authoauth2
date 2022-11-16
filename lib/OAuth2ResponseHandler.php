@@ -77,7 +77,7 @@ class OAuth2ResponseHandler
         $sourceId = $state[$this->expectedStateAuthId];
 
         /**
-         * @var OAuth2 $source
+         * @var ?OAuth2 $source
          */
         $source = $this->getSourceService()->getById($sourceId, OAuth2::class);
         if ($source === null) {
@@ -107,7 +107,7 @@ class OAuth2ResponseHandler
         $this->getSourceService()->completeAuth($state);
     }
 
-    private function handleErrorResponse(OAuth2 $source, array $state, array $request)
+    private function handleErrorResponse(OAuth2 $source, array $state, array $request): void
     {
         // Errors can be pretty inconsistent
         $error = @$request['error'];

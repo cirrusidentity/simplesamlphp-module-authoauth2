@@ -30,7 +30,7 @@ class MicrosoftHybridAuth extends OAuth2
      * @param AbstractProvider $provider
      * @param array $state
      */
-    protected function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, array &$state)
+    protected function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, array &$state): void
     {
         if (!array_key_exists('id_token', $accessToken->getValues())) {
             Logger::error('mshybridauth: ' . $this->getLabel() . ' no id_token returned');

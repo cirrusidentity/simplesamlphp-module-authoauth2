@@ -11,7 +11,7 @@ use SimpleSAML\Utils\HTTP;
  */
 trait SourceServiceLocator
 {
-    private ?SourceService $sourceService;
+    private ?SourceService $sourceService = null;
 
     /**
      * @return SourceService

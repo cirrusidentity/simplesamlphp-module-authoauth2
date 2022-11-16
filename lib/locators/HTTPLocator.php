@@ -10,7 +10,7 @@ use SimpleSAML\Utils\HTTP;
  */
 trait HTTPLocator
 {
-    private ?HTTP $http;
+    private ?HTTP $http = null;
 
     /**
      * Used to allow tests to override

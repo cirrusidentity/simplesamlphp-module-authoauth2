@@ -117,7 +117,7 @@ class OrcidOIDCAuth extends OpenIDConnect
      * @param AbstractProvider $provider
      * @param array $state
      */
-    protected function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, array &$state)
+    protected function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, array &$state): void
     {
         // initialize attributes from id token
         parent::postFinalStep($accessToken, $provider, $state);
@@ -133,6 +133,9 @@ class OrcidOIDCAuth extends OpenIDConnect
         );
         try {
             $response = $this->retry(
+            /**
+             * @return mixed
+             */
                 function () use ($provider, $request) {
                     return $provider->getParsedResponse($request);
                 }

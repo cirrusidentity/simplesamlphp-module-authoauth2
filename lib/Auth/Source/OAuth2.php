@@ -176,12 +176,19 @@ class OAuth2 extends Source
                     // phpcs:ignore Generic.Files.LineLength.TooLong
                     throw new InvalidArgumentException("The OAuth2 provider '$providerClass' does not extend " . AbstractProvider::class);
                 }
+                /**
+                 * @var AbstractProvider
+                 * @psalm-suppress UnsafeInstantiation
+                 */
                 return new $providerClass($config->toArray(), $collaborators);
             } else {
                 throw new InvalidArgumentException("No OAuth2 provider class found for '$providerClass'.");
             }
         }
-        /** @var AbstractProvider */
+        /**
+         * @var AbstractProvider
+         * @psalm-suppress InvalidStringClass,UnsafeInstantiation
+         */
         return new static::$defaultProviderClass($config->toArray(), $collaborators);
     }
 
@@ -192,7 +199,7 @@ class OAuth2 extends Source
      * @param string $oauth2Code
      *
      */
-    public function finalStep(array &$state, string $oauth2Code)
+    public function finalStep(array &$state, string $oauth2Code): void
     {
         $start = microtime(true);
         $providerLabel = $this->getLabel();
@@ -233,16 +240,21 @@ class OAuth2 extends Source
         $authenticatedApiRequests = $this->config->getOptionalArray('authenticatedApiRequests', []);
         foreach ($authenticatedApiRequests as $apiUrl) {
             try {
-                $apiAttributes = $this->retry(function () use ($provider, $accessToken, $apiUrl) {
+                $apiAttributes = $this->retry(
+                /**
+                 * @return array
+                 */
+                    function () use ($provider, $accessToken, $apiUrl) {
 
                     /** @var RequestInterface $request */
-                    $apiRequest = $provider->getAuthenticatedRequest(
-                        'GET',
-                        $apiUrl,
-                        $accessToken
-                    );
-                    return $provider->getParsedResponse($apiRequest);
-                });
+                        $apiRequest = $provider->getAuthenticatedRequest(
+                            'GET',
+                            $apiUrl,
+                            $accessToken
+                        );
+                        return $provider->getParsedResponse($apiRequest);
+                    }
+                );
                 if (!empty($apiAttributes)) {
                     $attributes = array_replace_recursive($attributes, $apiAttributes);
                 }
@@ -282,7 +294,7 @@ class OAuth2 extends Source
      * Retry token and user info endpoints in event of network errors.
      * @param callable $function the function to try
      * @param ?int $retries number of attempts to try
-     * @param int<0, max> $delay The time to delay between tries.
+     * @param int $delay The time to delay between tries.
      * @return mixed the result of the function
      */
     protected function retry(callable $function, ?int $retries = null, int $delay = 1)
@@ -300,6 +312,7 @@ class OAuth2 extends Source
             // phpcs:ignore Generic.Files.LineLength.TooLong
             Logger::info('authoauth2: ' . $providerLabel . " Connection error. Retries left $retries. error: {$e->getMessage()}");
             if ($retries > 0) {
+                /** @var 0|positive-int $delay */
                 sleep($delay);
                 return $this->retry($function, $retries - 1, $delay);
             } else {
@@ -352,7 +365,7 @@ class OAuth2 extends Source
      * @param AbstractProvider $provider The Oauth2 provider
      * @param array $state The current state
      */
-    protected function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, array &$state)
+    protected function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, array &$state): void
     {
     }
 
