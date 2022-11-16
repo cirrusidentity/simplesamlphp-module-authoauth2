@@ -24,6 +24,8 @@ class OpenIDConnectProvider extends AbstractProvider
      */
     protected string $issuer;
 
+    protected string $discoveryUrl;
+
     /**
      * @var ?Configuration
      */
@@ -39,13 +41,20 @@ class OpenIDConnectProvider extends AbstractProvider
      */
     private array $defaultScopes = [];
 
+    protected bool $validateIssuer = false;
+
     public function __construct(array $options = [], array $collaborators = [])
     {
         parent::__construct($options, $collaborators);
 
         $optionsConfig = Configuration::loadFromArray($options);
         $this->issuer = $optionsConfig->getString('issuer');
+        $this->discoveryUrl = $optionsConfig->getOptionalString(
+            'discoveryUrl',
+            rtrim($this->issuer, '/') . self::CONFIGURATION_PATH
+        );
         $this->defaultScopes = $optionsConfig->getOptionalArray('scopes', ['openid', 'profile']);
+        $this->validateIssuer = $optionsConfig->getOptionalBoolean('validateIssuer', true);
     }
 
     /**
@@ -95,8 +104,13 @@ class OpenIDConnectProvider extends AbstractProvider
             if (!in_array($this->clientId, $aud)) {
                 throw new IdentityProviderException("ID token has incorrect audience", 0, $claims->aud);
             }
-            if ($claims->iss !== $this->issuer) {
-                throw new IdentityProviderException("ID token has incorrect issuer", 0, $claims->iss);
+            // When working with Azure the issuer is tenant specific, but the discovery metadata can be for all tenants
+            if ($this->validateIssuer && $claims->iss !== $this->issuer) {
+                throw new IdentityProviderException(
+                    "ID token has incorrect issuer. Expected '{$this->issuer}' recieved '{$claims->iss}'",
+                    0,
+                    $claims->iss
+                );
             }
         } catch (\UnexpectedValueException $e) {
             throw new IdentityProviderException("ID token validation failed", 0, $e->getMessage());
@@ -114,13 +128,18 @@ class OpenIDConnectProvider extends AbstractProvider
         return $result;
     }
 
+    public function getDiscoveryUrl(): string
+    {
+        return $this->discoveryUrl;
+    }
+
     protected function getOpenIDConfiguration(): Configuration
     {
         if (isset($this->openIdConfiguration)) {
             return $this->openIdConfiguration;
         }
 
-        $req = $this->getRequest('GET', rtrim($this->issuer, '/') . self::CONFIGURATION_PATH);
+        $req = $this->getRequest('GET', $this->getDiscoveryUrl());
         /** @var array $config */
         $config = $this->getParsedResponse($req);
         $requiredEndPoints = [ "authorization_endpoint", "token_endpoint", "jwks_uri", "issuer", "userinfo_endpoint" ];
