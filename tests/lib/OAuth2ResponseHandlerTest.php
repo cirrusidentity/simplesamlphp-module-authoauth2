@@ -48,7 +48,7 @@ class OAuth2ResponseHandlerTest extends TestCase
     /**
      * Confirm checking if response can be handled by this module
      */
-    public function testCanHandle()
+    public function testCanHandle(): void
     {
         $this->assertFalse($this->responseHandler->canHandleResponseFromRequest([]));
         $this->assertFalse($this->responseHandler->canHandleResponseFromRequest(['wrongParams' => 'value']));
