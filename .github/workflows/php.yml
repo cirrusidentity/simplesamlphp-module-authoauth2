@@ -32,14 +32,15 @@ jobs:
         run: |
           git config --global core.autocrlf false
           git config --global core.eol lf
-      - uses: actions/checkout@v2
+
+      - uses: actions/checkout@v3
 
       - name: Get composer cache directory
         id: composer-cache
         run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
       - name: Cache composer dependencies
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
@@ -58,10 +59,19 @@ jobs:
         if: ${{ matrix.php-versions != '7.4' || matrix.operating-system != 'ubuntu-latest' }}
         run: |
           echo "NO_COVERAGE=--no-coverage" >> $GITHUB_ENV
+
       - name: Run unit tests
         run: |
           echo $NO_COVERAGE
           ./vendor/bin/phpunit $NO_COVERAGE
+
+      - name: Save coverage data
+        if: ${{ matrix.php-versions == '7.4' && matrix.operating-system == 'ubuntu-latest' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-data
+          path: ${{ github.workspace }}/build
+
   security:
     name: Security checks
     runs-on: [ ubuntu-latest ]
