@@ -162,9 +162,15 @@ Not all configuration options from `authoauth2:OAuth2` are supported in `OpenIDC
               'clientSecret' => '36aefb235314bad5df075363b79cbbcd',
 
               // Most Optional settings for OAuth2 above can be used
-              // *** New Optional ***
+              // *** Optional ***
               // Customize post logout redirect, if you don't want to use the standard /module.php/authoauth2/loggedout.php
               'postLogoutRedirectUri' => 'https://myapp.example.com/loggedout'
+
+              // Set a specific discovery url. Default is $issuer/.well-known/openid-configuration
+              'discoveryUrl' => 'https://login.microsoftonline.com/common/.well-known/openid-configuration',
+              // Check if the issuer in the ID token matches the one from discovery. Default true. For some multi-tenant
+              // applications (for example cross tenant Azure logins) the token issuer varies with tenant
+              'validateIssuer' => false,
 
               // Earlier version OpenIDConnect authsource doesn't support using `scopes` for overriding scope
               //'urlAuthorizeOptions' => [
@@ -177,7 +183,7 @@ If your OP supports front channel single logout, you can configure `https://host
 
 ## Provider Specific Usage
 
-There are numerous [Offical](http://oauth2-client.thephpleague.com/providers/league/) and [Third-Party](http://oauth2-client.thephpleague.com/providers/thirdparty/) providers
+There are numerous [Official](http://oauth2-client.thephpleague.com/providers/league/) and [Third-Party](http://oauth2-client.thephpleague.com/providers/thirdparty/) providers
 that you can use instead of the generic OAuth2 provider. Using one of those providers can simplify the configurations.
 
 To use a provider you must first install it `composer require league/oauth2-some-provider`

@@ -74,4 +74,26 @@ class OpenIDConnectProviderTest extends TestCase
         $request = Request::create($url);
         $this->assertEquals('openid', $request->query->get('scope'));
     }
+
+    public function testConfiguringDiscoveryUrl(): void
+    {
+        $provider = new OpenIDConnectProvider(
+            ['issuer' => 'https://accounts.example.com']
+        );
+        $this->assertEquals(
+            'https://accounts.example.com/.well-known/openid-configuration',
+            $provider->getDiscoveryUrl()
+        );
+
+        $provider = new OpenIDConnectProvider(
+            [
+                'issuer' => 'https://accounts.example.com',
+                'discoveryUrl' => 'https://otherhost.example.com/path/path2/.well-known/openid-configuration'
+            ]
+        );
+        $this->assertEquals(
+            'https://otherhost.example.com/path/path2/.well-known/openid-configuration',
+            $provider->getDiscoveryUrl()
+        );
+    }
 }
