@@ -11,6 +11,7 @@ use SimpleSAML\Module;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
 use SimpleSAML\Module\authoauth2\locators\HTTPLocator;
 use SimpleSAML\Module\authoauth2\locators\SourceServiceLocator;
+use Symfony\Component\HttpFoundation\Request;
 
 class OAuth2ResponseHandler
 {
@@ -45,7 +46,9 @@ class OAuth2ResponseHandler
 
     public function canHandleResponseFromRequest(array $request): bool
     {
-        return strpos(@$request['state'], $this->expectedPrefix) === 0;
+        /** @var ?string $stateId */
+        $stateId = $request['state'] ?? null;
+        return is_string($stateId) && strpos($stateId, $this->expectedPrefix) === 0;
     }
 
     /**

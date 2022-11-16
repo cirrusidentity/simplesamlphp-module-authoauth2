@@ -5,4 +5,13 @@
             <directory>./tests</directory>
         </testsuite>
     </testsuites>
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory>./lib</directory>
+        </include>
+        <report>
+            <clover outputFile="build/logs/clover.xml"/>
+            <html outputDirectory="build/coverage/html"/>
+        </report>
+    </coverage>
 </phpunit>

@@ -128,11 +128,10 @@
     </MixedReturnStatement>
   </file>
   <file src="lib/OAuth2ResponseHandler.php">
-    <MixedArgument occurrences="4">
+    <MixedArgument occurrences="3">
       <code>$request['code']</code>
       <code>$sourceId</code>
       <code>$stateIdWithPrefix</code>
-      <code>@$request['state']</code>
     </MixedArgument>
     <MixedAssignment occurrences="3">
       <code>$error</code>
@@ -146,11 +145,10 @@
     </MixedOperand>
   </file>
   <file src="lib/OIDCLogoutHandler.php">
-    <MixedArgument occurrences="4">
+    <MixedArgument occurrences="3">
       <code>$sourceId</code>
       <code>$sourceId</code>
       <code>$stateIdWithPrefix</code>
-      <code>@$request['state']</code>
     </MixedArgument>
     <MixedAssignment occurrences="3">
       <code>$sourceId</code>
@@ -371,9 +369,8 @@
     <MissingPropertyType occurrences="1">
       <code>$validStateValue</code>
     </MissingPropertyType>
-    <MissingReturnType occurrences="8">
+    <MissingReturnType occurrences="7">
       <code>noCodeDataProvider</code>
-      <code>testCanHandle</code>
       <code>testNoCodeInResponse</code>
       <code>testNoStateFoundInSession</code>
       <code>testSanityCheckMocks</code>
