@@ -154,13 +154,13 @@ jobs:
           uses: codecov/codecov-action@v3
 
         - name: PHP Code Sniffer
-          continue-on-error: false
+          if: always()
           run: php vendor/bin/phpcs
 
         - name: Psalm
-          continue-on-error: true
+          if: always()
           run: php vendor/bin/psalm --use-baseline=psalm-baseline.xml --show-info=true --shepherd --php-version=${{ steps.setup-php.outputs.php-version }}
 
         - name: Psalter
-          continue-on-error: false
+          if: always()
           run: php vendor/bin/psalter --issues=UnnecessaryVarAnnotation --dry-run --php-version=${{ steps.setup-php.outputs.php-version }}
