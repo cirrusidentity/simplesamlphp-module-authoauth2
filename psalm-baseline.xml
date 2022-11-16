@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<files psalm-version="4.30.0@d0bc6e25d89f649e4f36a534f330f8bb4643dd69">
+  <file src="lib/AttributeManipulator.php">
+    <MixedArgument occurrences="1">
+      <code>$input</code>
+    </MixedArgument>
+    <MixedAssignment occurrences="3">
+      <code>$value</code>
+      <code>$value</code>
+      <code>$value</code>
+    </MixedAssignment>
+  </file>
+  <file src="lib/Auth/Source/BitbucketAuth.php">
+    <MixedArrayAccess occurrences="3">
+      <code>$response["values"][$i]</code>
+      <code>$response["values"][$i]</code>
+      <code>$response["values"][$i]</code>
+    </MixedArrayAccess>
+    <MixedArrayAssignment occurrences="1">
+      <code>$state['Attributes'][$prefix . 'email']</code>
+    </MixedArrayAssignment>
+    <MixedAssignment occurrences="1">
+      <code>$response</code>
+    </MixedAssignment>
+  </file>
+  <file src="lib/Auth/Source/LinkedInV2Auth.php">
+    <MixedArgument occurrences="1">
+      <code>$attributes[$attributeName]['localized']</code>
+    </MixedArgument>
+    <MixedArrayAccess occurrences="1">
+      <code>$response["elements"][0]["handle~"]["emailAddress"]</code>
+    </MixedArrayAccess>
+    <MixedArrayAssignment occurrences="1">
+      <code>$state['Attributes'][$prefix . 'emailAddress']</code>
+    </MixedArrayAssignment>
+    <MixedAssignment occurrences="1">
+      <code>$response</code>
+    </MixedAssignment>
+    <MixedInferredReturnType occurrences="1">
+      <code>string|false|null</code>
+    </MixedInferredReturnType>
+    <MixedReturnStatement occurrences="1">
+      <code>reset($attributes[$attributeName]['localized'])</code>
+    </MixedReturnStatement>
+  </file>
+  <file src="lib/Auth/Source/MicrosoftHybridAuth.php">
+    <MixedArgument occurrences="1">
+      <code>$accessToken-&gt;getValues()['id_token']</code>
+    </MixedArgument>
+    <MixedArrayAssignment occurrences="2">
+      <code>$state['Attributes'][$prefix . 'mail']</code>
+      <code>$state['Attributes'][$prefix . 'name']</code>
+    </MixedArrayAssignment>
+  </file>
+  <file src="lib/Auth/Source/OAuth2.php">
+    <MixedArgument occurrences="7">
+      <code>$apiAttributes</code>
+      <code>$apiUrl</code>
+      <code>$config['urlResourceOwnerDetails']</code>
+      <code>$config['urlResourceOwnerOptions']</code>
+      <code>$idToken</code>
+      <code>$state['Attributes']</code>
+      <code>$templateArray</code>
+    </MixedArgument>
+    <MixedArgumentTypeCoercion occurrences="1"/>
+    <MixedArrayAccess occurrences="1">
+      <code>$templateArray[0]</code>
+    </MixedArrayAccess>
+    <MixedAssignment occurrences="6">
+      <code>$apiAttributes</code>
+      <code>$apiUrl</code>
+      <code>$data</code>
+      <code>$idToken</code>
+      <code>$template</code>
+      <code>$templateArray</code>
+    </MixedAssignment>
+    <MixedInferredReturnType occurrences="2">
+      <code>array</code>
+      <code>string[]</code>
+    </MixedInferredReturnType>
+    <MixedReturnStatement occurrences="2">
+      <code>$data</code>
+      <code>$provider-&gt;getParsedResponse($apiRequest)</code>
+    </MixedReturnStatement>
+  </file>
+  <file src="lib/Auth/Source/OpenIDConnect.php">
+    <MixedArgument occurrences="3">
+      <code>$handler</code>
+      <code>$id_token</code>
+      <code>$state['Attributes']</code>
+    </MixedArgument>
+    <MixedArgumentTypeCoercion occurrences="2">
+      <code>$key</code>
+      <code>$key</code>
+    </MixedArgumentTypeCoercion>
+    <MixedArrayAssignment occurrences="2">
+      <code>$httpClient-&gt;getConfig()['handler']</code>
+      <code>$state['PersistentAuthData'][]</code>
+    </MixedArrayAssignment>
+    <MixedAssignment occurrences="5">
+      <code>$handler</code>
+      <code>$id_token</code>
+      <code>$id_token</code>
+      <code>$result[substr($key, 5)]</code>
+      <code>$value</code>
+    </MixedAssignment>
+  </file>
+  <file src="lib/Auth/Source/OrcidOIDCAuth.php">
+    <MixedArrayAccess occurrences="4">
+      <code>$e["email"]</code>
+      <code>$e["primary"]</code>
+      <code>$e["primary"]</code>
+      <code>$state['Attributes'][$prefix . 'sub']</code>
+    </MixedArrayAccess>
+    <MixedArrayAssignment occurrences="1">
+      <code>$state['Attributes'][$prefix . 'email']</code>
+    </MixedArrayAssignment>
+    <MixedAssignment occurrences="3">
+      <code>$e</code>
+      <code>$email</code>
+      <code>$response</code>
+    </MixedAssignment>
+    <MixedInferredReturnType occurrences="1">
+      <code>string</code>
+    </MixedInferredReturnType>
+    <MixedReturnStatement occurrences="1">
+      <code>$email</code>
+    </MixedReturnStatement>
+  </file>
+  <file src="lib/OAuth2ResponseHandler.php">
+    <MixedArgument occurrences="4">
+      <code>$request['code']</code>
+      <code>$sourceId</code>
+      <code>$stateIdWithPrefix</code>
+      <code>@$request['state']</code>
+    </MixedArgument>
+    <MixedAssignment occurrences="3">
+      <code>$error</code>
+      <code>$sourceId</code>
+      <code>$stateIdWithPrefix</code>
+    </MixedAssignment>
+    <MixedOperand occurrences="3">
+      <code>$error</code>
+      <code>@$request['error_description']</code>
+      <code>@$request['error_description']</code>
+    </MixedOperand>
+  </file>
+  <file src="lib/OIDCLogoutHandler.php">
+    <MixedArgument occurrences="4">
+      <code>$sourceId</code>
+      <code>$sourceId</code>
+      <code>$stateIdWithPrefix</code>
+      <code>@$request['state']</code>
+    </MixedArgument>
+    <MixedAssignment occurrences="3">
+      <code>$sourceId</code>
+      <code>$sourceId</code>
+      <code>$stateIdWithPrefix</code>
+    </MixedAssignment>
+  </file>
+  <file src="lib/Providers/AdjustableGenericProvider.php">
+    <MixedAssignment occurrences="1">
+      <code>$toAdd[$param]</code>
+    </MixedAssignment>
+  </file>
+  <file src="lib/Providers/OpenIDConnectProvider.php">
+    <MixedArgument occurrences="6">
+      <code>$claims-&gt;aud</code>
+      <code>$claims-&gt;iss</code>
+      <code>$key</code>
+      <code>$key['e']</code>
+      <code>$key['n']</code>
+      <code>$result['id_token']</code>
+    </MixedArgument>
+    <MixedArrayAccess occurrences="5">
+      <code>$key['e']</code>
+      <code>$key['kid']</code>
+      <code>$key['kty']</code>
+      <code>$key['n']</code>
+      <code>$key['x5c']</code>
+    </MixedArrayAccess>
+    <MixedAssignment occurrences="2">
+      <code>$error</code>
+      <code>$key</code>
+    </MixedAssignment>
+    <MixedOperand occurrences="2">
+      <code>$config['issuer']</code>
+      <code>$x5c[0]</code>
+    </MixedOperand>
+  </file>
+  <file src="tests/config/authsources.php">
+    <UnusedVariable occurrences="1">
+      <code>$config</code>
+    </UnusedVariable>
+  </file>
+  <file src="tests/config/config.php">
+    <UnusedVariable occurrences="1">
+      <code>$config</code>
+    </UnusedVariable>
+  </file>
+  <file src="tests/config/ssp2_0-config.php">
+    <UnusedVariable occurrences="1">
+      <code>$config</code>
+    </UnusedVariable>
+  </file>
+  <file src="tests/lib/AttributeManipulatorTest.php">
+    <MissingReturnType occurrences="1">
+      <code>testPrefixAndFlatten</code>
+    </MissingReturnType>
+  </file>
+  <file src="tests/lib/Auth/Source/LinkedInV2AuthTest.php">
+    <MissingReturnType occurrences="3">
+      <code>getEmailProvider</code>
+      <code>testAttributeConversion</code>
+      <code>testGettingEmail</code>
+    </MissingReturnType>
+    <MixedInferredReturnType occurrences="1">
+      <code>array</code>
+    </MixedInferredReturnType>
+    <MixedMethodCall occurrences="5">
+      <code>method</code>
+      <code>willReturn</code>
+      <code>willReturn</code>
+      <code>with</code>
+      <code>with</code>
+    </MixedMethodCall>
+    <PossiblyInvalidArgument occurrences="2">
+      <code>$mock</code>
+      <code>$mock</code>
+    </PossiblyInvalidArgument>
+    <PossiblyUndefinedMethod occurrences="3">
+      <code>expects</code>
+      <code>method</code>
+      <code>method</code>
+    </PossiblyUndefinedMethod>
+  </file>
+  <file src="tests/lib/Auth/Source/MicrosoftHybridAuthTest.php">
+    <MissingReturnType occurrences="2">
+      <code>combineOidcAndGraphProfileProvider</code>
+      <code>testCombineOidcAndGraphProfile</code>
+    </MissingReturnType>
+    <MixedMethodCall occurrences="8">
+      <code>willReturn</code>
+      <code>willReturn</code>
+      <code>willReturn</code>
+      <code>willReturn</code>
+      <code>with</code>
+      <code>with</code>
+      <code>with</code>
+      <code>with</code>
+    </MixedMethodCall>
+    <PossiblyInvalidArgument occurrences="1">
+      <code>$mock</code>
+    </PossiblyInvalidArgument>
+    <PossiblyUndefinedMethod occurrences="4">
+      <code>method</code>
+      <code>method</code>
+      <code>method</code>
+      <code>method</code>
+    </PossiblyUndefinedMethod>
+  </file>
+  <file src="tests/lib/Auth/Source/OAuth2Test.php">
+    <DeprecatedMethod occurrences="1">
+      <code>getConfig</code>
+    </DeprecatedMethod>
+    <MissingParamType occurrences="15">
+      <code>$accessToken</code>
+      <code>$accessToken</code>
+      <code>$accessToken</code>
+      <code>$accessToken</code>
+      <code>$config</code>
+      <code>$config</code>
+      <code>$config</code>
+      <code>$config</code>
+      <code>$config</code>
+      <code>$expectedAttributes</code>
+      <code>$expectedAttributes</code>
+      <code>$expectedAttributes</code>
+      <code>$expectedAttributes</code>
+      <code>$expectedUrl</code>
+      <code>$state</code>
+    </MissingParamType>
+    <MissingPropertyType occurrences="1">
+      <code>$module_config</code>
+    </MissingPropertyType>
+    <MissingReturnType occurrences="12">
+      <code>finalStepsDataProvider</code>
+      <code>finalStepsDataProviderWithAuthenticatedApiRequest</code>
+      <code>testAuthenticatePerformsRedirect</code>
+      <code>testConfigTemplateByName</code>
+      <code>testDefaultConfigItemsSet</code>
+      <code>testEnableDebugLogging</code>
+      <code>testFinalSteps</code>
+      <code>testFinalStepsWithAuthenticatedApiRequest</code>
+      <code>testFinalStepsWithAuthenticatedApiRequestWithNetworkErrors</code>
+      <code>testFinalStepsWithNetworkErrorsAndRetries</code>
+      <code>testResourceOwnerQueryParamOption</code>
+      <code>testTooManyErrorsForRetry</code>
+    </MissingReturnType>
+    <MixedArgument occurrences="7">
+      <code>$config</code>
+      <code>$config</code>
+      <code>$config</code>
+      <code>$config</code>
+      <code>$config</code>
+      <code>$expectedUrl</code>
+      <code>$state</code>
+    </MixedArgument>
+    <MixedArrayAccess occurrences="2">
+      <code>$clientConfig['handler']</code>
+      <code>$state[OAuth2::AUTHID]</code>
+    </MixedArrayAccess>
+    <MixedAssignment occurrences="1">
+      <code>$clientConfig</code>
+    </MixedAssignment>
+    <MixedInferredReturnType occurrences="1">
+      <code>array</code>
+    </MixedInferredReturnType>
+    <MixedMethodCall occurrences="6">
+      <code>will</code>
+      <code>will</code>
+      <code>will</code>
+      <code>with</code>
+      <code>with</code>
+      <code>with</code>
+    </MixedMethodCall>
+    <PossiblyInvalidArgument occurrences="7">
+      <code>$mock</code>
+      <code>$mock</code>
+      <code>$mockRequest</code>
+      <code>$mockRequest</code>
+      <code>$mockRequest</code>
+      <code>$mockRequest</code>
+      <code>$mockRequest</code>
+    </PossiblyInvalidArgument>
+    <PossiblyUndefinedMethod occurrences="3">
+      <code>method</code>
+      <code>method</code>
+      <code>method</code>
+    </PossiblyUndefinedMethod>
+  </file>
+  <file src="tests/lib/Auth/Source/OpenIDConnectTest.php">
+    <MissingReturnType occurrences="3">
+      <code>testLogoutNoEndpointConfigured</code>
+      <code>testLogoutNoIDTokenInState</code>
+      <code>testLogoutRedirects</code>
+    </MissingReturnType>
+  </file>
+  <file src="tests/lib/Auth/Source/OrcidOIDCAuthTest.php">
+    <MixedInferredReturnType occurrences="1">
+      <code>array</code>
+    </MixedInferredReturnType>
+  </file>
+  <file src="tests/lib/MockOAuth2Provider.php">
+    <MissingReturnType occurrences="1">
+      <code>setDelegate</code>
+    </MissingReturnType>
+  </file>
+  <file src="tests/lib/MockOpenIDConnectProvider.php">
+    <MissingReturnType occurrences="2">
+      <code>setConfig</code>
+      <code>setSigningKeys</code>
+    </MissingReturnType>
+  </file>
+  <file src="tests/lib/OAuth2ResponseHandlerTest.php">
+    <MissingParamType occurrences="3">
+      <code>$expectedException</code>
+      <code>$expectedMessage</code>
+      <code>$queryParams</code>
+    </MissingParamType>
+    <MissingPropertyType occurrences="1">
+      <code>$validStateValue</code>
+    </MissingPropertyType>
+    <MissingReturnType occurrences="8">
+      <code>noCodeDataProvider</code>
+      <code>testCanHandle</code>
+      <code>testNoCodeInResponse</code>
+      <code>testNoStateFoundInSession</code>
+      <code>testSanityCheckMocks</code>
+      <code>testUnhandleableResponse</code>
+      <code>testUserCancelledErrorPage</code>
+      <code>testValidResponse</code>
+    </MissingReturnType>
+    <MixedArgument occurrences="3">
+      <code>$expectedException</code>
+      <code>$expectedMessage</code>
+      <code>$queryParams</code>
+    </MixedArgument>
+    <MixedMethodCall occurrences="8">
+      <code>method</code>
+      <code>method</code>
+      <code>method</code>
+      <code>willReturn</code>
+      <code>willReturn</code>
+      <code>with</code>
+      <code>with</code>
+      <code>with</code>
+    </MixedMethodCall>
+    <PossiblyUndefinedMethod occurrences="6">
+      <code>expects</code>
+      <code>expects</code>
+      <code>expects</code>
+      <code>finalStep</code>
+      <code>method</code>
+      <code>method</code>
+    </PossiblyUndefinedMethod>
+  </file>
+  <file src="tests/lib/OIDCLogoutHandlerTest.php">
+    <MissingReturnType occurrences="4">
+      <code>testCanHandle</code>
+      <code>testNoStateFoundInSession</code>
+      <code>testUnhandleableResponse</code>
+      <code>testValidResponse</code>
+    </MissingReturnType>
+    <MixedMethodCall occurrences="1">
+      <code>method</code>
+    </MixedMethodCall>
+    <PossiblyUndefinedMethod occurrences="1">
+      <code>expects</code>
+    </PossiblyUndefinedMethod>
+  </file>
+  <file src="tests/lib/Providers/AdjustableGenericProviderTest.php">
+    <MissingParamType occurrences="1">
+      <code>$expectedQueryString</code>
+    </MissingParamType>
+    <MissingReturnType occurrences="2">
+      <code>testNoAdjustmentsToUrl</code>
+      <code>testSetScopes</code>
+    </MissingReturnType>
+    <MixedInferredReturnType occurrences="1">
+      <code>array</code>
+    </MixedInferredReturnType>
+  </file>
+  <file src="tests/lib/Providers/OpenIDConnectProviderTest.php">
+    <MissingParamType occurrences="2">
+      <code>$expectedMessage</code>
+      <code>$idToken</code>
+    </MissingParamType>
+    <MixedArgument occurrences="2">
+      <code>$expectedMessage</code>
+      <code>$idToken</code>
+    </MixedArgument>
+    <MixedInferredReturnType occurrences="1">
+      <code>array</code>
+    </MixedInferredReturnType>
+    <PossiblyFalseOperand occurrences="1">
+      <code>getenv('SIMPLESAMLPHP_CONFIG_DIR')</code>
+    </PossiblyFalseOperand>
+  </file>
+</files>
