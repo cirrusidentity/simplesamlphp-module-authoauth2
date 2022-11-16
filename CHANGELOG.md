@@ -1,5 +1,13 @@
 # simplesamlphp-module-authoauth2  Changelog
 
+## v4.0.0-alpha.1
+
+_Release: 2022-11-16
+* Make OIDC discovery configrable
+* SSP 2 compatability
+* Improved psalm code quality
+* Better typing
+	
 ## v3.2.0
 
 _Release: 2020-?
