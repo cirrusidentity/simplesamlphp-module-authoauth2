@@ -102,7 +102,7 @@ jobs:
       - name: Security check for updated dependencies
         uses: symfonycorp/security-checker-action@v3
 
-    quality:
+  quality:
       name: Quality control
       runs-on: [ ubuntu-latest ]
       needs: [ basic-tests ]
