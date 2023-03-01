@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <files psalm-version="4.30.0@d0bc6e25d89f649e4f36a534f330f8bb4643dd69">
-  <file src="lib/AttributeManipulator.php">
+  <file src="src/AttributeManipulator.php">
     <MixedArgument occurrences="1">
       <code>$input</code>
     </MixedArgument>
@@ -10,7 +10,7 @@
       <code>$value</code>
     </MixedAssignment>
   </file>
-  <file src="lib/Auth/Source/BitbucketAuth.php">
+  <file src="src/Auth/Source/BitbucketAuth.php">
     <MixedArrayAccess occurrences="3">
       <code>$response["values"][$i]</code>
       <code>$response["values"][$i]</code>
@@ -23,7 +23,7 @@
       <code>$response</code>
     </MixedAssignment>
   </file>
-  <file src="lib/Auth/Source/LinkedInV2Auth.php">
+  <file src="src/Auth/Source/LinkedInV2Auth.php">
     <MixedArgument occurrences="1">
       <code>$attributes[$attributeName]['localized']</code>
     </MixedArgument>
@@ -43,7 +43,7 @@
       <code>reset($attributes[$attributeName]['localized'])</code>
     </MixedReturnStatement>
   </file>
-  <file src="lib/Auth/Source/MicrosoftHybridAuth.php">
+  <file src="src/Auth/Source/MicrosoftHybridAuth.php">
     <MixedArgument occurrences="1">
       <code>$accessToken-&gt;getValues()['id_token']</code>
     </MixedArgument>
@@ -52,7 +52,7 @@
       <code>$state['Attributes'][$prefix . 'name']</code>
     </MixedArrayAssignment>
   </file>
-  <file src="lib/Auth/Source/OAuth2.php">
+  <file src="src/Auth/Source/OAuth2.php">
     <MixedArgument occurrences="7">
       <code>$apiAttributes</code>
       <code>$apiUrl</code>
@@ -83,7 +83,7 @@
       <code>$provider-&gt;getParsedResponse($apiRequest)</code>
     </MixedReturnStatement>
   </file>
-  <file src="lib/Auth/Source/OpenIDConnect.php">
+  <file src="src/Auth/Source/OpenIDConnect.php">
     <MixedArgument occurrences="3">
       <code>$handler</code>
       <code>$id_token</code>
@@ -105,7 +105,7 @@
       <code>$value</code>
     </MixedAssignment>
   </file>
-  <file src="lib/Auth/Source/OrcidOIDCAuth.php">
+  <file src="src/Auth/Source/OrcidOIDCAuth.php">
     <MixedArrayAccess occurrences="4">
       <code>$e["email"]</code>
       <code>$e["primary"]</code>
@@ -127,7 +127,7 @@
       <code>$email</code>
     </MixedReturnStatement>
   </file>
-  <file src="lib/OAuth2ResponseHandler.php">
+  <file src="src/OAuth2ResponseHandler.php">
     <MixedArgument occurrences="3">
       <code>$request['code']</code>
       <code>$sourceId</code>
@@ -144,7 +144,7 @@
       <code>@$request['error_description']</code>
     </MixedOperand>
   </file>
-  <file src="lib/OIDCLogoutHandler.php">
+  <file src="src/OIDCLogoutHandler.php">
     <MixedArgument occurrences="3">
       <code>$sourceId</code>
       <code>$sourceId</code>
@@ -156,12 +156,12 @@
       <code>$stateIdWithPrefix</code>
     </MixedAssignment>
   </file>
-  <file src="lib/Providers/AdjustableGenericProvider.php">
+  <file src="src/Providers/AdjustableGenericProvider.php">
     <MixedAssignment occurrences="1">
       <code>$toAdd[$param]</code>
     </MixedAssignment>
   </file>
-  <file src="lib/Providers/OpenIDConnectProvider.php">
+  <file src="src/Providers/OpenIDConnectProvider.php">
     <MixedArgument occurrences="6">
       <code>$claims-&gt;aud</code>
       <code>$claims-&gt;iss</code>

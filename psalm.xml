@@ -10,7 +10,7 @@
     errorBaseline="psalm-baseline.xml"
 >
     <projectFiles>
-        <directory name="lib"/>
+        <directory name="src"/>
 <!-- Too many errors in test folder at the moment -->
         <directory name="tests"/>
 <!--        <directory name="templates" /> -->
