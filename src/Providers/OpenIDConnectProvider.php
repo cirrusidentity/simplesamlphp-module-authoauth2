@@ -97,8 +97,15 @@ class OpenIDConnectProvider extends AbstractProvider
     public function verifyIdToken(string $id_token): void
     {
         try {
-            $keys = $this->getSigningKeys();
-            $claims = JWT\JWT::decode($id_token, $keys, ['RS256']);
+            $keysRaw = $this->getSigningKeys();
+            $keys = [];
+            // Be explicit about key algorithms to avoid bug reports of key confusion.
+            foreach ($keysRaw as $kid => $key) {
+                $keys[$kid] = new JWT\Key($key, 'RS256');
+            }
+            // Once firebase/php-jwt 5.5 support is dropped we can move to firebase's parsing
+            //JWT\JWK::parseKeySet($keys, 'RS256');
+            $claims = JWT\JWT::decode($id_token, $keys);
             $aud = is_array($claims->aud) ? $claims->aud : [$claims->aud];
 
             if (!in_array($this->clientId, $aud)) {
