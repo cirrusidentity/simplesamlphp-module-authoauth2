@@ -6,9 +6,9 @@
         By default it is less stringent about long lines than other coding standards
     </description>
 
-    <file>lib</file>
+    <file>src</file>
     <file>tests</file>
-    <file>www</file>
+    <file>public</file>
 
     <!-- Use this to exclude paths. You can have multiple patterns -->
     <exclude-pattern>tests/config/*</exclude-pattern>

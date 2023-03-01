@@ -5,6 +5,7 @@ _Release: 2023-03-01
 * Move `lib` to `src`
 * Move `www` to `public`
 * Use ssp2 final release
+* firebase/php-jwt 6 support
 
 ## v4.0.0-alpha.1
 
