@@ -2,6 +2,7 @@
 
 namespace SimpleSAML\Module\authoauth2\Auth\Source;
 
+use Exception;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
 use SimpleSAML\Logger;
@@ -26,7 +27,7 @@ class OrcidOIDCAuth extends OpenIDConnect
      * @param mixed $response
      * @return string returns email address or null if not found
      */
-    public function parseEmailLookupResponse($response)
+    public function parseEmailLookupResponse($response): ?string
     {
         $email = null;
         if (is_array($response) && isset($response["email"])) {
@@ -116,7 +117,7 @@ class OrcidOIDCAuth extends OpenIDConnect
      * @param AbstractProvider $provider
      * @param array $state
      */
-    protected function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, &$state)
+    protected function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, array &$state): void
     {
         // initialize attributes from id token
         parent::postFinalStep($accessToken, $provider, $state);
@@ -132,12 +133,14 @@ class OrcidOIDCAuth extends OpenIDConnect
         );
         try {
             $response = $this->retry(
+            /**
+             * @return mixed
+             */
                 function () use ($provider, $request) {
                     return $provider->getParsedResponse($request);
-                },
-                $this->config->getInteger('retryOnError', 1)
+                }
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // not getting email shouldn't fail the authentication
             Logger::error(
                 'OrcidOIDCAuth: ' . $this->getLabel() . ' exception email query response ' . $e->getMessage()

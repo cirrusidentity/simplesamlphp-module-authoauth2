@@ -2,48 +2,48 @@
 
 namespace Test\SimpleSAML;
 
-use CirrusIdentity\SSP\Test\Auth\MockAuthSource;
-use CirrusIdentity\SSP\Test\Capture\RedirectException;
-use CirrusIdentity\SSP\Test\MockHttp;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use PHPUnit_Framework_MockObject_MockObject;
+use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
 use SimpleSAML\Module\authoauth2\Auth\Source\OpenIDConnect;
+use SimpleSAML\Module\authoauth2\locators\SourceService;
 use SimpleSAML\Module\authoauth2\OIDCLogoutHandler;
 use SimpleSAML\Auth\State;
-use SimpleSAML\Error\AuthSource;
-use SimpleSAML\Error\UserAborted;
 use SimpleSAML\Session;
-use AspectMock\Test as test;
+use SimpleSAML\Utils\HTTP;
 
 class OIDCLogoutHandlerTest extends TestCase
 {
     /**
      * @var OIDCLogoutHandler
      */
-    private $logoutHandler;
+    private OIDCLogoutHandler $logoutHandler;
 
-    private $validStateValue = 'authoauth2-validStateId';
+    private string $validStateValue = 'authoauth2-validStateId';
 
     /**
      * @var MockObject|OpenIDConnect
      */
     private $mockAuthSource;
 
-    public static function setUpBeforeClass(): void
-    {
-        putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(__DIR__) . '/config');
-    }
+    /**
+     * @var MockObject|SourceService
+     */
+    private $mockSourceService;
 
     protected function setUp(): void
     {
-        test::clean();
-        MockAuthSource::clearInternalState();
+
         $this->logoutHandler = new OIDCLogoutHandler();
 
         $this->mockAuthSource = $this->createMock(OpenIDConnect::class);
         $this->mockAuthSource->method('getAuthId')->willReturn('mockAuthSource');
-        MockAuthSource::getById($this->mockAuthSource, 'mockAuthSource');
+
+        $this->mockSourceService = $this->createMock(SourceService::class);
+        $this->mockSourceService->method('getById')
+            ->with('mockAuthSource', OpenIDConnect::class)
+            ->willReturn($this->mockAuthSource);
+        $this->logoutHandler->setSourceService($this->mockSourceService);
     }
 
     /**
@@ -89,15 +89,14 @@ class OIDCLogoutHandlerTest extends TestCase
 
     public function testValidResponse()
     {
-        // Override redirect behavior
-        MockHttp::throwOnRedirectTrustedURL();
-
         // given: a valid response
         $request = [
             'state' => $this->validStateValue,
             'code' => 'authCode'
         ];
 
+        $this->mockSourceService->expects($this->exactly(1))
+        ->method('completeLogout');
         $stateValue = serialize([
             State::ID => 'validStateId',
             State::STAGE => 'authouath2:logout',
@@ -108,17 +107,7 @@ class OIDCLogoutHandlerTest extends TestCase
 
         Session::getSessionFromRequest()->setData('\SimpleSAML\Auth\State', 'validStateId', $stateValue);
         // when: handling the response
-        try {
-            $this->logoutHandler->handleResponseFromRequest($request);
-            $this->fail("Redirect expected");
-        } catch (RedirectException $e) {
-            $this->assertEquals('redirectTrustedURL', $e->getMessage());
-            $this->assertEquals(
-                '/',
-                $e->getUrl(),
-                "First argument should be the redirect url"
-            );
-            $this->assertEquals([], $e->getParams(), "query params are already added into url");
-        }
+        $this->logoutHandler->handleResponseFromRequest($request);
+        // earlier we required that the mocked completeLogout is called
     }
 }

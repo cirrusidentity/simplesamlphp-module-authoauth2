@@ -9,8 +9,8 @@ use League\OAuth2\Client\Provider\GenericResourceOwner;
 use League\OAuth2\Client\Tool\BearerAuthorizationTrait;
 use League\OAuth2\Client\Token\AccessToken;
 use Psr\Http\Message\ResponseInterface;
+use SimpleSAML\Configuration;
 use SimpleSAML\Logger;
-use SimpleSAML\Utils\HTTP;
 
 class OpenIDConnectProvider extends AbstractProvider
 {
@@ -22,36 +22,44 @@ class OpenIDConnectProvider extends AbstractProvider
     /**
      * @var string
      */
-    protected $issuer;
+    protected string $issuer;
+
+    protected string $discoveryUrl;
 
     /**
-     * @var array
+     * @var ?Configuration
      */
-    private $openIdConfiguration;
+    private ?Configuration $openIdConfiguration = null;
 
     /**
      * @var string
      */
-    private $responseError = 'error';
+    private string $responseError = 'error';
 
     /**
      * @var array
      */
-    private $defaultScopes = [];
+    private array $defaultScopes = [];
+
+    protected bool $validateIssuer = false;
 
     public function __construct(array $options = [], array $collaborators = [])
     {
         parent::__construct($options, $collaborators);
 
-        if (!array_key_exists('issuer', $options)) {
-            throw new \InvalidArgumentException(
-                'Required options not defined: issuer'
-            );
-        }
-        $this->issuer = $options['issuer'];
-        $this->defaultScopes = $options['scopes'] ?? ['openid', 'profile'];
+        $optionsConfig = Configuration::loadFromArray($options);
+        $this->issuer = $optionsConfig->getString('issuer');
+        $this->discoveryUrl = $optionsConfig->getOptionalString(
+            'discoveryUrl',
+            rtrim($this->issuer, '/') . self::CONFIGURATION_PATH
+        );
+        $this->defaultScopes = $optionsConfig->getOptionalArray('scopes', ['openid', 'profile']);
+        $this->validateIssuer = $optionsConfig->getOptionalBoolean('validateIssuer', true);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function getScopeSeparator()
     {
         return ' ';
@@ -72,7 +80,7 @@ class OpenIDConnectProvider extends AbstractProvider
             }
         }
         if ($error || $response->getStatusCode() >= 400) {
-            throw new IdentityProviderException($error, 0, $data);
+            throw new IdentityProviderException($error ?? '', 0, $data);
         }
     }
 
@@ -85,9 +93,8 @@ class OpenIDConnectProvider extends AbstractProvider
      * Do any required verification of the id token and return an array of decoded claims
      *
      * @param string $id_token Raw id token as string
-     * @return array associative array of claims decoded from the id token
      */
-    public function verifyIdToken($id_token)
+    public function verifyIdToken(string $id_token): void
     {
         try {
             $keys = $this->getSigningKeys();
@@ -97,14 +104,23 @@ class OpenIDConnectProvider extends AbstractProvider
             if (!in_array($this->clientId, $aud)) {
                 throw new IdentityProviderException("ID token has incorrect audience", 0, $claims->aud);
             }
-            if ($claims->iss !== $this->issuer) {
-                throw new IdentityProviderException("ID token has incorrect issuer", 0, $claims->iss);
+            // When working with Azure the issuer is tenant specific, but the discovery metadata can be for all tenants
+            if ($this->validateIssuer && $claims->iss !== $this->issuer) {
+                throw new IdentityProviderException(
+                    "ID token has incorrect issuer. Expected '{$this->issuer}' recieved '{$claims->iss}'",
+                    0,
+                    $claims->iss
+                );
             }
         } catch (\UnexpectedValueException $e) {
             throw new IdentityProviderException("ID token validation failed", 0, $e->getMessage());
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * @psalm-suppress MoreSpecificImplementedParamType superClass has phpdoc doesn't align with parameter type
+     */
     protected function prepareAccessTokenResponse(array $result)
     {
         $result = parent::prepareAccessTokenResponse($result);
@@ -112,13 +128,19 @@ class OpenIDConnectProvider extends AbstractProvider
         return $result;
     }
 
-    protected function getOpenIDConfiguration()
+    public function getDiscoveryUrl(): string
+    {
+        return $this->discoveryUrl;
+    }
+
+    protected function getOpenIDConfiguration(): Configuration
     {
         if (isset($this->openIdConfiguration)) {
             return $this->openIdConfiguration;
         }
 
-        $req = $this->getRequest('GET', rtrim($this->issuer, '/') . self::CONFIGURATION_PATH);
+        $req = $this->getRequest('GET', $this->getDiscoveryUrl());
+        /** @var array $config */
         $config = $this->getParsedResponse($req);
         $requiredEndPoints = [ "authorization_endpoint", "token_endpoint", "jwks_uri", "issuer", "userinfo_endpoint" ];
         foreach ($requiredEndPoints as $key) {
@@ -150,28 +172,39 @@ class OpenIDConnectProvider extends AbstractProvider
                 }
             }
         }
-        $this->openIdConfiguration = $config;
-        return $config;
+        $this->openIdConfiguration =  Configuration::loadFromArray($config);
+        return $this->openIdConfiguration;
     }
 
-    protected static function base64urlDecode($input)
+    /**
+     * @param string $input
+     * @return false|string
+     */
+    protected static function base64urlDecode(string $input)
     {
         return base64_decode(strtr($input, '-_', '+/'));
     }
 
-    protected function getSigningKeys()
+    protected function getSigningKeys(): array
     {
-        $url = $this->getOpenIDConfiguration()['jwks_uri'];
+        $url = $this->getOpenIDConfiguration()->getString('jwks_uri');
+        /** @var array $jwks */
         $jwks = $this->getParsedResponse($this->getRequest('GET', $url));
         $keys = [];
         foreach ($jwks['keys'] as $key) {
+            /** @var string $kid */
             $kid = $key['kid'];
             if (array_key_exists('x5c', $key)) {
+                /** @var array $x5c */
                 $x5c = $key['x5c'];
                 $keys[$kid] = "-----BEGIN CERTIFICATE-----\n" . $x5c[0] . "\n-----END CERTIFICATE-----";
             } elseif ($key['kty'] === 'RSA') {
                 $e = self::base64urlDecode($key['e']);
                 $n = self::base64urlDecode($key['n']);
+                if (!$n || !$e) {
+                    Logger::warning("Failed to base64 decod key data for key id: " . $kid);
+                    continue;
+                }
                 $keys[$kid] = \RobRichards\XMLSecLibs\XMLSecurityKey::convertRSA($n, $e);
             } else {
                 Logger::warning("Failed to load key data for key id: " . $kid);
@@ -189,7 +222,7 @@ class OpenIDConnectProvider extends AbstractProvider
      */
     public function getBaseAuthorizationUrl()
     {
-        return $this->getOpenIDConfiguration()["authorization_endpoint"];
+        return $this->getOpenIDConfiguration()->getString("authorization_endpoint");
     }
 
     /**
@@ -202,26 +235,20 @@ class OpenIDConnectProvider extends AbstractProvider
      */
     public function getBaseAccessTokenUrl(array $params)
     {
-        return $this->getOpenIDConfiguration()["token_endpoint"];
+        return $this->getOpenIDConfiguration()->getString("token_endpoint");
     }
 
     /**
-     * Returns the URL for requesting the resource owner's details.
-     *
-     * @param AccessToken $token
-     * @return string
+     * {@inheritDoc}
      */
     public function getResourceOwnerDetailsUrl(AccessToken $token)
     {
-        return $this->getOpenIDConfiguration()["userinfo_endpoint"];
+        return $this->getOpenIDConfiguration()->getString("userinfo_endpoint");
     }
 
-    public function getEndSessionEndpoint()
+    public function getEndSessionEndpoint(): ?string
     {
         $config = $this->getOpenIDConfiguration();
-        if (array_key_exists("end_session_endpoint", $config)) {
-            return $config["end_session_endpoint"];
-        }
-        return null;
+        return $config->getOptionalString("end_session_endpoint", null);
     }
 }

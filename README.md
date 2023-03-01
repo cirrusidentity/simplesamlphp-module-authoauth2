@@ -38,6 +38,8 @@ If you are interested in using SSP as an OIDC OP see the [OIDC module](https://g
 - [Migrating from an existing auth module](#migrating-from-an-existing-auth-module)
   - [Calling OAuth2ResponseHandler](#calling-oauth2responsehandler)
 - [Development](#development)
+  - [Docker](#docker)
+    - [Facebook test user](#facebook-test-user)
   - [Code style](#code-style)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -48,6 +50,10 @@ If you are interested in using SSP as an OIDC OP see the [OIDC module](https://g
 The module can be installed with composer.
 
     composer require cirrusidentity/simplesamlphp-module-authoauth2
+
+
+If you are on SSP 2 use version 4.
+If you are on SSP 1.X use version 3.
 
 Or you can install the latest from master
 
@@ -163,9 +169,15 @@ Not all configuration options from `authoauth2:OAuth2` are supported in `OpenIDC
               'clientSecret' => '36aefb235314bad5df075363b79cbbcd',
 
               // Most Optional settings for OAuth2 above can be used
-              // *** New Optional ***
+              // *** Optional ***
               // Customize post logout redirect, if you don't want to use the standard /module.php/authoauth2/loggedout.php
               'postLogoutRedirectUri' => 'https://myapp.example.com/loggedout'
+
+              // Set a specific discovery url. Default is $issuer/.well-known/openid-configuration
+              'discoveryUrl' => 'https://login.microsoftonline.com/common/.well-known/openid-configuration',
+              // Check if the issuer in the ID token matches the one from discovery. Default true. For some multi-tenant
+              // applications (for example cross tenant Azure logins) the token issuer varies with tenant
+              'validateIssuer' => false,
 
               // Earlier version OpenIDConnect authsource doesn't support using `scopes` for overriding scope
               //'urlAuthorizeOptions' => [
@@ -178,7 +190,7 @@ If your OP supports front channel single logout, you can configure `https://host
 
 ## Provider Specific Usage
 
-There are numerous [Offical](http://oauth2-client.thephpleague.com/providers/league/) and [Third-Party](http://oauth2-client.thephpleague.com/providers/thirdparty/) providers
+There are numerous [Official](http://oauth2-client.thephpleague.com/providers/league/) and [Third-Party](http://oauth2-client.thephpleague.com/providers/thirdparty/) providers
 that you can use instead of the generic OAuth2 provider. Using one of those providers can simplify the configurations.
 
 To use a provider you must first install it `composer require league/oauth2-some-provider`
@@ -232,6 +244,12 @@ You can use the Facebook template `'template' => 'Facebook',` and then provide j
 have a cleaner looking config
 
 ```php
+    'templateFacebook' => [
+       'authoauth2:OAuth2',
+       'template' => 'Facebook',
+        'clientId' => '13397273example',
+        'clientSecret' => '36aefb235314baexample',
+    ],
     'genericFacebookTest' => array(
         'authoauth2:OAuth2',
         // *** Facebook endpoints ***
@@ -358,7 +376,7 @@ If you are migrating away from an existing auth module, such as `authfacebook` y
  * override the `authoauth2` authsource's redirect URI to match the `authfacebook` uri (`https://myserver.com/module.php/authfacebook/linkback.php)` AND do one of the following
    * edit `/modules/authfacebook/www/linkback.php` to conditionally call `OAuth2ResponseHandler` (see below)
    * configure an Apache rewrite rule to change '/module.php/authfacebook/linkback.php' to '/module.php/authoauth2/linkback.php'
-   * symlink or edit `/modules/authfacebook/www/linkback.php` to invoke the `/modules/authoauth2/www/linkback.php`
+   * symlink or edit `/modules/authfacebook/www/linkback.php` to invoke the `/modules/authoauth2/public/linkback.php`
    
 
 Some social providers support multiple login protocols and older SSP modules may use the non-OAuth2 version for login.
@@ -382,24 +400,31 @@ if ($handler->canHandleResponse()) {
 
 # Development
 
-To perform some integration tests you can run the embedded
-webserver. You may need to run `composer install` and then `phpunit` one time first to correctly
-link the project into SSP's modules directory
-
-```bash
-export SIMPLESAMLPHP_CONFIG_DIR=$PWD/tests/config/
-mkdir -p /tmp/ssp-log/
-php -S 0.0.0.0:8732 -t $PWD/vendor/simplesamlphp/simplesamlphp/www &
+## Docker
 
 ```
+docker run --name ssp-oauth2-dev \
+   --mount type=bind,source="$(pwd)",target=/var/simplesamlphp/staging-modules/authoauth2,readonly \
+  -e STAGINGCOMPOSERREPOS=authoauth2 \
+  -e COMPOSER_REQUIRE="cirrusidentity/simplesamlphp-module-authoauth2:@dev" \
+  -e SSP_ADMIN_PASSWORD=secret1 \
+  -e SSP_ENABLED_MODULES="authoauth2" \
+  --mount type=bind,source="$(pwd)/docker/config/authsources.php",target=/var/simplesamlphp/config/authsources.php,readonly \
+  --mount type=bind,source="$(pwd)/docker/config/config-override.php",target=/var/simplesamlphp/config/config-override.php,readonly \
+  -p 443:443 cirrusid/simplesamlphp:v2.0.0
+```
 
-Then visit http://abc.tutorial.stack-dev.cirrusidentity.com:8732/
+and visit (which resolves to localhost, and the docker container) the [test authsource page](https://oauth2-validation.local.stack-dev.cirrusidentity.com/simplesaml/module.php/admin/test)
+to test some pre-configured social integrations (yes, you can see the app passwords, these apps are only used for this demo).
 
-Note: `*.tutorial.stack-dev.cirrusidentity.com` resolves to your local host.
+### Facebook test user
 
-`authsources.php` contains some preconfigured clients. The generic facebook and google ones should work as is.
-The generic amazon one requires `https`. You can run use it and when Amazon redirects back to `https` change the url to
-`http` to proceed. The google provider authsource requires you to install the google auth module first.
+The pre-configured Facebook apps can only be accessed with a test account. You must be signed out of Facebook,
+otherwise you will get an error saying the application is not active.
+
+* email: open_nzwvghb_user@tfbnw.net
+* password: SSPisMyFavorite2022
+
 
 ## Code style
 

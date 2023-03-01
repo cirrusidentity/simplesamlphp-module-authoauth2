@@ -1,39 +1,51 @@
 {
-    "name": "cirrusidentity/simplesamlphp-module-authoauth2",
-    "description": "SSP Module for Oauth2 authentication sources",
-    "type": "simplesamlphp-module",
-    "keywords" : ["simplesamlphp", "oauth2", "oidc"],
-    "license" : "LGPL-2.1-only",
-    "require": {
-        "php" : ">=7.3",
-        "simplesamlphp/composer-module-installer": "^1.1",
-        "league/oauth2-client": "^2.6",
-        "simplesamlphp/simplesamlphp": "~1.18",
-        "firebase/php-jwt": "^5.0",
-        "kevinrob/guzzle-cache-middleware": "^3.2",
-        "psr/cache": "^1.0",
-        "symfony/cache": "^5.0|^4.3|^3.4"
-    },
-    "require-dev": {
-        "phpunit/phpunit": "^8",
-        "cirrusidentity/simplesamlphp-test-utils": "dev-master",
-        "simplesamlphp/simplesamlphp-test-framework": "^0.0.14",
-        "squizlabs/php_codesniffer": "3.*",
-        "codeception/aspect-mock": "3.1.0",
-        "goaop/framework": "2.3.4",
-        "goaop/parser-reflection": "2.1.3"
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Test\\SimpleSAML\\": "tests/lib/"
-        }
-    },
-    "config": {
-        "allow-plugins": {
-            "simplesamlphp/composer-module-installer": true
-        }
-    },
-    "suggest": {
-        "patrickbussmann/oauth2-apple": "Used to provide Apple sign in functionality"
+  "name": "cirrusidentity/simplesamlphp-module-authoauth2",
+  "description": "SSP Module for Oauth2 authentication sources",
+  "type": "simplesamlphp-module",
+  "keywords": [
+    "simplesamlphp",
+    "oauth2",
+    "oidc"
+  ],
+  "license": "LGPL-2.1-only",
+  "require": {
+    "php": ">=7.4 || ^8.0",
+    "simplesamlphp/composer-module-installer": "^1.1",
+    "league/oauth2-client": "^2.6",
+    "simplesamlphp/simplesamlphp": "^v2.0.0",
+    "firebase/php-jwt": "^5.0",
+    "kevinrob/guzzle-cache-middleware": "^3.2",
+    "psr/cache": "^1.0",
+    "symfony/cache": "^5.0|^4.3|^3.4",
+    "ext-json": "*"
+  },
+  "require-dev": {
+    "simplesamlphp/simplesamlphp-test-framework": "^1.2",
+    "phpunit/phpunit": "^9.5",
+    "psalm/plugin-phpunit": "^0.18.3"
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Test\\SimpleSAML\\": "tests/lib/"
     }
+  },
+  "config": {
+    "allow-plugins": {
+      "simplesamlphp/composer-module-installer": true
+    }
+  },
+  "suggest": {
+    "patrickbussmann/oauth2-apple": "Used to provide Apple sign in functionality"
+  },
+  "scripts": {
+    "validate": [
+      "vendor/bin/phpunit --no-coverage",
+      "vendor/bin/phpcs -p",
+      "vendor/bin/psalm --clear-cache",
+      "vendor/bin/psalm --use-baseline=psalm-baseline.xml"
+    ],
+    "tests": [
+      "vendor/bin/phpunit --no-coverage"
+    ]
+  }
 }

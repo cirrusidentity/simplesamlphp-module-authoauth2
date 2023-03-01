@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<psalm
+    errorLevel="1"
+    hideExternalErrors="true"
+    resolveFromConfigFile="true"
+    autoloader="vendor/autoload.php"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+    errorBaseline="psalm-baseline.xml"
+>
+    <projectFiles>
+        <directory name="lib"/>
+<!-- Too many errors in test folder at the moment -->
+        <directory name="tests"/>
+<!--        <directory name="templates" /> -->
+        <ignoreFiles>
+            <file name="tests/bootstrap.php"/>
+<!--            <directory name="tests/metadata" />-->
+<!--            <directory name="tests/config" />-->
+        </ignoreFiles>
+    </projectFiles>
+    <issueHandlers>
+        <PropertyNotSetInConstructor errorLevel="info"/>
+    </issueHandlers>
+<plugins><pluginClass class="Psalm\PhpUnitPlugin\Plugin"/></plugins></psalm>

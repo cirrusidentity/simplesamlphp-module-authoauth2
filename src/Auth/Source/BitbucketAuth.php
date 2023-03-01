@@ -2,10 +2,10 @@
 
 namespace SimpleSAML\Module\authoauth2\Auth\Source;
 
+use Exception;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
 use SimpleSAML\Logger;
-use SimpleSAML\Module\authoauth2\ConfigTemplate;
 
 /**
  * Bitbucket's api requires a 2nd call to determine email address.
@@ -32,7 +32,7 @@ class BitbucketAuth extends OAuth2
      * @param AbstractProvider $provider
      * @param array $state
      */
-    public function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, &$state)
+    public function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, array &$state): void
     {
         if (!in_array('email', $this->config->getArray('scopes'))) {
             // We didn't request email scope originally
@@ -42,12 +42,14 @@ class BitbucketAuth extends OAuth2
         $request = $provider->getAuthenticatedRequest('GET', $emailUrl, $accessToken);
         try {
             $response = $this->retry(
+            /**
+             * @return mixed
+             */
                 function () use ($provider, $request) {
                     return $provider->getParsedResponse($request);
-                },
-                $this->config->getInteger('retryOnError', 1)
+                }
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // not getting email shouldn't fail the authentication
             Logger::error(
                 'BitbucketAuth: ' . $this->getLabel() . ' exception email query response ' . $e->getMessage()

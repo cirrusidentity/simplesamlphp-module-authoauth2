@@ -2,18 +2,19 @@
 
 namespace Test\SimpleSAML\Auth\Source;
 
-use AspectMock\Test as test;
-use CirrusIdentity\SSP\Test\Capture\RedirectException;
-use CirrusIdentity\SSP\Test\MockHttp;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\HandlerStack;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Provider\GenericResourceOwner;
 use League\OAuth2\Client\Token\AccessToken;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
+use SimpleSAML\Auth\State;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
+use SimpleSAML\Utils\HTTP;
 use Test\SimpleSAML\MockOAuth2Provider;
+use Test\SimpleSAML\RedirectException;
 
 /**
  * Test authentication to OAuth2.
@@ -24,17 +25,7 @@ class OAuth2Test extends TestCase
 
     public $module_config;
 
-    public static function setUpBeforeClass(): void
-    {
-        putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(dirname(dirname(__DIR__))) . '/config');
-    }
-
-    protected function tearDown(): void
-    {
-        test::clean(); // remove all registered test doubles
-    }
-
-    protected function getInstance(array $config)
+    protected function getInstance(array $config): OAuth2
     {
         $info = ['AuthId' => static::AUTH_ID];
         return new OAuth2($info, $config);
@@ -99,7 +90,7 @@ class OAuth2Test extends TestCase
         );
     }
 
-    public function authenticateDataProvider()
+    public function authenticateDataProvider(): array
     {
         return [
             [
@@ -108,7 +99,7 @@ class OAuth2Test extends TestCase
                     'urlAccessToken' => 'https://example.com/token',
                     'urlResourceOwnerDetails' => 'https://example.com/userinfo'
                 ],
-                [\SimpleSAML\Auth\State::ID => 'stateId'],
+                [State::ID => 'stateId'],
                 // phpcs:ignore Generic.Files.LineLength.TooLong
                 'https://example.com/auth?state=authoauth2%7CstateId&response_type=code&approval_prompt=auto&redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Flinkback.php'
             ]
@@ -124,21 +115,22 @@ class OAuth2Test extends TestCase
     public function testAuthenticatePerformsRedirect($config, $state, $expectedUrl)
     {
         // Override redirect behavior
-        MockHttp::throwOnRedirectTrustedURL();
+        $http = $this->createMock(HTTP::class);
+        $http->method('redirectTrustedURL')
+            ->with($expectedUrl)
+            ->willThrowException(
+                new RedirectException('redirectTrustedURL', $expectedUrl)
+            );
 
         $authOAuth2 = $this->getInstance($config);
+        $authOAuth2->setHttp($http);
 
         try {
             $authOAuth2->authenticate($state);
             $this->fail("Redirect expected");
         } catch (RedirectException $e) {
             $this->assertEquals('redirectTrustedURL', $e->getMessage());
-            $this->assertEquals(
-                $expectedUrl,
-                $e->getUrl(),
-                "First argument should be the redirect url"
-            );
-            $this->assertEquals([], $e->getParams(), "query params are already added into url");
+            $this->assertEquals($expectedUrl, $e->getUrl());
         }
 
         $this->assertEquals(static::AUTH_ID, $state[OAuth2::AUTHID], 'Ensure authsource name is presevered in state');
@@ -169,7 +161,7 @@ class OAuth2Test extends TestCase
     {
         // given: A mock Oauth2 provider
         $code = 'theCode';
-        $state = [\SimpleSAML\Auth\State::ID => 'stateId'];
+        $state = [State::ID => 'stateId'];
 
         $mock = $this->getMockBuilder(AbstractProvider::class)
             ->disableOriginalConstructor()
@@ -223,7 +215,7 @@ class OAuth2Test extends TestCase
     {
         // given: A mock Oauth2 provider
         $code = 'theCode';
-        $state = [\SimpleSAML\Auth\State::ID => 'stateId'];
+        $state = [State::ID => 'stateId'];
 
         $mock = $this->getMockBuilder(AbstractProvider::class)
             ->disableOriginalConstructor()
@@ -270,14 +262,14 @@ class OAuth2Test extends TestCase
     {
         // given: A mock Oauth2 provider
         $code = 'theCode';
-        $state = [\SimpleSAML\Auth\State::ID => 'stateId'];
+        $state = [State::ID => 'stateId'];
 
-        /** @var $mock AbstractProvider|\PHPUnit_Framework_MockObject_MockObject */
+        /** @var AbstractProvider|MockObject $mock */
         $mock = $this->getMockBuilder(AbstractProvider::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        /** @var $mockRequest RequestInterface|\PHPUnit_Framework_MockObject_MockObject */
+        /** @var RequestInterface|MockObject $mockRequest */
         $mockRequest = $this->getMockBuilder(RequestInterface::class)
             ->getMock();
 
@@ -319,7 +311,7 @@ class OAuth2Test extends TestCase
     ) {
         // given: A mock Oauth2 provider
         $code = 'theCode';
-        $state = [\SimpleSAML\Auth\State::ID => 'stateId'];
+        $state = [State::ID => 'stateId'];
 
         $mock = $this->getMockBuilder(AbstractProvider::class)
             ->disableOriginalConstructor()
@@ -376,14 +368,14 @@ class OAuth2Test extends TestCase
             'attributePrefix' => 'test.',
             'retryOnError' => 2,
         ];
-        $state = [\SimpleSAML\Auth\State::ID => 'stateId'];
+        $state = [State::ID => 'stateId'];
 
-        /** @var $mock AbstractProvider|\PHPUnit_Framework_MockObject_MockObject */
+        /** @var AbstractProvider|MockObject $mock */
         $mock = $this->getMockBuilder(AbstractProvider::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        /** @var $mockRequest RequestInterface|\PHPUnit_Framework_MockObject_MockObject */
+        /** @var RequestInterface|MockObject $mockRequest */
         $mockRequest = $this->getMockBuilder(RequestInterface::class)
             ->getMock();
 

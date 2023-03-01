@@ -13,13 +13,12 @@ class OrcidOIDCAuthTest extends TestCase
 {
     public static function setUpBeforeClass(): void
     {
-        putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(dirname(dirname(__DIR__))) . '/config');
          // When all tests are run at once, sometimes a Configuration is created prior to us
         // setting the one we want to use for the test.
         Configuration::clearInternalState();
     }
 
-    public function emailResponseProvider()
+    public function emailResponseProvider(): array
     {
         return [
             // no email addresses
@@ -185,9 +184,9 @@ class OrcidOIDCAuthTest extends TestCase
     /**
      * @dataProvider emailResponseProvider
      * @param array $emailResponse The JSON response from the email endpoint
-     * @param array $expectedEmail What the resolved email address should be
+     * @param string $expectedEmail What the resolved email address should be
      */
-    public function testEmailResolution(array $emailResponse, ?string $expectedEmail)
+    public function testEmailResolution(array $emailResponse, ?string $expectedEmail): void
     {
         $orcidAuth = new OrcidOIDCAuth(['AuthId' => 'orcid'], []);
         $email = $orcidAuth->parseEmailLookupResponse($emailResponse);

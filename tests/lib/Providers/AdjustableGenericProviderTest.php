@@ -10,23 +10,18 @@ use Symfony\Component\HttpFoundation\Request;
 
 class AdjustableGenericProviderTest extends TestCase
 {
-    private $requiredProviderConifg = [
+    private array $requiredProviderConifg = [
         'urlAuthorize' => 'https://www.facebook.com/dialog/oauth',
         'urlAccessToken' => 'https://graph.facebook.com/oauth/access_token',
         'urlResourceOwnerDetails' => 'https://graph.facebook.com/me?fields=123',
     ];
-
-    public static function setUpBeforeClass(): void
-    {
-        putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(dirname(__DIR__)) . '/config');
-    }
 
     /**
      * @dataProvider adjustProvider
      * @param array $tokenResponse
      * @param $expectedQueryString
      */
-    public function testAdjustingResourceOwnerUrl(array $tokenResponse, $expectedQueryString)
+    public function testAdjustingResourceOwnerUrl(array $tokenResponse, $expectedQueryString): void
     {
 
         $token = new AccessToken($tokenResponse);
@@ -43,7 +38,7 @@ class AdjustableGenericProviderTest extends TestCase
         $this->assertEquals($expectedQueryString, $query);
     }
 
-    public function adjustProvider()
+    public function adjustProvider(): array
     {
         return [
             [

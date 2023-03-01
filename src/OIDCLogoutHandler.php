@@ -1,46 +1,43 @@
 <?php
 
-/**
- * Created by PhpStorm.
- * User: patrick
- * Date: 12/21/17
- * Time: 3:26 PM
- */
-
 namespace SimpleSAML\Module\authoauth2;
 
-use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
+use SimpleSAML\Auth\Simple;
+use SimpleSAML\Configuration;
 use SimpleSAML\Logger;
-use SimpleSAML\Module;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
 use SimpleSAML\Module\authoauth2\Auth\Source\OpenIDConnect;
-use SimpleSAML\Utils\HTTP;
+use SimpleSAML\Module\authoauth2\locators\SourceServiceLocator;
 
 class OIDCLogoutHandler
 {
-    private $expectedStageState = OpenIDConnect::STAGE_LOGOUT;
-    private $expectedStateAuthId = OAuth2::AUTHID;
+    use SourceServiceLocator;
 
-    private $expectedPrefix = OAuth2::STATE_PREFIX . '-';
+    private string $expectedStageState = OpenIDConnect::STAGE_LOGOUT;
+    private string $expectedStateAuthId = OAuth2::AUTHID;
+
+    private string $expectedPrefix = OAuth2::STATE_PREFIX . '-';
 
     /**
      * Look at the state parameter returned by the OpenID Connect server and determine if we can handle it;
      * @return bool true if response can be handled by this module
      */
-    public function canHandleResponseFromRequest(array $request)
+    public function canHandleResponseFromRequest(array $request): bool
     {
-        return strpos(@$request['state'], $this->expectedPrefix) === 0;
+        /** @var ?string $stateId */
+        $stateId = $request['state'] ?? null;
+        return is_string($stateId) && strpos($stateId, $this->expectedPrefix) === 0;
     }
 
     /**
      * Handle an OAuth2 response.
      */
-    public function handleResponse()
+    public function handleResponse(): void
     {
         $this->handleResponseFromRequest($_REQUEST);
     }
 
-    public function handleResponseFromRequest(array $request)
+    public function handleResponseFromRequest(array $request): void
     {
         Logger::debug('authoauth2: logout request=' . var_export($request, true));
 
@@ -61,28 +58,28 @@ class OIDCLogoutHandler
         $sourceId = $state[$this->expectedStateAuthId];
 
         /**
-         * @var OAuth2 $source
+         * @var ?OpenIDConnect $source
          */
-        $source = \SimpleSAML\Auth\Source::getById($sourceId, OpenIDConnect::class);
+        $source = $this->getSourceService()->getById($sourceId, OpenIDConnect::class);
         if ($source === null) {
             throw new \SimpleSAML\Error\BadRequest('Could not find authentication source with id ' . $sourceId);
         }
 
-        \SimpleSAML\Auth\Source::completeLogout($state);
+        $this->getSourceService()->completeLogout($state);
         // @codeCoverageIgnoreStart
     }
 
-    public function handleRequest()
+    public function handleRequest(): void
     {
         $this->handleRequestFromRequest($_REQUEST);
     }
 
-    public function handleRequestFromRequest(array $request)
+    public function handleRequestFromRequest(array $request): void
     {
         Logger::debug('authoauth2: logout request=' . var_export($request, true));
-        $config = \SimpleSAML\Configuration::getInstance();
+        $config = Configuration::getInstance();
         $sourceId = $request['authSource'];
-        $as = new \SimpleSAML\Auth\Simple($sourceId);
+        $as = new Simple($sourceId);
         $as->logout([
             'oidc:localLogout' => true,
             'ReturnTo' => $config->getBasePath() . 'logout.php',

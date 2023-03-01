@@ -11,12 +11,7 @@ use Test\SimpleSAML\MockOpenIDConnectProvider;
 
 class OpenIDConnectProviderTest extends TestCase
 {
-    public static function setUpBeforeClass(): void
-    {
-        putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(dirname(__DIR__)) . '/config');
-    }
-
-    public function idTokenErrorDataProvider()
+    public function idTokenErrorDataProvider(): array
     {
         // phpcs:disable
         return [
@@ -41,7 +36,7 @@ class OpenIDConnectProviderTest extends TestCase
      * @param $idToken
      * @param $expectedMessage
      */
-    public function testIdTokenValidationFails($idToken, $expectedMessage)
+    public function testIdTokenValidationFails($idToken, $expectedMessage): void
     {
         $this->expectException(IdentityProviderException::class);
         $this->expectExceptionMessage($expectedMessage);
@@ -59,7 +54,7 @@ class OpenIDConnectProviderTest extends TestCase
     /**
      * Confirm scope can be set with scopes or authoricationUrl.scope
      */
-    public function testSetScopes()
+    public function testSetScopes(): void
     {
         $provider = new OpenIDConnectProvider(
             ['issuer' => 'https://accounts.google.com']
@@ -78,5 +73,27 @@ class OpenIDConnectProviderTest extends TestCase
         $url = $provider->getAuthorizationUrl();
         $request = Request::create($url);
         $this->assertEquals('openid', $request->query->get('scope'));
+    }
+
+    public function testConfiguringDiscoveryUrl(): void
+    {
+        $provider = new OpenIDConnectProvider(
+            ['issuer' => 'https://accounts.example.com']
+        );
+        $this->assertEquals(
+            'https://accounts.example.com/.well-known/openid-configuration',
+            $provider->getDiscoveryUrl()
+        );
+
+        $provider = new OpenIDConnectProvider(
+            [
+                'issuer' => 'https://accounts.example.com',
+                'discoveryUrl' => 'https://otherhost.example.com/path/path2/.well-known/openid-configuration'
+            ]
+        );
+        $this->assertEquals(
+            'https://otherhost.example.com/path/path2/.well-known/openid-configuration',
+            $provider->getDiscoveryUrl()
+        );
     }
 }

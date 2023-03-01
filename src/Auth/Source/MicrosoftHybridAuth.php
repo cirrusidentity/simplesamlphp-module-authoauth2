@@ -1,18 +1,10 @@
 <?php
 
-/**
- * Created by PhpStorm.
- * User: patrick
- * Date: 10/16/18
- * Time: 1:34 PM
- */
-
 namespace SimpleSAML\Module\authoauth2\Auth\Source;
 
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
 use SimpleSAML\Logger;
-use SimpleSAML\Module\authoauth2\ConfigTemplate;
 
 /**
  * Microsoft seems to return some attributes in the ID token and some attributes in user profile call.
@@ -38,7 +30,7 @@ class MicrosoftHybridAuth extends OAuth2
      * @param AbstractProvider $provider
      * @param array $state
      */
-    protected function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, &$state)
+    protected function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, array &$state): void
     {
         if (!array_key_exists('id_token', $accessToken->getValues())) {
             Logger::error('mshybridauth: ' . $this->getLabel() . ' no id_token returned');

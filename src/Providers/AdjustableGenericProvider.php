@@ -13,9 +13,8 @@ class AdjustableGenericProvider extends GenericProvider
      * The fields (and corresponding query param names) in the token response that should get added
      * to the resource owner query. For example ['uid' => 'user'] would add the value of 'uid' from
      * the token response json as the query param 'user' to the resource owner details endpoint
-     * @var array[]
      */
-    protected $tokenFieldsToUserDetailsUrl;
+    protected array $tokenFieldsToUserDetailsUrl = [];
 
     protected function getConfigurableOptions()
     {
@@ -34,6 +33,9 @@ class AdjustableGenericProvider extends GenericProvider
         $responseValues = $token->jsonSerialize();
         if ($this->tokenFieldsToUserDetailsUrl) {
             foreach ($this->tokenFieldsToUserDetailsUrl as $field => $param) {
+                if (!is_string($param)) {
+                    throw new \Exception('Query param for field ' . $field . ' must be a string');
+                }
                 if (array_key_exists($field, $responseValues)) {
                     $toAdd[$param] = $responseValues[$field];
                 } else {
@@ -42,7 +44,7 @@ class AdjustableGenericProvider extends GenericProvider
             }
         }
         if ($toAdd) {
-            $url = HTTP::addURLParameters($url, $toAdd);
+            $url = (new HTTP())->addURLParameters($url, $toAdd);
         }
         return $url;
     }

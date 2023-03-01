@@ -2,18 +2,16 @@
 
 namespace Test\SimpleSAML;
 
-use CirrusIdentity\SSP\Test\Auth\MockAuthSource;
-use CirrusIdentity\SSP\Test\Capture\RedirectException;
-use CirrusIdentity\SSP\Test\MockHttp;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
+use SimpleSAML\Module\authoauth2\locators\SourceService;
 use SimpleSAML\Module\authoauth2\OAuth2ResponseHandler;
 use SimpleSAML\Auth\State;
 use SimpleSAML\Error\AuthSource;
 use SimpleSAML\Error\UserAborted;
 use SimpleSAML\Session;
-use AspectMock\Test as test;
+use SimpleSAML\Utils\HTTP;
 
 class OAuth2ResponseHandlerTest extends TestCase
 {
@@ -29,26 +27,28 @@ class OAuth2ResponseHandlerTest extends TestCase
      */
     private $mockAuthSource;
 
-    public static function setUpBeforeClass(): void
-    {
-        putenv('SIMPLESAMLPHP_CONFIG_DIR=' . dirname(__DIR__) . '/config');
-    }
+    /**
+     * @var MockObject|SourceService
+     */
+    protected $mockSourceService;
 
     protected function setUp(): void
     {
-        test::clean();
-        MockAuthSource::clearInternalState();
         $this->responseHandler = new OAuth2ResponseHandler();
 
         $this->mockAuthSource = $this->createMock(OAuth2::class);
         $this->mockAuthSource->method('getAuthId')->willReturn('mockAuthSource');
-        MockAuthSource::getById($this->mockAuthSource, 'mockAuthSource');
+        $this->mockSourceService = $this->createMock(SourceService::class);
+        $this->mockSourceService->method('getById')
+            ->with('mockAuthSource', OAuth2::class)
+            ->willReturn($this->mockAuthSource);
+        $this->responseHandler->setSourceService($this->mockSourceService);
     }
 
     /**
      * Confirm checking if response can be handled by this module
      */
-    public function testCanHandle()
+    public function testCanHandle(): void
     {
         $this->assertFalse($this->responseHandler->canHandleResponseFromRequest([]));
         $this->assertFalse($this->responseHandler->canHandleResponseFromRequest(['wrongParams' => 'value']));
@@ -170,8 +170,20 @@ class OAuth2ResponseHandlerTest extends TestCase
             State::STAGE => 'authouath2:init',
             'authouath2:AuthId' => 'mockAuthSource',
         ]);
-        // Mock completeAuth so we can verify its called later
-        $double = MockAuthSource::completeAuth();
+
+        // Confirm completeAuth is called later
+        $this->mockSourceService->expects($this->once())
+            ->method('completeAuth')
+            ->with(
+                $this->callback(function (array $state) {
+                    $this->assertEquals([
+                        '\SimpleSAML\Auth\State.id' => 'validStateId',
+                        '\SimpleSAML\Auth\State.stage' => 'authouath2:init',
+                        'authouath2:AuthId' => 'mockAuthSource'
+                    ], $state);
+                    return true;
+                })
+            );
 
         // phpunit mock to confirm authsource called
         $this->mockAuthSource->expects($this->once())
@@ -186,12 +198,6 @@ class OAuth2ResponseHandlerTest extends TestCase
         Session::getSessionFromRequest()->setData('\SimpleSAML\Auth\State', 'validStateId', $stateValue);
         // when: handling the response
         $this->responseHandler->handleResponseFromRequest($request);
-
-        // then: final method should be called (base on earlier 'expects') and
-        //  then completeAuth is called
-        $double->verifyInvokedOnce('completeAuth');
-        $firstParam = $double->getCallsForMethod('completeAuth')[0][0];
-        $this->assertEquals('mockAuthSource', $firstParam['authouath2:AuthId']);
     }
 
     /**
@@ -211,8 +217,14 @@ class OAuth2ResponseHandlerTest extends TestCase
 
     public function testUserCancelledErrorPage()
     {
-        // Override redirect behavior
-        MockHttp::throwOnRedirectTrustedURL();
+        $expectedUrl = 'http://localhost/module.php/authoauth2/errors/consent.php';
+        $http = $this->createMock(HTTP::class);
+        $http->method('redirectTrustedURL')
+            ->with($expectedUrl)
+            ->willThrowException(
+                new RedirectException('redirectTrustedURL', $expectedUrl)
+            );
+        $this->responseHandler->setHttp($http);
         // Use an empty config to test defaults
         $this->mockAuthSource->method('getConfig')->willReturn(
             new \SimpleSAML\Configuration([], 'authsources:oauth2')
@@ -233,13 +245,8 @@ class OAuth2ResponseHandlerTest extends TestCase
             $this->responseHandler->handleResponseFromRequest($request);
             $this->fail("Redirect expected");
         } catch (RedirectException $e) {
-            $this->assertEquals(
-            // phpcs:ignore Generic.Files.LineLength.TooLong
-                'http://localhost/module.php/authoauth2/errors/consent.php',
-                $e->getUrl(),
-                "First argument should be the redirect url"
-            );
-            $this->assertEquals([], $e->getParams(), "query params are already added into url");
+            $this->assertEquals('redirectTrustedURL', $e->getMessage());
+            $this->assertEquals($expectedUrl, $e->getUrl());
         }
     }
 }
