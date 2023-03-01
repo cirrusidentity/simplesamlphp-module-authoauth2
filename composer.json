@@ -12,7 +12,7 @@
     "php": ">=7.4 || ^8.0",
     "simplesamlphp/composer-module-installer": "^1.1",
     "league/oauth2-client": "^2.6",
-    "simplesamlphp/simplesamlphp": "^v2.0.0-rc2",
+    "simplesamlphp/simplesamlphp": "^v2.0.0",
     "firebase/php-jwt": "^5.0",
     "kevinrob/guzzle-cache-middleware": "^3.2",
     "psr/cache": "^1.0",

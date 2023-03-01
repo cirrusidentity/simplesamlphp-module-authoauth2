@@ -48,6 +48,10 @@ The module can be installed with composer.
 
     composer require cirrusidentity/simplesamlphp-module-authoauth2
 
+
+If you are on SSP 2 use version 4.
+If you are on SSP 1.X use version 3.
+
 Or you can install the latest from master
 
     composer require cirrusidentity/simplesamlphp-module-authoauth2:dev-master
@@ -369,7 +373,7 @@ If you are migrating away from an existing auth module, such as `authfacebook` y
  * override the `authoauth2` authsource's redirect URI to match the `authfacebook` uri (`https://myserver.com/module.php/authfacebook/linkback.php)` AND do one of the following
    * edit `/modules/authfacebook/www/linkback.php` to conditionally call `OAuth2ResponseHandler` (see below)
    * configure an Apache rewrite rule to change '/module.php/authfacebook/linkback.php' to '/module.php/authoauth2/linkback.php'
-   * symlink or edit `/modules/authfacebook/www/linkback.php` to invoke the `/modules/authoauth2/www/linkback.php`
+   * symlink or edit `/modules/authfacebook/www/linkback.php` to invoke the `/modules/authoauth2/public/linkback.php`
    
 
 Some social providers support multiple login protocols and older SSP modules may use the non-OAuth2 version for login.
@@ -399,12 +403,12 @@ if ($handler->canHandleResponse()) {
 docker run --name ssp-oauth2-dev \
    --mount type=bind,source="$(pwd)",target=/var/simplesamlphp/staging-modules/authoauth2,readonly \
   -e STAGINGCOMPOSERREPOS=authoauth2 \
-  -e COMPOSER_REQUIRE="cirrusidentity/simplesamlphp-module-authoauth2:dev-$(git rev-parse --abbrev-ref HEAD)" \
+  -e COMPOSER_REQUIRE="cirrusidentity/simplesamlphp-module-authoauth2:@dev" \
   -e SSP_ADMIN_PASSWORD=secret1 \
   -e SSP_ENABLED_MODULES="authoauth2" \
   --mount type=bind,source="$(pwd)/docker/config/authsources.php",target=/var/simplesamlphp/config/authsources.php,readonly \
   --mount type=bind,source="$(pwd)/docker/config/config-override.php",target=/var/simplesamlphp/config/config-override.php,readonly \
-  -p 443:443 cirrusid/simplesamlphp:v2.0.0-rc2.20221109T222122
+  -p 443:443 cirrusid/simplesamlphp:v2.0.0
 ```
 
 and visit (which resolves to localhost, and the docker container) the [test authsource page](https://oauth2-validation.local.stack-dev.cirrusidentity.com/simplesaml/module.php/admin/test)
