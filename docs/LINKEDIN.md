@@ -3,48 +3,29 @@
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
 - [LinkedIn as authsource](#linkedin-as-authsource)
+  - [Enabling OIDC in your LinkedIn App](#enabling-oidc-in-your-linkedin-app)
 - [Usage](#usage)
-- [Migrarting from OAuth v1 authlinkedin](#migrarting-from-oauth-v1-authlinkedin)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # LinkedIn as authsource
 
-LinkedIn recommends using OAuth2 and their v2 apis. Their v1 apis and
-OAuth1 endpoints are being shutdown. LinkedIn v2 apis return data in a
-more complex format (json keys change based on language) and require
-additional API calls to get an email address. You need to use the
-`authoauth2:LinkedInV2Auth` authsource since LinkedIn doesn't conform
-the expected OIDC/OAuth pattern.
+The `LinkedInV2Auth` authsource has been deprecated, and we now recommend the use of OIDC, which is enabled in the LinkedIn developer portal via their [Sign In with LinkedIn V2](https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2#what-is-openid-connect) product. Use of OIDC facilitates the use of standard configuration patterns and claims endpoints.
+
+## Enabling OIDC in your LinkedIn App
+
+OIDC can be enabled in your existing LinkedIn App by simply adding **Sign In with LinkedIn v2** to your app's products. See the [Cirrus Identity Blog article](https://blog.cirrusidentity.com/enabling-linkedins-oidc-authentication) for details.
 
 # Usage
 
 ```php
    'linkedin' => [
-        'authoauth2:LinkedInV2Auth',
+        'authoauth2:OAuth2',
+        'template' => 'LinkedInOIDC',
         'clientId' => $apiKey,
         'clientSecret' =>  $apiSecret,
-        // Adjust the scopes: default is to request email and liteprofile
-        // 'scopes' => ['r_liteprofile'], 
-    ],
+        // Adjust the scopes: default is to request 'openid' (required),
+        // 'profile' and 'email'
+        // 'scopes' => ['openid', 'profile'],
+   ]
 ```
-
-# Migrating from OAuth v1 authlinkedin
-
-The `authlinkedin` module bundled with most versions of SSP uses
-deprecated OAuth v1 and v1 API endpoints.  To migrate to the new
-LinkedIn API you will need to add a [redirect URI to your linkedin
-application](https://docs.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?context=linkedin/consumer/context). The
-redirect URI is
-
-    https://hostname/SSP_PATH/module.php/authoauth2/linkback.php
-
-You will then need to change your `authsource` configuration to match the example usage above.
-
-On your IdP side you may need to use `linkedin2name` from this module rather than `authlinkedin`.
-
-```php
-        // Convert linkedin names to ldap friendly names
-        10 => array('class' => 'core:AttributeMap',  'authoauth2:linkedin2name'),
-```
-There are some minor changes in user experience and consent which are outlined in [our blog post](https://blog.cirrusidentity.com/linkedin-user-interaction-changes).

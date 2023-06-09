@@ -86,6 +86,7 @@ class ConfigTemplate
         'label' => 'linkedin'
     ];
 
+    // Deprecated
     public const LinkedInV2 = [
         'authoauth2:LinkedInV2Auth',
         // *** LinkedIn Endpoints ***

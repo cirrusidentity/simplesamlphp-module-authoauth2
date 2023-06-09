@@ -1,5 +1,9 @@
 <?php
 
+/** 
+ * DEPRECATED -- see docs/LINKEDIN.md
+ */
+
 /**
  * Created by PhpStorm.
  * User: patrick
