@@ -86,6 +86,7 @@ class ConfigTemplate
         'label' => 'linkedin'
     ];
 
+    // Deprecated
     public const LinkedInV2 = [
         'authoauth2:LinkedInV2Auth',
         // *** LinkedIn Endpoints ***
@@ -101,6 +102,21 @@ class ConfigTemplate
             'r_emailaddress',
         ],
         'scopeSeparator' => ' ',
+        // Improve log lines
+        'label' => 'linkedin'
+    ];
+
+    //https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2
+    public const LinkedInOIDC = [
+        'authoauth2:OAuth2',
+        // *** LinkedIn oidc Endpoints ***
+        'urlAuthorize' => 'https://www.linkedin.com/oauth/v2/authorization',
+        'urlAccessToken' => 'https://www.linkedin.com/oauth/v2/accessToken',
+        'urlResourceOwnerDetails' => 'https://api.linkedin.com/v2/userinfo',
+        'attributePrefix' => 'oidc.',
+        'scopes' => ['openid', 'email', 'profile'],
+        'scopeSeparator' => ' ',
+
         // Improve log lines
         'label' => 'linkedin'
     ];
