@@ -14,7 +14,7 @@
     "league/oauth2-client": "^2.6",
     "simplesamlphp/simplesamlphp": "^v2.0.0",
     "firebase/php-jwt": "^5.5|^6",
-    "kevinrob/guzzle-cache-middleware": "^3.2",
+    "kevinrob/guzzle-cache-middleware": "^4.1.1",
     "psr/cache": "^1.0",
     "symfony/cache": "^5.0|^4.3|^3.4",
     "ext-json": "*"
