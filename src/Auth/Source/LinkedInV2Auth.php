@@ -1,6 +1,10 @@
 <?php
 
 /**
+ * DEPRECATED -- see docs/LINKEDIN.md
+ */
+
+/**
  * Created by PhpStorm.
  * User: patrick
  * Date: 10/16/18
