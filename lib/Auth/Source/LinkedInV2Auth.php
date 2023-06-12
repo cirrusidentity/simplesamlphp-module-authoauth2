@@ -1,6 +1,6 @@
 <?php
 
-/** 
+/**
  * DEPRECATED -- see docs/LINKEDIN.md
  */
 
