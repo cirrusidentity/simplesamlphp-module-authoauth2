@@ -92,8 +92,9 @@ class ConfigTemplate
         // *** LinkedIn Endpoints ***
         'urlAuthorize' => 'https://www.linkedin.com/oauth/v2/authorization',
         'urlAccessToken' => 'https://www.linkedin.com/oauth/v2/accessToken',
-        'urlResourceOwnerDetails' => 'https://api.linkedin.com/v2/me',
+        'urlResourceOwnerDetails' => 'https://api.linkedin.com/rest/me',
         'urlResourceOwnerEmail' => 'https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))',
+        'linkedInApiVersion' => '202305',
         //scopes are the default ones configured for your application
         'attributePrefix' => 'linkedin.',
         'scopes' => [

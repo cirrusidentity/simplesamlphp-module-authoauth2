@@ -17,12 +17,19 @@ use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
 use SimpleSAML\Logger;
 use SimpleSAML\Module\authoauth2\ConfigTemplate;
+use SimpleSAML\Module\authoauth2\Providers\LinkedInV2AuthProvider;
 
 /**
  * LinkedIn's v2 api requires a 2nd call to determine email address.
  */
 class LinkedInV2Auth extends OAuth2
 {
+    /**
+     * Need to use custom Provider to insert LinkedIn-Version header for versioned endpoints.
+     * See https://learn.microsoft.com/en-us/linkedin/marketing/versioning
+     */
+    protected static $defaultProviderClass = LinkedInV2AuthProvider::class;
+
     public function __construct(array $info, array $config)
     {
         // Set some defaults
