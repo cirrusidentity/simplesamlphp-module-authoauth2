@@ -3,6 +3,7 @@
 namespace SimpleSAML\Module\authoauth2\Providers;
 
 use League\OAuth2\Client\Token\AccessToken;
+use SimpleSAML\Logger;
 
 class LinkedInV2AuthProvider extends AdjustableGenericProvider
 {
@@ -62,6 +63,8 @@ class LinkedInV2AuthProvider extends AdjustableGenericProvider
             $token,
             $this->getLinkedInVersionHeader($url)
         );
+
+        Logger::debug("authoauth2: fetching resource owner details from url = $url , headers = " . print_r($request->getHeaders(), true));
 
         $response = $this->getParsedResponse($request);
 
