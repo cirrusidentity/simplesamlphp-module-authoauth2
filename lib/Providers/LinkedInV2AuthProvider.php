@@ -64,8 +64,6 @@ class LinkedInV2AuthProvider extends AdjustableGenericProvider
             $this->getLinkedInVersionHeader($url)
         );
 
-        Logger::debug("authoauth2: fetching resource owner details from url = $url , headers = " . print_r($request->getHeaders(), true));
-
         $response = $this->getParsedResponse($request);
 
         if (false === is_array($response)) {
