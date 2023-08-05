@@ -6,3 +6,4 @@ vendor/
 .phpunit.result.cache
 .test-secrets
 composer.lock
+build/
