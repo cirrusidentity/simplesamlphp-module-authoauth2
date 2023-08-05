@@ -7,7 +7,7 @@
     </testsuites>
     <coverage processUncoveredFiles="true">
         <include>
-            <directory>./lib</directory>
+            <directory>./src</directory>
         </include>
         <report>
             <clover outputFile="build/logs/clover.xml"/>
