@@ -15,9 +15,16 @@ _Release: 2022-11-16
 * Improved psalm code quality
 * Better source code typing
 
+## v3.3.0
+
+_Release: 2023-06-12
+* LinkedIn OIDC Template
+* Deprecate old LinkedIn auth method
+* Upgrade `kevinrob/guzzle-cache-middleware` to fix Guzzle promise issue
+
 ## v3.2.0
 
-_Release: 2020-?
+_Release: 2022-10-12
 * Amazon template
 * Apple template
 * Orcid auth source
