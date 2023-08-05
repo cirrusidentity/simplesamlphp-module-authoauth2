@@ -1,5 +1,13 @@
 # simplesamlphp-module-authoauth2  Changelog
 
+## v4.0.0-beta.2
+
+_Release: 2023-08-04
+* LinkedIn OIDC Template
+* Deprecate old LinkedIn auth method
+* Upgrade `kevinrob/guzzle-cache-middleware` to fix Guzzle promise issue
+* Allow more versions of `psr/cache` and `symfony/cache`
+
 ## v4.0.0-beta.1
 _Release: 2023-03-01
 * Move `lib` to `src`
