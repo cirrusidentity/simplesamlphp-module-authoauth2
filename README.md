@@ -131,7 +131,7 @@ Generic usage provides enough configuration parameters to use with any OAuth2 or
                   //'scope' => ['other']
               ],
               // Default scopes to request
-              'scopes' = ['email', 'profile'],
+              'scopes' => ['email', 'profile'],
               'scopeSeparator' => ' ',
               // Customize redirect, if you don't want to use the standard /module.php/authoauth2/linkback.php
               'redirectUri' => 'https://myapp.example.com/callback',
