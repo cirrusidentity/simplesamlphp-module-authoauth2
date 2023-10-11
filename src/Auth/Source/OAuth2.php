@@ -12,7 +12,6 @@ use InvalidArgumentException;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 use League\OAuth2\Client\Token\AccessToken;
-use League\OAuth2\Client\Token\AccessTokenInterface;
 use Psr\Http\Message\RequestInterface;
 use SimpleSAML\Auth\Source;
 use SimpleSAML\Auth\State;
@@ -23,7 +22,9 @@ use SimpleSAML\Module\authoauth2\AttributeManipulator;
 use SimpleSAML\Module\authoauth2\ConfigTemplate;
 use SimpleSAML\Module\authoauth2\locators\HTTPLocator;
 use SimpleSAML\Module\authoauth2\Providers\AdjustableGenericProvider;
-use SimpleSAML\Utils\HTTP;
+use SimpleSAML\Module\authoauth2\Strategy\AuthProcStrategyInterface;
+use SimpleSAML\Module\authoauth2\Strategy\PkceStrategyInterface;
+use SimpleSAML\Module\authoauth2\Strategy\StrategyInterface;
 
 /**
  * Authenticate using Oauth2.
@@ -53,6 +54,9 @@ class OAuth2 extends Source
 
     protected Configuration $config;
 
+    protected ?PkceStrategyInterface $pkceStrategy = null;
+
+    protected ?AuthProcStrategyInterface $authProcStrategy = null;
 
     /**
      * Constructor for this authentication source.
@@ -62,9 +66,11 @@ class OAuth2 extends Source
      */
     public function __construct(array $info, array $config)
     {
-
         // Call the parent constructor first, as required by the interface
         parent::__construct($info, $config);
+
+        $this->initStrategiesByConfig($config);
+
         if (array_key_exists('template', $config)) {
             $template = $config['template'];
             if (is_string($template)) {
@@ -123,6 +129,9 @@ class OAuth2 extends Source
         $options['state'] = self::STATE_PREFIX . '|' . $stateID;
         $authorizeURL = $provider->getAuthorizationUrl($options);
         Logger::debug("authoauth2: $providerLabel redirecting to authorizeURL=$authorizeURL");
+
+        // save the pkce code in the current session, so it can be retrieved later for verification
+        $this->saveCodeChallengeFromProvider($provider, $state);
 
         $this->getHttp()->redirectTrustedURL($authorizeURL);
     }
@@ -205,6 +214,10 @@ class OAuth2 extends Source
         $providerLabel = $this->getLabel();
 
         $provider = $this->getProvider($this->config);
+
+        // load the pkce code from the session, so the server can validate it
+        // when exchanging the authorization code for an access token.
+        $this->loadCodeChallengeIntoProvider($provider, $state);
 
         /**
          * @var AccessToken $accessToken
@@ -360,13 +373,85 @@ class OAuth2 extends Source
     }
 
     /**
-     * Allow subclasses to invoked any additional methods, such as extra API calls
+     * checks the config for a pkce or authProc strategy class and initializes it.
+     *
+     * the corresponding config keys are:
+     * - pkceStrategyClass (full class name)
+     * - authProcStrategyClass (full class name)
+     *
+     * Note: the classes itself might need additional configs.
+     *
+     * @throws Exception
+     */
+    protected function initStrategiesByConfig(array &$config): void
+    {
+        $this->injectStrategyClassFromConfig($config, 'pkceStrategy', PkceStrategyInterface::class);
+        $this->injectStrategyClassFromConfig($config, 'authProcStrategy', AuthProcStrategyInterface::class);
+    }
+
+    /**
+     * @param array        $config
+     * @param string       $propertyName
+     * @param class-string $classInterface
+     *
+     * @return void
+     *
+     * @throws Exception
+     */
+    protected function injectStrategyClassFromConfig(
+        array &$config,
+        string $propertyName,
+        string $classInterface
+    ): void {
+        $classConfigKey = $propertyName . 'Class';
+        if (isset($config[$classConfigKey])) {
+            /**
+             * @var class-string<StrategyInterface> $strategyClass
+             */
+            $strategyClass = Module::resolveClass((string)$config[$classConfigKey], 'Strategy', $classInterface);
+            $strategyInstance = new $strategyClass();
+            $strategyInstance->initWithConfig($config);
+            $this->$propertyName = $strategyInstance;
+
+            unset($config[$classConfigKey]);
+        }
+    }
+
+    /**
+     * support saving the providers PKCE code in the session for later verification.
+     *
+     * Note: the state is not the same as in `loadCodeChallengeIntoProvider`
+     */
+    protected function saveCodeChallengeFromProvider(AbstractProvider $provider, array &$state): void
+    {
+        if ($this->pkceStrategy) {
+            $this->pkceStrategy->saveCodeChallengeFromProvider($provider, $state);
+        }
+    }
+
+    /**
+     * support retrieving the PKCE code from tne session for verification.
+     *
+     * Note: the state is not the same as in `saveCodeChallengeFromProvider`
+     */
+    protected function loadCodeChallengeIntoProvider(AbstractProvider $provider, array &$state): void
+    {
+        if ($this->pkceStrategy) {
+            $this->pkceStrategy->loadCodeChallengeIntoProvider($provider, $state);
+        }
+    }
+
+    /**
+     * Allow subclasses to invoke any additional methods, such as extra API calls
      * @param AccessToken $accessToken The user's access token
      * @param AbstractProvider $provider The Oauth2 provider
      * @param array $state The current state
      */
     protected function postFinalStep(AccessToken $accessToken, AbstractProvider $provider, array &$state): void
     {
+        if ($this->authProcStrategy) {
+            $state = $this->authProcStrategy->processState($state);
+        }
     }
 
     /**

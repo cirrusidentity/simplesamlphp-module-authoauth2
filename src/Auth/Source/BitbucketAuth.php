@@ -70,5 +70,7 @@ class BitbucketAuth extends OAuth2
                 'BitbucketAuth: ' . $this->getLabel() . ' invalid email query response ' . var_export($response, true)
             );
         }
+
+        parent::postFinalStep($accessToken, $provider, $state);
     }
 }

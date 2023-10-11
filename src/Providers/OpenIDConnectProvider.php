@@ -3,6 +3,7 @@
 namespace SimpleSAML\Module\authoauth2\Providers;
 
 use Firebase\JWT;
+use InvalidArgumentException;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Provider\GenericResourceOwner;
@@ -27,6 +28,11 @@ class OpenIDConnectProvider extends AbstractProvider
     protected string $discoveryUrl;
 
     /**
+     * @var string|null set to S256 or plain (not recommended) to activate PKCE
+     */
+    private ?string $pkceMethod = null;
+
+    /**
      * @var ?Configuration
      */
     private ?Configuration $openIdConfiguration = null;
@@ -45,6 +51,17 @@ class OpenIDConnectProvider extends AbstractProvider
 
     public function __construct(array $options = [], array $collaborators = [])
     {
+        // support enabling PKCE via config
+        if (array_key_exists('pkceMethod', $options)) {
+            $pkceMethod = (string)$options['pkceMethod'];
+            if (!in_array($pkceMethod, [self::PKCE_METHOD_S256, self::PKCE_METHOD_PLAIN], true)) {
+                throw new InvalidArgumentException("Unsupported pkceMethod: " . $pkceMethod);
+            }
+            $this->pkceMethod = $pkceMethod;
+            // unset the option, so it doesn't get passed to the parent constructor
+            unset($options['pkceMethod']);
+        }
+
         parent::__construct($options, $collaborators);
 
         $optionsConfig = Configuration::loadFromArray($options);
@@ -257,5 +274,10 @@ class OpenIDConnectProvider extends AbstractProvider
     {
         $config = $this->getOpenIDConfiguration();
         return $config->getOptionalString("end_session_endpoint", null);
+    }
+
+    protected function getPkceMethod(): ?string
+    {
+        return $this->pkceMethod ?: parent::getPkceMethod();
     }
 }

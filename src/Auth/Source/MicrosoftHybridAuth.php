@@ -46,5 +46,7 @@ class MicrosoftHybridAuth extends OAuth2
         if (array_key_exists('name', $idTokenData)) {
             $state['Attributes'][$prefix . 'name'] = [$idTokenData['name']];
         }
+
+        parent::postFinalStep($accessToken, $provider, $state);
     }
 }

@@ -12,6 +12,10 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 use SimpleSAML\Auth\State;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
+use SimpleSAML\Module\authoauth2\Strategy\AuthProcStrategy;
+use SimpleSAML\Module\authoauth2\Strategy\AuthProcStrategyInterface;
+use SimpleSAML\Module\authoauth2\Strategy\PkceSessionStrategy;
+use SimpleSAML\Module\authoauth2\Strategy\PkceStrategyInterface;
 use SimpleSAML\Utils\HTTP;
 use Test\SimpleSAML\MockOAuth2Provider;
 use Test\SimpleSAML\RedirectException;
@@ -415,5 +419,165 @@ class OAuth2Test extends TestCase
         // so we need to convert to a string and then see if it contains the named middleware
         $strHandler = (string)$handlerStack;
         $this->assertStringContainsString('logHttpTraffic', $strHandler);
+    }
+
+    public function testNoSuppliedStrategiesWillNotFillDependencies(): void
+    {
+        $config = [];
+        $authOAuth2 = $this->getInstance($config);
+
+        // assert the protected provider member is null
+        $reflector = new \ReflectionClass(OAuth2::class);
+        $pkceStrategy = $reflector->getProperty('pkceStrategy');
+        $pkceStrategy->setAccessible(true);
+        $authProcStrategy = $reflector->getProperty('authProcStrategy');
+        $authProcStrategy->setAccessible(true);
+
+        $this->assertNull($pkceStrategy->getValue($authOAuth2));
+        $this->assertNull($authProcStrategy->getValue($authOAuth2));
+    }
+
+    public function testWithStrategiesDefinedInSspNotationWillFillDependencies(): void
+    {
+        $config = [
+            'pkceStrategyClass' => 'authoauth2:PkceSessionStrategy',
+            'authProcStrategyClass' => 'authoauth2:AuthProcStrategy'
+        ];
+        $authOAuth2 = $this->getInstance($config);
+
+        // assert the protected provider member is null
+        $reflector = new \ReflectionClass(OAuth2::class);
+        $pkceStrategy = $reflector->getProperty('pkceStrategy');
+        $pkceStrategy->setAccessible(true);
+        $authProcStrategy = $reflector->getProperty('authProcStrategy');
+        $authProcStrategy->setAccessible(true);
+
+        $this->assertInstanceOf(PkceSessionStrategy::class, $pkceStrategy->getValue($authOAuth2));
+        $this->assertInstanceOf(AuthProcStrategy::class, $authProcStrategy->getValue($authOAuth2));
+    }
+
+    /**
+     * test that the authenticate and finalStep methods will call the pkceStrategy's
+     * save and load methods exactly once and with the correct parameters - if the
+     * pkceStrategy is set.
+     */
+    public function testAuthenticateAndFinalStepWillCallThePkceStrategy(): void
+    {
+        $pkceStrategySaveInvocationCount = 0;
+        $pkceStrategyLoadInvocationCount = 0;
+
+        /**
+         * create a mock for the pkceStrategy.
+         * we want to test, that the strategy is getting called exactly once and with
+         * the correct parameters.
+         */
+        $pkceStrategyMock = $this->createMock(PkceStrategyInterface::class);
+        $pkceStrategyMock->method('saveCodeChallengeFromProvider')->willReturnCallback(
+            function (AbstractProvider $provider, array &$state) use (&$pkceStrategySaveInvocationCount) {
+                /** @psalm-suppress MixedAssignment, MixedOperand */
+                $pkceStrategySaveInvocationCount++;
+                $this->assertInstanceOf(MockOAuth2Provider::class, $provider);
+                $this->assertEquals(static::AUTH_ID, $state[OAuth2::AUTHID]);
+            }
+        );
+        $pkceStrategyMock->method('loadCodeChallengeIntoProvider')->willReturnCallback(
+            function (AbstractProvider $provider, array &$state) use (&$pkceStrategyLoadInvocationCount) {
+                /** @psalm-suppress MixedAssignment, MixedOperand */
+                $pkceStrategyLoadInvocationCount++;
+                $this->assertInstanceOf(MockOAuth2Provider::class, $provider);
+                $this->assertEquals(static::AUTH_ID, $state[OAuth2::AUTHID]);
+            }
+        );
+
+        // Override redirect behavior of authenticate
+        $http = $this->createMock(HTTP::class);
+        $http->method('redirectTrustedURL')
+            ->willThrowException(
+                new RedirectException('redirectTrustedURL', 'https://mock.com/')
+            );
+
+        // Delegation for the MockProvider
+        $delegationMock = $this->getMockBuilder(AbstractProvider::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $delegationMock->method('getAccessToken')
+            ->willReturn(new AccessToken(['access_token' => 'access_token', 'id_token' => 'id_token']));
+        $delegationMock->method('getResourceOwner')
+            ->willReturn(new GenericResourceOwner(['name' => 'Foo'], 'userId'));
+
+        MockOAuth2Provider::setDelegate($delegationMock);
+
+        $config = [
+            'providerClass' => MockOAuth2Provider::class,
+        ];
+        $authOAuth2 = $this->getInstance($config);
+
+        // set the http mock
+        $authOAuth2->setHttp($http);
+
+        // set the strategy mock
+        $reflector = new \ReflectionClass(OAuth2::class);
+        $pkceStrategy = $reflector->getProperty('pkceStrategy');
+        $pkceStrategy->setAccessible(true);
+        $pkceStrategy->setValue($authOAuth2, $pkceStrategyMock);
+
+        // perform the test
+        $state = [State::ID => 'stateId'];
+        try {
+            $authOAuth2->authenticate($state);
+            $this->fail("Redirect expected");
+        } catch (RedirectException $e) {
+            static::assertEquals(1, $pkceStrategySaveInvocationCount);
+        }
+
+        $authOAuth2->finalStep($state, 'theCode');
+        static::assertEquals(1, $pkceStrategyLoadInvocationCount);
+    }
+
+    public function testFinalStepWillCallTheAuthProcStrategy(): void
+    {
+        $authProcStrategyInvocationCount = 0;
+
+        /**
+         * create a mock for the pkceStrategy.
+         * we want to test, that the strategy is getting called exactly once and with
+         * the correct parameters.
+         */
+        $authProcStrategyMock = $this->createMock(AuthProcStrategyInterface::class);
+        $authProcStrategyMock->method('processState')->willReturnCallback(
+            function (array &$state) use (&$authProcStrategyInvocationCount) {
+                /** @psalm-suppress MixedAssignment, MixedOperand */
+                $authProcStrategyInvocationCount++;
+                $this->assertEquals('stateId', $state[State::ID]);
+                return $state;
+            }
+        );
+
+        // Delegation for the MockProvider
+        $delegationMock = $this->getMockBuilder(AbstractProvider::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $delegationMock->method('getAccessToken')
+            ->willReturn(new AccessToken(['access_token' => 'access_token', 'id_token' => 'id_token']));
+        $delegationMock->method('getResourceOwner')
+            ->willReturn(new GenericResourceOwner(['name' => 'Foo'], 'userId'));
+
+        MockOAuth2Provider::setDelegate($delegationMock);
+
+        $config = [
+            'providerClass' => MockOAuth2Provider::class,
+        ];
+        $authOAuth2 = $this->getInstance($config);
+
+        // set the strategy mock
+        $reflector = new \ReflectionClass(OAuth2::class);
+        $authProc = $reflector->getProperty('authProcStrategy');
+        $authProc->setAccessible(true);
+        $authProc->setValue($authOAuth2, $authProcStrategyMock);
+
+        // perform the test
+        $state = [State::ID => 'stateId'];
+        $authOAuth2->finalStep($state, 'theCode');
+        static::assertEquals(1, $authProcStrategyInvocationCount);
     }
 }

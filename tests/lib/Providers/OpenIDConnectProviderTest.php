@@ -5,6 +5,7 @@ namespace Test\SimpleSAML\Providers;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Token\AccessToken;
 use PHPUnit\Framework\TestCase;
+use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
 use SimpleSAML\Module\authoauth2\Providers\OpenIDConnectProvider;
 use Symfony\Component\HttpFoundation\Request;
 use Test\SimpleSAML\MockOpenIDConnectProvider;
@@ -94,6 +95,67 @@ class OpenIDConnectProviderTest extends TestCase
         $this->assertEquals(
             'https://otherhost.example.com/path/path2/.well-known/openid-configuration',
             $provider->getDiscoveryUrl()
+        );
+    }
+
+    public function testInitializingWithoutPkceMethod(): void
+    {
+        $provider = new OpenIDConnectProvider(
+            ['issuer' => 'https://accounts.example.com']
+        );
+
+        // assert the protected provider member is null
+        $reflector = new \ReflectionClass(OpenIDConnectProvider::class);
+        $method = $reflector->getMethod('getPkceMethod');
+        $method->setAccessible(true);
+
+        $this->assertNull($method->invoke($provider));
+    }
+
+    public function testInitializingWithPkceMethodSetToS256(): void
+    {
+        $provider = new OpenIDConnectProvider(
+            [
+                'issuer' => 'https://accounts.example.com',
+                'pkceMethod' => 'S256'
+            ]
+        );
+
+        // assert the protected provider member is null
+        $reflector = new \ReflectionClass(OpenIDConnectProvider::class);
+        $method = $reflector->getMethod('getPkceMethod');
+        $method->setAccessible(true);
+
+        $this->assertEquals('S256', $method->invoke($provider));
+    }
+
+    public function testInitializingWithPkceMethodSetToPlain(): void
+    {
+        $provider = new OpenIDConnectProvider(
+            [
+                'issuer' => 'https://accounts.example.com',
+                'pkceMethod' => 'plain'
+            ]
+        );
+
+        // assert the protected provider member is null
+        $reflector = new \ReflectionClass(OpenIDConnectProvider::class);
+        $method = $reflector->getMethod('getPkceMethod');
+        $method->setAccessible(true);
+
+        $this->assertEquals('plain', $method->invoke($provider));
+    }
+
+    public function testInitializingWithInvalidPkceMethodFails(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unsupported pkceMethod: invalid');
+
+        new OpenIDConnectProvider(
+            [
+                'issuer' => 'https://accounts.example.com',
+                'pkceMethod' => 'invalid'
+            ]
         );
     }
 }

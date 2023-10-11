@@ -111,6 +111,8 @@ class OpenIDConnect extends OAuth2
         $state['id_token'] = $id_token;
         $state['PersistentAuthData'][] = 'id_token';
         $state['LogoutState'] = ['id_token' => $id_token];
+
+        parent::postFinalStep($accessToken, $provider, $state);
     }
 
     /**

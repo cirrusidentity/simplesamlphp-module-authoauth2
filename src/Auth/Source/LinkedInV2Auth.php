@@ -140,5 +140,7 @@ class LinkedInV2Auth extends OAuth2
                 'linkedInv2Auth: ' . $this->getLabel() . ' invalid email query response ' . var_export($response, true)
             );
         }
+
+        parent::postFinalStep($accessToken, $provider, $state);
     }
 }
