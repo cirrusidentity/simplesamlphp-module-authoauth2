@@ -26,6 +26,8 @@ class OpenIDConnectProvider extends AbstractProvider
 
     protected string $discoveryUrl;
 
+    protected ?string $pkceMethod = null;
+
     /**
      * @var ?Configuration
      */
@@ -257,5 +259,10 @@ class OpenIDConnectProvider extends AbstractProvider
     {
         $config = $this->getOpenIDConfiguration();
         return $config->getOptionalString("end_session_endpoint", null);
+    }
+
+    protected function getPkceMethod(): ?string
+    {
+        return $this->pkceMethod ?: parent::getPkceMethod();
     }
 }

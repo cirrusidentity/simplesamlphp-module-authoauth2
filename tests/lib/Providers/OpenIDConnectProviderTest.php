@@ -96,4 +96,26 @@ class OpenIDConnectProviderTest extends TestCase
             $provider->getDiscoveryUrl()
         );
     }
+
+    public function testGetPkceMethodGetsSetFromConfig(): void
+    {
+        $provider = new OpenIDConnectProvider(
+            ['issuer' => 'https://accounts.example.com']
+        );
+        // make the protected getPkceMethod available
+        $reflection = new \ReflectionClass($provider);
+        $method = $reflection->getMethod('getPkceMethod');
+        $method->setAccessible(true);
+        $this->assertNull($method->invoke($provider));
+
+        $provider = new OpenIDConnectProvider([
+            'issuer' => 'https://accounts.example.com',
+            'pkceMethod' => 'S256'
+        ]);
+        // make the protected getPkceMethod available
+        $reflection = new \ReflectionClass($provider);
+        $method = $reflection->getMethod('getPkceMethod');
+        $method->setAccessible(true);
+        $this->assertEquals('S256', $method->invoke($provider));
+    }
 }
