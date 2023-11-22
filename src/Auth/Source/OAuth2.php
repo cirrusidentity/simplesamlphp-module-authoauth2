@@ -379,6 +379,9 @@ class OAuth2 extends Source
 
     /**
      * support saving the providers PKCE code in the session for later verification.
+     * We store in the session rather in the $state since the $provider generates
+     * the pkce after it has been configured with the $state id, which we get after
+     * saving the $state.
      */
     protected function saveCodeChallengeFromProvider(AbstractProvider $provider): void
     {
