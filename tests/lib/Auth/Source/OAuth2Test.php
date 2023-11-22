@@ -12,6 +12,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 use SimpleSAML\Auth\State;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
+use SimpleSAML\Session;
 use SimpleSAML\Utils\HTTP;
 use Test\SimpleSAML\MockOAuth2Provider;
 use Test\SimpleSAML\RedirectException;
@@ -415,5 +416,107 @@ class OAuth2Test extends TestCase
         // so we need to convert to a string and then see if it contains the named middleware
         $strHandler = (string)$handlerStack;
         $this->assertStringContainsString('logHttpTraffic', $strHandler);
+    }
+
+    /**
+     * test that the authenticate with save the pkce code challenge in the session and
+     * finalStep methods will load the pkce code challenge from the session.
+     *
+     * @psalm-param class-string<\Throwable>|null $expectedException
+     *
+     * @dataProvider dataAuthenticateAndFinalStepWillCallSaveAndRetrieveTheCode
+     */
+    public function testAuthenticateAndFinalStepWillCallSaveAndRetrieveTheCode(
+        ?string $method,
+        int $count,
+        ?string $expectedException
+    ): void {
+        if ($expectedException !== null) {
+            $this->expectException($expectedException);
+        }
+
+        $config = [
+            'providerClass' => MockOAuth2Provider::class,
+        ];
+        if ($method !== 'unset') {
+            $config['pkceMethod'] = $method;
+        }
+
+        $authOAuth2 = $this->getInstance($config);
+
+        $mock = $this->getMockBuilder(AbstractProvider::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $accessToken = new AccessToken(['access_token' => 'stubAccessToken', 'id_token' => 'stubIdToken']);
+        $mock->method('getAccessToken')
+            ->willReturn($accessToken);
+
+        $attributes = ['name' => 'Bob'];
+        $user = new GenericResourceOwner($attributes, 'userId');
+        $mock->method('getResourceOwner')
+            ->with($accessToken)
+            ->willReturn($user);
+
+        // use different codes for loading and saving to test both cases
+        $pkceCodeOnAuthenticate = 'thePkceCodeOnAuthenticate';
+        $pkceCodeOnFinalStep = 'thePkceCodeOnFinalStep';
+        $mock
+            ->expects($this->exactly($count))
+            ->method('getPkceCode')
+            ->willReturn($pkceCodeOnAuthenticate);
+
+        $mock
+            ->expects($this->exactly($count))
+            ->method('setPkceCode')
+            ->with($pkceCodeOnFinalStep);
+
+        MockOAuth2Provider::setDelegate($mock);
+
+        // Override redirect behavior of authenticate
+        $http = $this->createMock(HTTP::class);
+        $http->method('redirectTrustedURL')
+            ->willThrowException(
+                new RedirectException('redirectTrustedURL', 'https://mock.com/')
+            );
+        // set the http mock
+        $authOAuth2->setHttp($http);
+
+        // empty the session and check it is empty
+        Session::getSessionFromRequest()->deleteData('authoauth2_pkce', 'pkceCode');
+        static::assertEmpty(Session::getSessionFromRequest()->getDataOfType('authoauth2_pkce'));
+
+        // perform the test
+        $state = [State::ID => 'stateId'];
+        try {
+            $authOAuth2->authenticate($state);
+            $this->fail("Redirect expected");
+        } catch (RedirectException $e) {
+            $sessionData = Session::getSessionFromRequest()->getDataOfType('authoauth2_pkce');
+            if ($count === 0) {
+                static::assertEmpty($sessionData);
+            } else {
+                static::assertEquals($pkceCodeOnAuthenticate, $sessionData['pkceCode']);
+            }
+        }
+
+        // prepare the session for the final step (different code to test, that the session will get used)
+        Session::getSessionFromRequest()->setData('authoauth2_pkce', 'pkceCode', $pkceCodeOnFinalStep);
+        $authOAuth2->finalStep($state, 'theOAuth2Code');
+    }
+
+    /**
+     * @return array<string, array{0: string|null, 1: int, 2: class-string<\Throwable>|null}>
+     */
+    public function dataAuthenticateAndFinalStepWillCallSaveAndRetrieveTheCode(): array
+    {
+        return [
+            'pkceMethod=S256' => ['S256', 1, null],
+            'pkceMethod=plain' => ['plain', 1, null],
+            // exception from underlying AbstractProvider
+            'invalid pkceMethod throws exception' => ['invalid', 0, \InvalidArgumentException::class],
+            'pkceMethod="" means pkce is disabled' => ['', 0, null],
+            'pkceMethod=null means pkce is disabled' => [null, 0, null],
+            'pkceMethod not set means pkce is disabled' => ['unset', 0, null],
+        ];
     }
 }

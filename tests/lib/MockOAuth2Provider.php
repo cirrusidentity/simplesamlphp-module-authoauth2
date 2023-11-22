@@ -54,6 +54,16 @@ class MockOAuth2Provider extends GenericProvider implements ClearableState
         return self::$delegate->getParsedResponse($request);
     }
 
+    public function setPkceCode($pkceCode): void
+    {
+        self::$delegate->setPkceCode($pkceCode);
+    }
+
+    public function getPkceCode()
+    {
+        return self::$delegate->getPkceCode();
+    }
+
     /**
      * Clear any cached internal state.
      */

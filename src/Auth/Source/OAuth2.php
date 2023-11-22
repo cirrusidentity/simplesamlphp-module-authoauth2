@@ -12,7 +12,6 @@ use InvalidArgumentException;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 use League\OAuth2\Client\Token\AccessToken;
-use League\OAuth2\Client\Token\AccessTokenInterface;
 use Psr\Http\Message\RequestInterface;
 use SimpleSAML\Auth\Source;
 use SimpleSAML\Auth\State;
@@ -23,7 +22,7 @@ use SimpleSAML\Module\authoauth2\AttributeManipulator;
 use SimpleSAML\Module\authoauth2\ConfigTemplate;
 use SimpleSAML\Module\authoauth2\locators\HTTPLocator;
 use SimpleSAML\Module\authoauth2\Providers\AdjustableGenericProvider;
-use SimpleSAML\Utils\HTTP;
+use SimpleSAML\Session;
 
 /**
  * Authenticate using Oauth2.
@@ -48,6 +47,9 @@ class OAuth2 extends Source
      */
     // phpcs:ignore
     public const DEBUG_LOG_FORMAT = "{method} {uri} {code} {req_headers_Authorization} >>>>'{req_body}' <<<<'{res_body}'";
+
+    private const PKCE_SESSION_NAMESPACE = 'authoauth2_pkce';
+    private const PKCE_SESSION_KEY = 'pkceCode';
 
     protected static string $defaultProviderClass = AdjustableGenericProvider::class;
 
@@ -123,6 +125,9 @@ class OAuth2 extends Source
         $options['state'] = self::STATE_PREFIX . '|' . $stateID;
         $authorizeURL = $provider->getAuthorizationUrl($options);
         Logger::debug("authoauth2: $providerLabel redirecting to authorizeURL=$authorizeURL");
+
+        // save the pkce code in the current session, so it can be retrieved later for verification
+        $this->saveCodeChallengeFromProvider($provider);
 
         $this->getHttp()->redirectTrustedURL($authorizeURL);
     }
@@ -205,6 +210,10 @@ class OAuth2 extends Source
         $providerLabel = $this->getLabel();
 
         $provider = $this->getProvider($this->config);
+
+        // load the pkce code from the session, so the server can validate it
+        // when exchanging the authorization code for an access token.
+        $this->loadCodeChallengeIntoProvider($provider);
 
         /**
          * @var AccessToken $accessToken
@@ -357,6 +366,50 @@ class OAuth2 extends Source
             return null;
         }
         return $decoded;
+    }
+
+    protected function isPkceEnabled(): bool
+    {
+        return (bool)$this->config->getOptionalValueValidate('pkceMethod', [
+            AbstractProvider::PKCE_METHOD_PLAIN,
+            AbstractProvider::PKCE_METHOD_S256,
+            ''
+        ], null);
+    }
+
+    /**
+     * support saving the providers PKCE code in the session for later verification.
+     * We store in the session rather in the $state since the $provider generates
+     * the pkce after it has been configured with the $state id, which we get after
+     * saving the $state.
+     */
+    protected function saveCodeChallengeFromProvider(AbstractProvider $provider): void
+    {
+        if ($this->isPkceEnabled()) {
+            Session::getSessionFromRequest()
+                ->setData(
+                    self::PKCE_SESSION_NAMESPACE,
+                    self::PKCE_SESSION_KEY,
+                    $provider->getPkceCode()
+                );
+        }
+    }
+
+    /**
+     * support retrieving the PKCE code from the session for verification.
+     */
+    protected function loadCodeChallengeIntoProvider(AbstractProvider $provider): void
+    {
+        if ($this->isPkceEnabled()) {
+            $pkceCode = (string)Session::getSessionFromRequest()
+                ->getData(
+                    self::PKCE_SESSION_NAMESPACE,
+                    self::PKCE_SESSION_KEY
+                );
+            if ($pkceCode) {
+                $provider->setPkceCode($pkceCode);
+            }
+        }
     }
 
     /**

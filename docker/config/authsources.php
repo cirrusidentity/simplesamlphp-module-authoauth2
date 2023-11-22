@@ -57,6 +57,18 @@ $config = array(
         'clientSecret' => 'GXc8Q~mgI7kTBllrvpBthUEioeARdjrRYORSyda4',
     ],
 
+    'microsoftOIDCPkceSource' => [
+        'authoauth2:OpenIDConnect',
+        'issuer' => 'https://sts.windows.net/{tenantid}/',
+        // When using the 'common' discovery endpoint it allows any Azure user to authenticate, however
+        // the token issuer is tenant specific and will not match what is in the common discovery document.
+        'validateIssuer' => false,  // issuer is just used to confirm correct discovery endpoint loaded
+        'discoveryUrl' => 'https://login.microsoftonline.com/common/.well-known/openid-configuration',
+        'clientId' => 'f579dc6e-58f5-41a8-8bbf-96d54eacfe8d',
+        'clientSecret' => 'GXc8Q~mgI7kTBllrvpBthUEioeARdjrRYORSyda4',
+        'pkceMethod' => 'S256',
+    ],
+
 
     // This is a authentication source which handles admin authentication.
     'admin' => array(
