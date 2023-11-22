@@ -411,7 +411,7 @@ docker run --name ssp-oauth2-dev \
   -e SSP_ENABLED_MODULES="authoauth2" \
   --mount type=bind,source="$(pwd)/docker/config/authsources.php",target=/var/simplesamlphp/config/authsources.php,readonly \
   --mount type=bind,source="$(pwd)/docker/config/config-override.php",target=/var/simplesamlphp/config/config-override.php,readonly \
-  -p 443:443 cirrusid/simplesamlphp:v2.0.0
+  -p 443:443 cirrusid/simplesamlphp:v2.0.7
 ```
 
 and visit (which resolves to localhost, and the docker container) the [test authsource page](https://oauth2-validation.local.stack-dev.cirrusidentity.com/simplesaml/module.php/admin/test)
