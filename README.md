@@ -402,13 +402,17 @@ if ($handler->canHandleResponse()) {
 
 ## Docker
 
+The `preprodwarning` module is include for testing authproc filters. *note:* The 1.0.2 version
+of `preprodwarning` has a bug in the redirect url. If using it you need to change `showwarning.php` to `warning`
+in your browser url.
+
 ```
 docker run --name ssp-oauth2-dev \
    --mount type=bind,source="$(pwd)",target=/var/simplesamlphp/staging-modules/authoauth2,readonly \
   -e STAGINGCOMPOSERREPOS=authoauth2 \
-  -e COMPOSER_REQUIRE="cirrusidentity/simplesamlphp-module-authoauth2:@dev" \
+  -e COMPOSER_REQUIRE="cirrusidentity/simplesamlphp-module-authoauth2:@dev simplesamlphp/simplesamlphp-module-preprodwarning" \
   -e SSP_ADMIN_PASSWORD=secret1 \
-  -e SSP_ENABLED_MODULES="authoauth2" \
+  -e SSP_ENABLED_MODULES="authoauth2 preprodwarning" \
   --mount type=bind,source="$(pwd)/docker/config/authsources.php",target=/var/simplesamlphp/config/authsources.php,readonly \
   --mount type=bind,source="$(pwd)/docker/config/config-override.php",target=/var/simplesamlphp/config/config-override.php,readonly \
   -p 443:443 cirrusid/simplesamlphp:v2.0.7

@@ -16,6 +16,37 @@ $config = array(
          */
     ],
 
+    'templateAuthProcFacebook' => [
+        'authoauth2:OAuth2',
+        'template' => 'Facebook',
+        // App is in development mode and can be used to login as a test user
+        'clientId' => '1223209798230151',
+        'clientSecret' => '61cb2fdddc5a16998924360c1a9a726f',
+        /**
+         * This the app's test user that can be used to authenticate:
+         *  email: open_nzwvghb_user@tfbnw.net
+         *  password: SSPisMyFavorite2022
+         */
+        'authproc' => [
+            20 => [
+                'class' => 'preprodwarning:Warning'
+            ],
+            25 => [
+                'class' => 'core:AttributeAdd',
+                '%replace',
+                'groups' => ['users', 'members'],
+            ],
+            // The authproc should be run in order by key, not by order defined,
+            // which means this authproc will run first and have its output overwritten by the
+            // above authproc
+            15 => [
+                'class' => 'core:AttributeAdd',
+                '%replace',
+                'groups' => ['should', 'be', 'replaced'],
+            ],
+        ]
+    ],
+
     'templateMicrosoft' => [
         'authoauth2:OAuth2',
         'template' => 'MicrosoftGraphV1',
