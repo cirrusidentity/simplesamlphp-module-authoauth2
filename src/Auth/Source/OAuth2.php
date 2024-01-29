@@ -200,6 +200,7 @@ class OAuth2 extends Source
              */
             $provider = new static::$defaultProviderClass($config->toArray(), $collaborators);
         }
+        /** @psalm-suppress MixedArgument, MixedMethodCall psalm is confused about baseAuthzUrl */
         $this->oauth2ServerIdentifier = $config->getOptionalString('issuer', $provider->getBaseAuthorizationUrl());
         return $provider;
     }

@@ -63,7 +63,7 @@ class LinkedInV2Auth extends OAuth2
         ];
         foreach (['firstName', 'lastName'] as $attributeName) {
             $value = $this->getFirstValueFromMultiLocaleString($attributeName, $resourceOwnerAttributes);
-            if ($value) {
+            if (!empty($value)) {
                 $attributes[$prefix . $attributeName] = [$value];
             }
         }
