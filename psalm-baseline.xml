@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<files psalm-version="5.7.7@e028ba46ba0d7f9a78bc3201c251e137383e145f">
+<files psalm-version="5.20.0@3f284e96c9d9be6fe6b15c79416e1d1903dcfef4">
   <file src="src/AttributeManipulator.php">
     <MixedArgument>
       <code>$input</code>
@@ -45,6 +45,9 @@
     <MixedReturnStatement>
       <code>reset($attributes[$attributeName]['localized'])</code>
     </MixedReturnStatement>
+    <RiskyTruthyFalsyComparison>
+      <code>empty($value)</code>
+    </RiskyTruthyFalsyComparison>
   </file>
   <file src="src/Auth/Source/MicrosoftHybridAuth.php">
     <MixedArgument>
@@ -83,11 +86,14 @@
       <code>$templateArray</code>
     </MixedAssignment>
     <MixedInferredReturnType>
+      <code>AbstractProvider</code>
       <code>array</code>
       <code>string[]</code>
     </MixedInferredReturnType>
     <MixedReturnStatement>
       <code>$data</code>
+      <code>$provider</code>
+      <code>$provider</code>
       <code><![CDATA[$provider->getParsedResponse($apiRequest)]]></code>
     </MixedReturnStatement>
     <UnnecessaryVarAnnotation>
@@ -115,6 +121,10 @@
       <code>$result[substr($key, 5)]</code>
       <code>$value</code>
     </MixedAssignment>
+    <RiskyTruthyFalsyComparison>
+      <code>!$endSessionEndpoint</code>
+      <code>!$postLogoutUrl</code>
+    </RiskyTruthyFalsyComparison>
   </file>
   <file src="src/Auth/Source/OrcidOIDCAuth.php">
     <MixedArrayAccess>
@@ -156,6 +166,12 @@
       <code>@$request['error_description']</code>
       <code>@$request['error_description']</code>
     </MixedOperand>
+    <PossiblyNullArgument>
+      <code>$request['code']</code>
+    </PossiblyNullArgument>
+    <PossiblyUndefinedArrayOffset>
+      <code>$request['code']</code>
+    </PossiblyUndefinedArrayOffset>
   </file>
   <file src="src/OIDCLogoutHandler.php">
     <MixedArgument>
@@ -176,8 +192,6 @@
   </file>
   <file src="src/Providers/OpenIDConnectProvider.php">
     <MixedArgument>
-      <code><![CDATA[$claims->aud]]></code>
-      <code><![CDATA[$claims->iss]]></code>
       <code>$key</code>
       <code>$key</code>
       <code>$key['e']</code>
@@ -203,6 +217,12 @@
       <code>$config['issuer']</code>
       <code>$x5c[0]</code>
     </MixedOperand>
+    <RiskyTruthyFalsyComparison>
+      <code>!$e</code>
+      <code>!$n</code>
+      <code>$error</code>
+      <code><![CDATA[$this->pkceMethod]]></code>
+    </RiskyTruthyFalsyComparison>
   </file>
   <file src="tests/config/authsources.php">
     <UnusedVariable>
@@ -314,6 +334,7 @@
       <code>testTooManyErrorsForRetry</code>
     </MissingReturnType>
     <MixedArgument>
+      <code>$accessToken</code>
       <code>$config</code>
       <code>$config</code>
       <code>$config</code>
@@ -321,15 +342,20 @@
       <code>$config</code>
       <code>$expectedUrl</code>
       <code>$state</code>
+      <code>$state['Attributes']</code>
+      <code>$state['Attributes']</code>
     </MixedArgument>
     <MixedArrayAccess>
       <code>$clientConfig['handler']</code>
+      <code>$state['Attributes']['firstName']</code>
+      <code>$state['Attributes']['firstName'][0]</code>
       <code>$state[OAuth2::AUTHID]</code>
     </MixedArrayAccess>
     <MixedAssignment>
       <code>$clientConfig</code>
     </MixedAssignment>
     <MixedInferredReturnType>
+      <code>array</code>
       <code>array</code>
     </MixedInferredReturnType>
     <MixedMethodCall>

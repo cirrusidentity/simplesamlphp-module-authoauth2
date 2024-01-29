@@ -13,6 +13,7 @@ use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 use League\OAuth2\Client\Token\AccessToken;
 use Psr\Http\Message\RequestInterface;
+use SimpleSAML\Auth\ProcessingChain;
 use SimpleSAML\Auth\Source;
 use SimpleSAML\Auth\State;
 use SimpleSAML\Configuration;
@@ -54,6 +55,9 @@ class OAuth2 extends Source
     protected static string $defaultProviderClass = AdjustableGenericProvider::class;
 
     protected Configuration $config;
+
+    /** @var string an identifier for the server. Used in place we need to record the oauth2 server */
+    private string $oauth2ServerIdentifier = 'oauth2-server-id-not-set';
 
 
     /**
@@ -182,19 +186,23 @@ class OAuth2 extends Source
                     throw new InvalidArgumentException("The OAuth2 provider '$providerClass' does not extend " . AbstractProvider::class);
                 }
                 /**
-                 * @var AbstractProvider
                  * @psalm-suppress UnsafeInstantiation
                  */
-                return new $providerClass($config->toArray(), $collaborators);
+                $provider = new $providerClass($config->toArray(), $collaborators);
             } else {
                 throw new InvalidArgumentException("No OAuth2 provider class found for '$providerClass'.");
             }
         }
-        /**
-         * @var AbstractProvider
-         * @psalm-suppress InvalidStringClass,UnsafeInstantiation
-         */
-        return new static::$defaultProviderClass($config->toArray(), $collaborators);
+        if (!isset($provider)) {
+            /**
+             * @var AbstractProvider $provider
+             * @psalm-suppress InvalidStringClass,UnsafeInstantiation
+             */
+            $provider = new static::$defaultProviderClass($config->toArray(), $collaborators);
+        }
+        /** @psalm-suppress MixedArgument, MixedMethodCall psalm is confused about baseAuthzUrl */
+        $this->oauth2ServerIdentifier = $config->getOptionalString('issuer', $provider->getBaseAuthorizationUrl());
+        return $provider;
     }
 
     /**
@@ -284,6 +292,9 @@ class OAuth2 extends Source
         // Track time spent calling out to oauth2 server. This can often be a source of slowness.
         $time = microtime(true) - $start;
         Logger::debug('authoauth2: ' . $providerLabel . ' finished authentication in ' . $time . ' seconds');
+
+        // Auth procs may redirect the user and processing may finish in another request/method
+        $this->runAuthProcs($state);
     }
 
     /**
@@ -434,5 +445,49 @@ class OAuth2 extends Source
     protected function getAttributePrefix(): string
     {
         return $this->config->getOptionalString('attributePrefix', '');
+    }
+
+    /**
+     * Run authproc filters with the processing chain
+     * @param array $state
+     * @return void
+     * @throws \SimpleSAML\Error\Exception
+     * @throws \SimpleSAML\Error\UnserializableException
+     */
+    protected function runAuthProcs(array &$state): void
+    {
+        $idpMetadata = [
+           'entityid' => $this->getOAuth2ServerIdentifier()
+        ];
+        $spMetadata = [
+            'entityid' => $this->config->getOptionalString('clientId', 'unknown-clientid'),
+            'authproc' => $this->config->getOptionalArray('authproc', [])
+        ];
+        $pc = new ProcessingChain($idpMetadata, $spMetadata, 'oauth2');
+
+        $state['ReturnCall'] = [OAuth2::class, 'authProcessingComplete'];
+        $state['Destination'] = $spMetadata;
+        $state['Source'] = $idpMetadata;
+
+        $pc->processState($state);
+    }
+
+    /**
+     * Allow processing chain to finish the authentication if authprocs require user interaction.
+     * @param array $state
+     * @return void
+     */
+    public static function authProcessingComplete(array $state): void
+    {
+            Source::completeAuth($state);
+    }
+
+    /**
+     * Attempt to return an identifier for the OAuth2 server.
+     * @return string
+     */
+    public function getOAuth2ServerIdentifier(): string
+    {
+        return $this->oauth2ServerIdentifier;
     }
 }

@@ -130,6 +130,17 @@ class OpenIDConnectTest extends OAuth2Test
         ];
     }
 
+    public function authprocTokenProvider(): array
+    {
+        return [
+            [
+                new AccessToken([
+                    'access_token' => 'stubToken',
+                    'id_token' => 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiYXVkIjoidGVzdCBjbGllbnQgaWQiLCJpYXQiOjE1MTYyMzkwMjJ9.emHrAifV1IyvmTXh3lYX0oAFqqZInhDlclIlTUumut0',
+                ]),
+            ]
+        ];
+    }
 
     public function testLogoutNoEndpointConfigured()
     {

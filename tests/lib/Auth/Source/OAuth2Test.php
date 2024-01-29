@@ -155,15 +155,33 @@ class OAuth2Test extends TestCase
     /**
      * @dataProvider finalStepsDataProvider
      * @param $config
-     * @param $accessToken
      * @param $expectedAttributes
      */
     public function testFinalSteps($config, $accessToken, $expectedAttributes)
     {
         // given: A mock Oauth2 provider
-        $code = 'theCode';
         $state = [State::ID => 'stateId'];
 
+        // when: turning a code into a token and then into a resource owner attributes
+        $this->setupAndCallFinalSteps($config, $state, $accessToken);
+
+        // then: The attributes should be returned based on the getResourceOwner call
+        $this->assertEquals($expectedAttributes, $state['Attributes']);
+    }
+
+    /**
+     * Setup mocks and create an OAuth2 and call finalSteps
+     * @param array $config
+     * @param array $state
+     * @param AccessToken $accessToken Allow oauth2 and oidc to provide necessary token contents
+     * @param array $attributes
+     * @return OAuth2
+     */
+    public function setupAndCallFinalSteps(array $config, array &$state, AccessToken $accessToken, array $attributes = ['name' => 'Bob']): OAuth2
+    {
+
+        $code = 'theCode';
+        $state = [State::ID => 'stateId'];
         $mock = $this->getMockBuilder(AbstractProvider::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -171,20 +189,15 @@ class OAuth2Test extends TestCase
             ->with('authorization_code', ['code' => $code])
             ->willReturn($accessToken);
 
-        $attributes = ['name' => 'Bob'];
         $user = new GenericResourceOwner($attributes, 'userId');
         $mock->method('getResourceOwner')
             ->with($accessToken)
             ->willReturn($user);
 
         MockOAuth2Provider::setDelegate($mock);
-
-        // when: turning a code into a token and then into a resource owner attributes
         $authOAuth2 = $this->getInstance($config);
         $authOAuth2->finalStep($state, $code);
-
-        // then: The attributes should be returned based on the getResourceOwner call
-        $this->assertEquals($expectedAttributes, $state['Attributes']);
+        return $authOAuth2;
     }
 
     public function finalStepsDataProviderWithAuthenticatedApiRequest()
@@ -416,6 +429,39 @@ class OAuth2Test extends TestCase
         // so we need to convert to a string and then see if it contains the named middleware
         $strHandler = (string)$handlerStack;
         $this->assertStringContainsString('logHttpTraffic', $strHandler);
+    }
+
+    public function authprocTokenProvider(): array
+    {
+        return [
+            [
+                new AccessToken(['access_token' => 'stubToken']),
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider authprocTokenProvider
+     * @param AccessToken $accessToken
+     * @return void
+     */
+    public function testAuthProcsCanRun(AccessToken $accessToken): void
+    {
+
+        $config = [
+            'providerClass' => MockOAuth2Provider::class,
+            'authproc' => [
+                0 => [
+                    'class' => 'core:AttributeMap',
+                    'name' => 'firstName'
+                ]
+            ]
+        ];
+        $state = [State::ID => 'stateId'];
+        $this->setupAndCallFinalSteps($config, $state, $accessToken);
+        $this->assertArrayNotHasKey('name', $state['Attributes']);
+        $this->assertArrayHasKey('firstName', $state['Attributes']);
+        $this->assertEquals('Bob', $state['Attributes']['firstName'][0]);
     }
 
     /**
