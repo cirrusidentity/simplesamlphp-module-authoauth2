@@ -1,7 +1,17 @@
 # simplesamlphp-module-authoauth2  Changelog
 
-## v4.0.0-beta.2
+## v4.1.0-beta.1
+_Release: 2024-01-29
+* Test against php 8.3
+* Add support for PKCE
+* Add support for running authproc filters
+* Require league/oauth2-client ^2.7
 
+## v4.0.0
+_Release: 2023-08-04
+* No changes from v4.0.0-beta.2
+
+## v4.0.0-beta.2
 _Release: 2023-08-04
 * LinkedIn OIDC Template
 * Deprecate old LinkedIn auth method
