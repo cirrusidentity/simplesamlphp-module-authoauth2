@@ -1,0 +1,6 @@
+
+msgid "noconsent_error"
+msgstr "You must consent/allow access to your profile information. Press the back button and then allow/grant access."
+
+msgid "noconsent_title"
+msgstr "Consent Needed"
