@@ -1,5 +1,9 @@
 # simplesamlphp-module-authoauth2  Changelog
 
+## v4.1.0-beta.2
+_Release: 2024-02-13
+* Update consent template to twig
+
 ## v4.1.0-beta.1
 _Release: 2024-01-29
 * Test against php 8.3
