@@ -45,6 +45,8 @@ class OpenIDConnectProvider extends AbstractProvider
 
     protected bool $validateIssuer = false;
 
+    protected ?string $urlResourceOwnerDetails = null;
+
     public function __construct(array $options = [], array $collaborators = [])
     {
         parent::__construct($options, $collaborators);
@@ -57,6 +59,7 @@ class OpenIDConnectProvider extends AbstractProvider
         );
         $this->defaultScopes = $optionsConfig->getOptionalArray('scopes', ['openid', 'profile']);
         $this->validateIssuer = $optionsConfig->getOptionalBoolean('validateIssuer', true);
+        $this->urlResourceOwnerDetails = $optionsConfig->getOptionalString('urlResourceOwnerDetails', null);
     }
 
     /**
@@ -252,7 +255,7 @@ class OpenIDConnectProvider extends AbstractProvider
      */
     public function getResourceOwnerDetailsUrl(AccessToken $token)
     {
-        return $this->getOpenIDConfiguration()->getString("userinfo_endpoint");
+        return $this->urlResourceOwnerDetails ?? $this->getOpenIDConfiguration()->getString("userinfo_endpoint");
     }
 
     public function getEndSessionEndpoint(): ?string
