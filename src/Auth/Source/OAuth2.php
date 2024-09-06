@@ -81,7 +81,8 @@ class OAuth2 extends Source
             }
         }
         if (!array_key_exists('redirectUri', $config)) {
-            $config['redirectUri'] = Module::getModuleURL('authoauth2/linkback.php');
+            $config['redirectUri'] = Module::getModuleURL('authoauth2/callback');
+//            $config['redirectUri'] = Module::getModuleURL('authoauth2/linkback.php');
         }
         if (!array_key_exists('timeout', $config)) {
             $config['timeout'] = 3;
