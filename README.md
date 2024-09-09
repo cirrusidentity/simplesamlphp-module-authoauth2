@@ -130,6 +130,7 @@ Generic usage provides enough configuration parameters to use with any OAuth2 or
                   // The underlying OAuth2 library also supports overriding requested scopes
                   //'scope' => ['other']
               ],
+              'useConsentErrorPage' => false|true,
               // Default scopes to request
               'scopes' => ['email', 'profile'],
               'scopeSeparator' => ' ',
@@ -151,7 +152,6 @@ Generic usage provides enough configuration parameters to use with any OAuth2 or
               'logHttpTraffic' => true, //default is false
               'logMessageFormat' => 'A Guzzle MessageFormatter format string', // default setting is sufficient for most debugging
               'logIdTokenJson' => true, //default false. Log the json in the ID token.
-              
           ),
 ```
 
