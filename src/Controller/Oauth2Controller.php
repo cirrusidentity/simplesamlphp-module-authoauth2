@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SimpleSAML\Module\authoauth2\Controller;
 
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
-use Module\authoauth2\Codebooks\Oauth2Enum;
 use SimpleSAML\Auth\State;
 use SimpleSAML\Error\AuthSource;
 use SimpleSAML\Error\BadRequest;
@@ -15,8 +14,9 @@ use SimpleSAML\Error\UserAborted;
 use SimpleSAML\Logger;
 use SimpleSAML\Module;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
+use SimpleSAML\Module\authoauth2\Codebooks\Oauth2ErrorsEnum;
+use SimpleSAML\Module\authoauth2\Controller\Traits\ErrorTrait;
 use SimpleSAML\Module\authoauth2\Controller\Traits\RequestTrait;
-use Module\authoauth2\Controller\Traits\ErrorTrait;
 use SimpleSAML\Module\authoauth2\locators\HTTPLocator;
 use SimpleSAML\Module\authoauth2\locators\SourceServiceLocator;
 use Symfony\Component\HttpFoundation\Request;
@@ -79,6 +79,8 @@ class Oauth2Controller
     private function handleError(OAuth2 $source, array $state, Request $request): void
     {
         // Errors can be pretty inconsistent
+        // XXX We do not have the ability to parse hash parameters in the backend, for example
+        //     https://example.com/ssp/module.php/authoauth2/linkback#error=invalid_scope
         [$error, $error_description] = $this->parseError($request);
         $oauth2ErrorsValues = array_column(Oauth2ErrorsEnum::cases(), 'value');
         if (\in_array($error, $oauth2ErrorsValues, true)) {

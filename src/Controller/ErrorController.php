@@ -20,8 +20,8 @@ class ErrorController
      * It initializes the global configuration and session for the controllers implemented here.
      *
      */
-    public function __construct(
-    ) {
+    public function __construct()
+    {
         $this->config = SimpleSAML\Configuration::getInstance();
     }
 

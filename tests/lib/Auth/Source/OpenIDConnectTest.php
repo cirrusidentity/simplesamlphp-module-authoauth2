@@ -136,6 +136,7 @@ class OpenIDConnectTest extends OAuth2Test
             [
                 new AccessToken([
                     'access_token' => 'stubToken',
+                     //phpcs:ignore Generic.Files.LineLength.TooLong
                     'id_token' => 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiYXVkIjoidGVzdCBjbGllbnQgaWQiLCJpYXQiOjE1MTYyMzkwMjJ9.emHrAifV1IyvmTXh3lYX0oAFqqZInhDlclIlTUumut0',
                 ]),
             ]
@@ -175,8 +176,9 @@ class OpenIDConnectTest extends OAuth2Test
 
     public function testLogoutRedirects()
     {
-        //phpcs:ignore Generic.Files.LineLength.TooLong
-        $expectedUrl = 'https://example.org/logout?id_token_hint=myidtoken&post_logout_redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Floggedout.php&state=authoauth2-stateId';
+        $expectedUrl = 'https://example.org/logout?id_token_hint=myidtoken'
+            . '&post_logout_redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Floggedout.php'
+            . '&state=authoauth2-stateId';
         // Override redirect behavior
         $http = $this->createMock(HTTP::class);
         $http->method('redirectTrustedURL')

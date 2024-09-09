@@ -20,7 +20,7 @@ trait RequestTrait
 
     public function stateIsValid(Request $request): bool
     {
-        if(!$request->query->has('state')) {
+        if (!$request->query->has('state')) {
             return false;
         }
         /** @var ?string $stateId */
@@ -35,9 +35,10 @@ trait RequestTrait
     public function loadState(Request $request): void
     {
         if (!$this->stateIsValid($request)) {
-            // phpcs:ignore Generic.Files.LineLength.TooLong
-            $message = match($request->attributes->get('_route')) {
+            $message = match ($request->attributes->get('_route')) {
+                // phpcs:ignore Generic.Files.LineLength.TooLong
                 RoutesEnum::Logout->name   => 'Either missing state parameter on OpenID Connect logout callback, or cannot be handled by authoauth2',
+                // phpcs:ignore Generic.Files.LineLength.TooLong
                 RoutesEnum::Linkback->name => 'Either missing state parameter on OAuth2 login callback, or cannot be handled by authoauth2',
             };
             throw new BadRequest($message);
@@ -47,7 +48,7 @@ trait RequestTrait
 
         $this->state = State::loadState($stateId, $this->expectedStageState);
 
-        // Find authentication source
+        // Find the authentication source
         if (!\array_key_exists($this->expectedStateAuthId, $this->state)) {
             throw new BadRequest('No authsource id data in state for ' . $this->expectedStateAuthId);
         }

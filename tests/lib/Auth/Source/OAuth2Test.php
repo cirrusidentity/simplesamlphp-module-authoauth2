@@ -178,8 +178,12 @@ class OAuth2Test extends TestCase
      * @param array $attributes
      * @return OAuth2
      */
-    public function setupAndCallFinalSteps(array $config, array &$state, AccessToken $accessToken, array $attributes = ['name' => 'Bob']): OAuth2
-    {
+    public function setupAndCallFinalSteps(
+        array $config,
+        array &$state,
+        AccessToken $accessToken,
+        array $attributes = ['name' => 'Bob']
+    ): OAuth2 {
 
         $code = 'theCode';
         $state = [State::ID => 'stateId'];
