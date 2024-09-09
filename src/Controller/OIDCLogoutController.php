@@ -5,6 +5,7 @@ namespace SimpleSAML\Module\authoauth2\Controller;
 use SimpleSAML\Auth\Simple;
 use SimpleSAML\Configuration;
 use SimpleSAML\Error\BadRequest;
+use SimpleSAML\Error\CriticalConfigurationError;
 use SimpleSAML\Error\NoState;
 use SimpleSAML\Logger;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
@@ -31,9 +32,9 @@ class OIDCLogoutController
      * @throws NoState
      * @throws BadRequest
      */
-    public function logout(Request $request): void
+    public function loggedout(Request $request): void
     {
-        Logger::debug('authoauth2: logout request=' . var_export($request, true));
+        Logger::debug('authoauth2: logout request=' . var_export($request->request->all(), true));
 
         $this->loadState($request);
 
@@ -41,11 +42,20 @@ class OIDCLogoutController
         // @codeCoverageIgnoreStart
     }
 
-    public function handleRequestFromRequest(array $request): void
+    /**
+     * @throws BadRequest
+     * @throws CriticalConfigurationError
+     * @throws \Exception
+     */
+    public function logout(Request $request): void
     {
-        Logger::debug('authoauth2: logout request=' . var_export($request, true));
+        Logger::debug('authoauth2: logout request=' . var_export($request->request->all(), true));
         $config = Configuration::getInstance();
-        $sourceId = $request['authSource'];
+        // Find the authentication source
+        if (!$request->query->has('authSource')) {
+            throw new BadRequest('No authsource in the request');
+        }
+        $sourceId = $request->query->get('authSource');
         $as = new Simple($sourceId);
         $as->logout([
                         'oidc:localLogout' => true,

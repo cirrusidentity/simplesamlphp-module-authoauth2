@@ -146,7 +146,8 @@ class OpenIDConnect extends OAuth2
 
         $postLogoutUrl = $this->config->getOptionalString('postLogoutRedirectUri', null);
         if (!$postLogoutUrl) {
-            $postLogoutUrl = Module::getModuleURL('authoauth2/loggedout.php');
+            $postLogoutUrl = Module::getModuleURL('authoauth2/loggedout');
+//            $postLogoutUrl = Module::getModuleURL('authoauth2/loggedout.php');
         }
 
         // We are going to need the authId in order to retrieve this authentication source later, in the callback

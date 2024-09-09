@@ -38,7 +38,7 @@ trait RequestTrait
             // phpcs:ignore Generic.Files.LineLength.TooLong
             $message = match($request->attributes->get('_route')) {
                 RoutesEnum::Logout->name   => 'Either missing state parameter on OpenID Connect logout callback, or cannot be handled by authoauth2',
-                RoutesEnum::Callback->name => 'Either missing state parameter on OAuth2 login callback, or cannot be handled by authoauth2',
+                RoutesEnum::Linkback->name => 'Either missing state parameter on OAuth2 login callback, or cannot be handled by authoauth2',
             };
             throw new BadRequest($message);
         }

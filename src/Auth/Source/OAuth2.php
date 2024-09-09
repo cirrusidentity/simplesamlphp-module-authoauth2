@@ -21,8 +21,8 @@ use SimpleSAML\Logger;
 use SimpleSAML\Module;
 use SimpleSAML\Module\authoauth2\AttributeManipulator;
 use SimpleSAML\Module\authoauth2\ConfigTemplate;
-use SimpleSAML\Module\authoauth2\locators\HTTPLocator;
 use SimpleSAML\Module\authoauth2\Providers\AdjustableGenericProvider;
+use SimpleSAML\Module\authoauth2\locators\HTTPLocator;
 use SimpleSAML\Session;
 
 /**
@@ -81,8 +81,7 @@ class OAuth2 extends Source
             }
         }
         if (!array_key_exists('redirectUri', $config)) {
-            $config['redirectUri'] = Module::getModuleURL('authoauth2/callback');
-//            $config['redirectUri'] = Module::getModuleURL('authoauth2/linkback.php');
+            $config['redirectUri'] = Module::getModuleURL('authoauth2/linkback');
         }
         if (!array_key_exists('timeout', $config)) {
             $config['timeout'] = 3;

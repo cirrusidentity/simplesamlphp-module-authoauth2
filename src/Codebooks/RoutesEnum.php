@@ -6,8 +6,8 @@ namespace SimpleSAML\Module\authoauth2\Codebooks;
 
 enum RoutesEnum: string
 {
-    case Callback = 'callback';
+    case Linkback = 'linkback';
     case Logout = 'logout';
     case LoggedOut = 'loggedout';
-    case Consent = 'consent';
+    case ConsentError = 'errors/consent';
 }

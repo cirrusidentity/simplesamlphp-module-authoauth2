@@ -14,10 +14,12 @@ use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 /** @psalm-suppress InvalidArgument */
 return function (RoutingConfigurator $routes): void {
 
-    $routes->add(RoutesEnum::Callback->name, RoutesEnum::Callback->value)
-        ->controller([Oauth2Controller::class, 'callback']);
+    $routes->add(RoutesEnum::Linkback->name, RoutesEnum::Linkback->value)
+        ->controller([Oauth2Controller::class, 'linkback']);
     $routes->add(RoutesEnum::Logout->name, RoutesEnum::Logout->value)
         ->controller([OIDCLogoutController::class, 'logout']);
-//    $routes->add(RoutesEnum::LoggedOut->name, RoutesEnum::LoggedOut->value)
-//        ->controller([AccessTokenController::class, 'token']);
+    $routes->add(RoutesEnum::LoggedOut->name, RoutesEnum::LoggedOut->value)
+        ->controller([OIDCLogoutController::class, 'loggedout']);
+    $routes->add(RoutesEnum::ConsentError->name, RoutesEnum::ConsentError->value)
+        ->controller([ErrorController::class, 'consent']);
 };
