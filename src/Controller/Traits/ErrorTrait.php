@@ -8,6 +8,11 @@ use Symfony\Component\HttpFoundation\Request;
 
 trait ErrorTrait
 {
+    /**
+     * @param   Request  $request
+     *
+     * @return array
+     */
     public function parseError(Request $request): array
     {
         // Do not throw if errors are suppressed by @ operator
@@ -18,7 +23,7 @@ trait ErrorTrait
             $error = $request->query->get('error');
         }
 
-        if (!$request->query->has('error_description')) {
+        if ($request->query->has('error_description')) {
             $error_description = $request->query->get('error_description');
         }
 

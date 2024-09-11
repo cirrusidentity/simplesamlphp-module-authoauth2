@@ -19,13 +19,35 @@ class OIDCLogoutController
     use SourceServiceLocator;
     use RequestTrait;
 
+    /**
+     * @var string
+     */
     private string $expectedStageState = OpenIDConnect::STAGE_LOGOUT;
+    /**
+     * @var string
+     */
     private string $expectedStateAuthId = OAuth2::AUTHID;
 
+    /**
+     * @var string
+     */
     private string $expectedPrefix = OAuth2::STATE_PREFIX . '-';
 
-    public function __construct()
+    /**
+     * @var Configuration
+     */
+    protected Configuration $config;
+
+    /**
+     *  Controller constructor.
+     *
+     *  It initializes the global configuration for the controllers implemented here.
+     *
+     * @param   Configuration|null  $config
+     */
+    public function __construct(Configuration $config = null)
     {
+        $this->config = $config ?? SimpleSAML\Configuration::getInstance();
     }
 
     /**
@@ -50,16 +72,27 @@ class OIDCLogoutController
     public function logout(Request $request): void
     {
         Logger::debug('authoauth2: logout request=' . var_export($request->request->all(), true));
-        $config = Configuration::getInstance();
         // Find the authentication source
         if (!$request->query->has('authSource')) {
             throw new BadRequest('No authsource in the request');
         }
         $sourceId = $request->query->get('authSource');
-        $as = new Simple($sourceId);
-        $as->logout([
-                        'oidc:localLogout' => true,
-                        'ReturnTo' => $config->getBasePath() . 'logout.php',
-                    ]);
+        $this->getAuthSource($sourceId)
+            ->logout([
+                         'oidc:localLogout' => true,
+                         'ReturnTo' => $this->config->getBasePath() . 'logout.php',
+                     ]);
+    }
+
+    /**
+     * Create and return an instance with the specified authsource.
+     *
+     * @param   string  $authSource  The id of the authentication source.
+     *
+     * @return Simple The authentication source.
+     */
+    public function getAuthSource(string $authSource): Simple
+    {
+        return new Simple($authSource);
     }
 }

@@ -9,10 +9,10 @@
   ],
   "license": "LGPL-2.1-only",
   "require": {
-    "php": ">=7.4 || ^8.0",
+    "php": "^8.1",
     "simplesamlphp/composer-module-installer": "^1.1",
     "league/oauth2-client": "^2.7",
-    "simplesamlphp/simplesamlphp": "^v2.0.0",
+    "simplesamlphp/simplesamlphp": "^v2.3",
     "firebase/php-jwt": "^5.5|^6",
     "kevinrob/guzzle-cache-middleware": "^4.1.1",
     "psr/cache": "^1.0|^2.0|^3.0",

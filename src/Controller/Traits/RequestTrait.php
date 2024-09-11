@@ -14,10 +14,24 @@ use Symfony\Component\HttpFoundation\Request;
 
 trait RequestTrait
 {
+    /**
+     * @var array
+     */
     private array $state;
+    /**
+     * @var Source
+     */
     private Source $source;
+    /**
+     * @var string
+     */
     private string $sourceid;
 
+    /**
+     * @param   Request  $request
+     *
+     * @return bool
+     */
     public function stateIsValid(Request $request): bool
     {
         if (!$request->query->has('state')) {

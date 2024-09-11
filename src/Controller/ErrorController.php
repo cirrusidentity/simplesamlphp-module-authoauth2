@@ -17,16 +17,17 @@ class ErrorController
     /**
      * Controller constructor.
      *
-     * It initializes the global configuration and session for the controllers implemented here.
+     * It initializes the global configuration for the controllers implemented here.
      *
+     * @param   Configuration|null  $config
      */
-    public function __construct()
+    public function __construct(Configuration $config = null)
     {
-        $this->config = SimpleSAML\Configuration::getInstance();
+        $this->config = $config ?? SimpleSAML\Configuration::getInstance();
     }
 
     /**
-     * Show warning.
+     * Show error consent view.
      *
      * @param   Request  $request
      * @return Response
