@@ -1,7 +1,6 @@
 <?php
 
-$attributemap = array(
-
+$attributemap = [
     // http://openid.net/specs/openid-connect-core-1_0.html#Claims
     'oidc.sub'  => 'uid',
     'oidc.family_name'   => 'sn',
@@ -9,4 +8,4 @@ $attributemap = array(
     'oidc.name'        => 'cn',
     'oidc.preferred_username' => 'displayName',
     'oidc.email'       => 'mail',
-);
+];

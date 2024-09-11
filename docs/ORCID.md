@@ -21,13 +21,13 @@ If you are using this with a SAML IdP then you can map the standard OIDC attribu
 
 ```php
     // saml20-idp-hosted.php
-$metadata['myEntityId'] = array(
-    'authproc' => array(
+$metadata['myEntityId'] = [
+    'authproc' => [
         // Convert oidc names to ldap friendly names
-        90 => array('class' => 'core:AttributeMap',  'authoauth2:oidc2name'),
-    ),
+        90 => ['class' => 'core:AttributeMap',  'authoauth2:orcid2name'],
+    ],
    // other IdP config options
-)
+]
 ```
 
 
