@@ -46,7 +46,7 @@ class Oauth2Controller
     {
         Logger::debug('authoauth2: linkback request=' . var_export($request->query->all(), true));
 
-        $this->loadState($request);
+        $this->parseRequest($request);
 
         // Handle Identify Provider error
         if (!$request->query->has('code')) {

@@ -46,7 +46,7 @@ trait RequestTrait
      * @throws NoState
      * @throws BadRequest
      */
-    public function loadState(Request $request): void
+    public function parseRequest(Request $request): void
     {
         if (!$this->stateIsValid($request)) {
             $message = match ($request->attributes->get('_route')) {
@@ -60,7 +60,7 @@ trait RequestTrait
         $stateIdWithPrefix = $request->query->get('state');
         $stateId = substr($stateIdWithPrefix, strlen($this->expectedPrefix));
 
-        $this->state = State::loadState($stateId, $this->expectedStageState);
+        $this->state = $this->loadState($stateId, $this->expectedStageState);
 
         // Find the authentication source
         if (!\array_key_exists($this->expectedStateAuthId, $this->state)) {
@@ -75,5 +75,20 @@ trait RequestTrait
         if ($this->source === null) {
             throw new BadRequest('Could not find authentication source with id ' . $this->sourceId);
         }
+    }
+
+    /**
+     *  Retrieve saved state.
+     *
+     * @param   string  $id
+     * @param   string  $stage
+     * @param   bool    $allowMissing
+     *
+     * @return array|null
+     * @throws NoState
+     */
+    public function loadState(string $id, string $stage, bool $allowMissing = false): ?array
+    {
+        return State::loadState($id, $stage, $allowMissing);
     }
 }

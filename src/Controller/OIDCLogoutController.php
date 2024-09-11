@@ -58,7 +58,7 @@ class OIDCLogoutController
     {
         Logger::debug('authoauth2: logout request=' . var_export($request->request->all(), true));
 
-        $this->loadState($request);
+        $this->parseRequest($request);
 
         $this->getSourceService()->completeLogout($this->state);
         // @codeCoverageIgnoreStart
