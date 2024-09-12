@@ -9,5 +9,7 @@ services:
 
     SimpleSAML\Module\authoauth2\Controller\:
         resource: '../../src/Controller/*'
+        exclude:
+            - '../src/Controller/Traits/*'
         public: true
         autowire: true
