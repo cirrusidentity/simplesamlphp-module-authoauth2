@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Module\authoauth2\Providers;
 
 use Firebase\JWT;
@@ -136,7 +138,7 @@ class OpenIDConnectProvider extends AbstractProvider
     protected function prepareAccessTokenResponse(array $result)
     {
         $result = parent::prepareAccessTokenResponse($result);
-        $this->verifyIdToken($result['id_token']);
+        $this->verifyIdToken((string)$result['id_token']);
         return $result;
     }
 
@@ -197,6 +199,10 @@ class OpenIDConnectProvider extends AbstractProvider
         return base64_decode(strtr($input, '-_', '+/'));
     }
 
+    /**
+     * @throws IdentityProviderException
+     * @return array<string, string> $keys
+     */
     protected function getSigningKeys(): array
     {
         $url = $this->getOpenIDConfiguration()->getString('jwks_uri');
@@ -204,9 +210,9 @@ class OpenIDConnectProvider extends AbstractProvider
         $jwks = $this->getParsedResponse($this->getRequest('GET', $url));
         $keys = [];
         foreach ($jwks['keys'] as $key) {
-            /** @var string $kid */
+            /** @psalm-var array<string, string> $key */
             $kid = $key['kid'];
-            if (array_key_exists('x5c', $key)) {
+            if (\array_key_exists('x5c', $key)) {
                 /** @var array $x5c */
                 $x5c = $key['x5c'];
                 $keys[$kid] = "-----BEGIN CERTIFICATE-----\n" . $x5c[0] . "\n-----END CERTIFICATE-----";
@@ -214,7 +220,7 @@ class OpenIDConnectProvider extends AbstractProvider
                 $e = self::base64urlDecode($key['e']);
                 $n = self::base64urlDecode($key['n']);
                 if (!$n || !$e) {
-                    Logger::warning("Failed to base64 decod key data for key id: " . $kid);
+                    Logger::warning('Failed to base64 decode key data for key id: ' . $kid);
                     continue;
                 }
                 $keys[$kid] = \RobRichards\XMLSecLibs\XMLSecurityKey::convertRSA($n, $e);

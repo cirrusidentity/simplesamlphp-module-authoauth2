@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Module\authoauth2\Auth\Source;
 
 use Exception;
 use League\OAuth2\Client\Provider\AbstractProvider;
+use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Token\AccessToken;
 use SimpleSAML\Logger;
 
@@ -44,6 +47,7 @@ class BitbucketAuth extends OAuth2
             $response = $this->retry(
             /**
              * @return mixed
+             * @throws IdentityProviderException
              */
                 function () use ($provider, $request) {
                     return $provider->getParsedResponse($request);
@@ -58,11 +62,12 @@ class BitbucketAuth extends OAuth2
         }
 
         // if the user has multiple email addresses, pick the primary one
-        if (is_array($response) && isset($response["size"])) {
-            for ($i = 0; $i < $response["size"]; $i++) {
-                if ($response["values"][$i]["is_primary"] == "true" && $response["values"][$i]["type"] == "email") {
+        if (is_array($response) && isset($response['size'])) {
+            for ($i = 0; $i < $response['size']; $i++) {
+                /** @psalm-suppress MixedArrayAccess */
+                if ($response['values'][$i]['is_primary'] === 'true' && $response['values'][$i]['type'] === 'email') {
                     $prefix = $this->getAttributePrefix();
-                    $state['Attributes'][$prefix . 'email'] = [$response["values"][$i]["email"]];
+                    $state['Attributes'][$prefix . 'email'] = [$response['values'][$i]['email']];
                 }
             }
         } else {

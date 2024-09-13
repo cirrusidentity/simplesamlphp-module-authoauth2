@@ -4,6 +4,8 @@
  * DEPRECATED -- see docs/LINKEDIN.md
  */
 
+declare(strict_types=1);
+
 /**
  * Created by PhpStorm.
  * User: patrick
@@ -76,13 +78,13 @@ class LinkedInV2Auth extends OAuth2
      * LinkedIn's attribute values are complex subobjects per
      * https://docs.microsoft.com/en-us/linkedin/shared/references/v2/object-types#multilocalestring
      * @param string $attributeName The multiLocalString attribute to check
-     * @param array $attributes All the linkedIn attributes
+     * @param array $attributes All the LinkedIn attributes
      * @return string|false|null Return the first value or null/false if there is no value
      */
-    private function getFirstValueFromMultiLocaleString(string $attributeName, array $attributes)
+    private function getFirstValueFromMultiLocaleString(string $attributeName, array $attributes): false|string|null
     {
-        if (isset($attributes[$attributeName]['localized'])) {
-            // reset gives us the first value from the multi valued associate localized array
+        if (isset($attributes[$attributeName]['localized']) && \is_array($attributes[$attributeName]['localized'])) {
+            // reset gives us the first value from the multivalued associate localized array
             return reset($attributes[$attributeName]['localized']);
         }
         return null;
@@ -121,7 +123,7 @@ class LinkedInV2Auth extends OAuth2
             return;
         }
 
-        if (is_array($response) && isset($response["elements"][0]["handle~"]["emailAddress"])) {
+        if (is_array($response) && isset($response['elements'][0]['handle~']['emailAddress'])) {
             /**
              * A valid response for email lookups is:
              * {
@@ -134,7 +136,8 @@ class LinkedInV2Auth extends OAuth2
              * }
              */
             $prefix = $this->getAttributePrefix();
-            $state['Attributes'][$prefix . 'emailAddress'] = [$response["elements"][0]["handle~"]["emailAddress"]];
+            /** @psalm-suppress MixedArrayAccess */
+            $state['Attributes'][$prefix . 'emailAddress'] = [$response['elements'][0]['handle~']['emailAddress']];
         } else {
             Logger::error(
                 'linkedInv2Auth: ' . $this->getLabel() . ' invalid email query response ' . var_export($response, true)

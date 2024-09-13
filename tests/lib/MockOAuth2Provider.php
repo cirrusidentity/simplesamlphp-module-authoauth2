@@ -1,10 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Test\SimpleSAML;
 
 use League\OAuth2\Client\Provider\GenericProvider;
 use League\OAuth2\Client\Provider\AbstractProvider;
+use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 use League\OAuth2\Client\Token\AccessToken;
+use League\OAuth2\Client\Token\AccessTokenInterface;
 use Psr\Http\Message\RequestInterface;
 use SimpleSAML\Utils\ClearableState;
 
@@ -13,7 +17,7 @@ class MockOAuth2Provider extends GenericProvider implements ClearableState
     /**
      * @var AbstractProvider
      */
-    private static $delegate;
+    private static AbstractProvider $delegate;
 
     /**
      * MockOAuth2Provider constructor.
@@ -28,13 +32,12 @@ class MockOAuth2Provider extends GenericProvider implements ClearableState
         parent::__construct(array_merge($options, $defaultOptions), $collaborators);
     }
 
-
-    public function getAccessToken($grant, array $options = [])
+    public function getAccessToken($grant, array $options = []): AccessTokenInterface|AccessToken
     {
         return self::$delegate->getAccessToken($grant, $options);
     }
 
-    public function getResourceOwner(AccessToken $token)
+    public function getResourceOwner(AccessToken $token): ResourceOwnerInterface
     {
         return self::$delegate->getResourceOwner($token);
     }
@@ -44,7 +47,7 @@ class MockOAuth2Provider extends GenericProvider implements ClearableState
         return self::$delegate->getAuthenticatedRequest($method, $url, $token, $options);
     }
 
-    public static function setDelegate(AbstractProvider $delegate)
+    public static function setDelegate(AbstractProvider $delegate): void
     {
         self::$delegate = $delegate;
     }
@@ -59,7 +62,7 @@ class MockOAuth2Provider extends GenericProvider implements ClearableState
         self::$delegate->setPkceCode($pkceCode);
     }
 
-    public function getPkceCode()
+    public function getPkceCode(): ?string
     {
         return self::$delegate->getPkceCode();
     }

@@ -1,31 +1,35 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Test\SimpleSAML\Providers;
 
 use League\OAuth2\Client\Token\AccessToken;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\Module\authoauth2\Providers\AdjustableGenericProvider;
-use SimpleSAML\Module\authoauth2\Providers\OpenIDConnectProvider;
 use Symfony\Component\HttpFoundation\Request;
 
 class AdjustableGenericProviderTest extends TestCase
 {
-    private array $requiredProviderConifg = [
+    final protected const REQUIRED_PROVIDER_CONFIG = [
         'urlAuthorize' => 'https://www.facebook.com/dialog/oauth',
         'urlAccessToken' => 'https://graph.facebook.com/oauth/access_token',
         'urlResourceOwnerDetails' => 'https://graph.facebook.com/me?fields=123',
     ];
 
     /**
-     * @dataProvider adjustProvider
-     * @param array $tokenResponse
-     * @param $expectedQueryString
+     * @param   array   $tokenResponse
+     * @param   string  $expectedQueryString
+     *
+     * @throws \Exception
      */
-    public function testAdjustingResourceOwnerUrl(array $tokenResponse, $expectedQueryString): void
+    #[DataProvider('adjustProvider')]
+    public function testAdjustingResourceOwnerUrl(array $tokenResponse, string $expectedQueryString): void
     {
 
         $token = new AccessToken($tokenResponse);
-        $config = $this->requiredProviderConifg + [
+        $config = self::REQUIRED_PROVIDER_CONFIG + [
                 'tokenFieldsToUserDetailsUrl' => [
                     'uid' => 'uid',
                     'rename' => 'newname',
@@ -38,7 +42,7 @@ class AdjustableGenericProviderTest extends TestCase
         $this->assertEquals($expectedQueryString, $query);
     }
 
-    public function adjustProvider(): array
+    public static function adjustProvider(): array
     {
         return [
             [
@@ -52,9 +56,9 @@ class AdjustableGenericProviderTest extends TestCase
     /**
      * Test only adjusting the url if configured
      */
-    public function testNoAdjustmentsToUrl()
+    public function testNoAdjustmentsToUrl(): void
     {
-        $provider = new AdjustableGenericProvider($this->requiredProviderConifg);
+        $provider = new AdjustableGenericProvider(self::REQUIRED_PROVIDER_CONFIG);
         $token = new AccessToken(['access_token' => 'abc', 'someid' => 123]);
         $url = $provider->getResourceOwnerDetailsUrl($token);
         $this->assertEquals('https://graph.facebook.com/me?fields=123', $url);
@@ -63,9 +67,9 @@ class AdjustableGenericProviderTest extends TestCase
     /**
      * Confirm scope can be set with scopes or authoricationUrl.scope
      */
-    public function testSetScopes()
+    public function testSetScopes(): void
     {
-        $provider = new AdjustableGenericProvider($this->requiredProviderConifg);
+        $provider = new AdjustableGenericProvider(self::REQUIRED_PROVIDER_CONFIG);
         $url = $provider->getAuthorizationUrl();
         $request = Request::create($url);
         $this->assertFalse($request->query->has('scope'), 'no default scopes');
@@ -74,7 +78,7 @@ class AdjustableGenericProviderTest extends TestCase
         $request = Request::create($url);
         $this->assertEquals('otherscope', $request->query->get('scope'));
 
-        $provider = new AdjustableGenericProvider($this->requiredProviderConifg + ['scopes' => ['openid']]);
+        $provider = new AdjustableGenericProvider(self::REQUIRED_PROVIDER_CONFIG + ['scopes' => ['openid']]);
 
         $url = $provider->getAuthorizationUrl();
         $request = Request::create($url);

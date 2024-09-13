@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Module\authoauth2\Auth\Source;
 
 use Exception;
 use League\OAuth2\Client\Provider\AbstractProvider;
+use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Token\AccessToken;
 use SimpleSAML\Logger;
 
@@ -24,13 +27,15 @@ class OrcidOIDCAuth extends OpenIDConnect
     /**
      * Parse ORCID's email lookup endpoint response and return email or null
      * Public for testing
-     * @param mixed $response
-     * @return string returns email address or null if not found
+     *
+     * @param   mixed  $response
+     *
+     * @return string|null returns email address or null if not found
      */
-    public function parseEmailLookupResponse($response): ?string
+    public function parseEmailLookupResponse(mixed $response): ?string
     {
         $email = null;
-        if (is_array($response) && isset($response["email"])) {
+        if (\is_array($response) && isset($response['email']) && \is_array($response['email'])) {
             /**
              * A valid response for email lookups is:
              * {
@@ -96,14 +101,15 @@ class OrcidOIDCAuth extends OpenIDConnect
              * }
              *
              * ORCID allows multiple email addresses, with only one being marked as "primary". Email addresses
-             * can also me restricted from public visibility -- so the "primary" email address may not be released.
-             * Use the first email address in array marked primary (if any), else use first email address.
+             * can also be restricted from public visibility -- so the "primary" email address may not be released.
+             * Use the first email address in an array marked primary (if any), else use the first email address.
              */
-            foreach ($response["email"] as $e) {
-                if ($email === null || $e["primary"] === true) {
-                    $email = $e["email"];
+            /** @var string $email */
+            foreach ($response['email'] as $e) {
+                if ($email === null || $e['primary'] === true) {
+                    $email = (string)$e['email'];
                 }
-                if ($e["primary"] === true) {
+                if ($e['primary'] === true) {
                     break;
                 }
             }
@@ -125,6 +131,7 @@ class OrcidOIDCAuth extends OpenIDConnect
         $prefix = $this->getAttributePrefix();
 
         $emailUrl = $this->getConfig()->getString('urlResourceOwnerEmail');
+        /** @psalm-suppress MixedArrayAccess */
         $request = $provider->getAuthenticatedRequest(
             'GET',
             strtr($emailUrl, ['@orcid' => $state['Attributes'][$prefix . 'sub'][0]]),
@@ -132,9 +139,11 @@ class OrcidOIDCAuth extends OpenIDConnect
             ['headers' => ['Accept' => 'application/json']]
         );
         try {
+            /** @psalm-suppress MixedAssignment */
             $response = $this->retry(
             /**
              * @return mixed
+             * @throws IdentityProviderException
              */
                 function () use ($provider, $request) {
                     return $provider->getParsedResponse($request);

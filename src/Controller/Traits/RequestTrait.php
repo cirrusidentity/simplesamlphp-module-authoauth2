@@ -15,17 +15,17 @@ use Symfony\Component\HttpFoundation\Request;
 trait RequestTrait
 {
     /**
-     * @var array
+     * @var array|null
      */
-    private array $state;
+    protected ?array $state;
     /**
-     * @var Source
+     * @var Source|null
      */
-    private Source $source;
+    protected ?OAuth2 $source;
     /**
-     * @var string
+     * @var string|null
      */
-    private string $sourceid;
+    protected ?string $sourceId;
 
     /**
      * @param   Request  $request
@@ -39,7 +39,10 @@ trait RequestTrait
         }
         /** @var ?string $stateId */
         $stateId = $request->query->get('state');
-        return \is_string($stateId) && str_starts_with($stateId, $this->expectedPrefix);
+        if (empty($stateId)) {
+            return false;
+        }
+        return str_starts_with($stateId, $this->expectedPrefix);
     }
 
     /**
@@ -54,23 +57,31 @@ trait RequestTrait
                 RoutesEnum::Logout->name   => 'Either missing state parameter on OpenID Connect logout callback, or cannot be handled by authoauth2',
                 // phpcs:ignore Generic.Files.LineLength.TooLong
                 RoutesEnum::Linkback->name => 'Either missing state parameter on OAuth2 login callback, or cannot be handled by authoauth2',
+                default => 'An error occured'
             };
             throw new BadRequest($message);
         }
-        $stateIdWithPrefix = $request->query->get('state');
+        $stateIdWithPrefix = (string)($request->query->get('state') ?? '');
         $stateId = substr($stateIdWithPrefix, strlen($this->expectedPrefix));
 
         $this->state = $this->loadState($stateId, $this->expectedStageState);
 
         // Find the authentication source
-        if (!\array_key_exists($this->expectedStateAuthId, $this->state)) {
+        if (
+            $this->state === null
+            || !\array_key_exists($this->expectedStateAuthId, $this->state)
+        ) {
             throw new BadRequest('No authsource id data in state for ' . $this->expectedStateAuthId);
         }
-        $this->sourceId = $this->state[$this->expectedStateAuthId];
 
         /**
          * @var ?OAuth2 $source
          */
+        if (empty($this->state[$this->expectedStateAuthId])) {
+            throw new BadRequest('Source ID is undefined');
+        }
+
+        $this->sourceId = (string)$this->state[$this->expectedStateAuthId];
         $this->source = $this->getSourceService()->getById($this->sourceId, OAuth2::class);
         if ($this->source === null) {
             throw new BadRequest('Could not find authentication source with id ' . $this->sourceId);

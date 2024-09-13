@@ -48,13 +48,18 @@ class Oauth2Controller
 
         $this->parseRequest($request);
 
+        // Required for psalm
+        assert($this->source instanceof  OAuth2);
+        assert(is_array($this->state));
+        assert(is_string($this->sourceId));
+
         // Handle Identify Provider error
-        if (!$request->query->has('code')) {
+        if (!$request->query->has('code') || empty($request->query->get('code'))) {
             $this->handleError($this->source, $this->state, $request);
         }
 
         try {
-            $this->source->finalStep($this->state, $request->query->get('code'));
+            $this->source->finalStep($this->state, (string)$request->query->get('code'));
         } catch (IdentityProviderException $e) {
             // phpcs:ignore Generic.Files.LineLength.TooLong
             Logger::error("authoauth2: error in '$this->sourceId' msg '{$e->getMessage()}' body '" . var_export($e->getResponseBody(), true) . "'");
@@ -81,11 +86,18 @@ class Oauth2Controller
         // Errors can be pretty inconsistent
         // XXX We do not have the ability to parse hash parameters in the backend, for example
         //     https://example.com/ssp/module.php/authoauth2/linkback#error=invalid_scope
+        /** @var string $error */
+        /** @var string $error_description */
         [$error, $error_description] = $this->parseError($request);
         $oauth2ErrorsValues = array_column(Oauth2ErrorsEnum::cases(), 'value');
         if (\in_array($error, $oauth2ErrorsValues, true)) {
-            // phpcs:ignore Generic.Files.LineLength.TooLong
-            Logger::debug("authoauth2: Authsource '" . $source->getAuthId() . "' User denied access: $error. Msg: " .  $error_description);
+            $msg = 'authoauth2: Authsource '
+                . $source->getAuthId()
+                . ' User denied access: '
+                . $error
+                . ' Msg: '
+                . $error_description;
+            Logger::debug($msg);
             if ($source->getConfig()->getOptionalBoolean('useConsentErrorPage', true)) {
                 $consentErrorPageUrl = Module::getModuleURL('authoauth2/errors/consent');
                 $this->getHttp()->redirectTrustedURL($consentErrorPageUrl);

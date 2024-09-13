@@ -11,7 +11,7 @@ trait ErrorTrait
     /**
      * @param   Request  $request
      *
-     * @return array
+     * @return string[]
      */
     public function parseError(Request $request): array
     {
@@ -20,11 +20,11 @@ trait ErrorTrait
         $error = '';
         $error_description = '';
         if ($request->query->has('error')) {
-            $error = $request->query->get('error');
+            $error = (string)$request->query->get('error');
         }
 
         if ($request->query->has('error_description')) {
-            $error_description = $request->query->get('error_description');
+            $error_description = (string)$request->query->get('error_description');
         }
 
         return [

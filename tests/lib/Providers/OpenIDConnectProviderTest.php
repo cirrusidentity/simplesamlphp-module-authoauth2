@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Test\SimpleSAML\Providers;
 
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
-use League\OAuth2\Client\Token\AccessToken;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\Module\authoauth2\Providers\OpenIDConnectProvider;
 use Symfony\Component\HttpFoundation\Request;
@@ -11,7 +13,7 @@ use Test\SimpleSAML\MockOpenIDConnectProvider;
 
 class OpenIDConnectProviderTest extends TestCase
 {
-    public function idTokenErrorDataProvider(): array
+    public static function idTokenErrorDataProvider(): array
     {
         // phpcs:disable
         return [
@@ -32,17 +34,18 @@ class OpenIDConnectProviderTest extends TestCase
     }
 
     /**
-     * @dataProvider idTokenErrorDataProvider
-     * @param $idToken
-     * @param $expectedMessage
+     * @param string $idToken
+     * @param string $expectedMessage
      */
-    public function testIdTokenValidationFails($idToken, $expectedMessage): void
+    #[DataProvider('idTokenErrorDataProvider')]
+    public function testIdTokenValidationFails(string $idToken, string $expectedMessage): void
     {
         $this->expectException(IdentityProviderException::class);
         $this->expectExceptionMessage($expectedMessage);
 
+        $configDir = !empty(getenv('SIMPLESAMLPHP_CONFIG_DIR')) ? (string)getenv('SIMPLESAMLPHP_CONFIG_DIR') : '';
         MockOpenIDConnectProvider::setSigningKeys([
-            'mykey' => file_get_contents(getenv('SIMPLESAMLPHP_CONFIG_DIR') . '/jwks-cert.pem')
+            'mykey' => file_get_contents($configDir . '/jwks-cert.pem')
                                                   ]);
         $provider = new MockOpenIDConnectProvider([
             'issuer' => 'niceidp',

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Module\authoauth2\Controller;
 
 use SimpleSAML\Auth\Simple;
@@ -47,7 +49,7 @@ class OIDCLogoutController
      */
     public function __construct(Configuration $config = null)
     {
-        $this->config = $config ?? SimpleSAML\Configuration::getInstance();
+        $this->config = $config ?? Configuration::getInstance();
     }
 
     /**
@@ -59,6 +61,8 @@ class OIDCLogoutController
         Logger::debug('authoauth2: logout request=' . var_export($request->request->all(), true));
 
         $this->parseRequest($request);
+
+        assert(is_array($this->state));
 
         $this->getSourceService()->completeLogout($this->state);
         // @codeCoverageIgnoreStart
@@ -77,6 +81,9 @@ class OIDCLogoutController
             throw new BadRequest('No authsource in the request');
         }
         $sourceId = $request->query->get('authSource');
+        if (empty($sourceId) || !is_string($sourceId)) {
+            throw new BadRequest('Authsource ID invalid');
+        }
         $this->getAuthSource($sourceId)
             ->logout([
                          'oidc:localLogout' => true,

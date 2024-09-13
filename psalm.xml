@@ -9,20 +9,35 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="https://getpsalm.org/schema/config"
     xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
-    errorBaseline="psalm-baseline.xml"
 >
     <projectFiles>
         <directory name="src"/>
-<!-- Too many errors in test folder at the moment -->
         <directory name="tests"/>
-<!--        <directory name="templates" /> -->
+        <directory name="templates" />
+        <directory name="public" />
+        <directory name="routing/routes" />
         <ignoreFiles>
-            <file name="tests/bootstrap.php"/>
-<!--            <directory name="tests/metadata" />-->
-<!--            <directory name="tests/config" />-->
+            <directory name="vendor" />
         </ignoreFiles>
     </projectFiles>
+
     <issueHandlers>
+        <!-- Ignore UnusedVariable in tests config directory -->
+        <UnusedVariable>
+            <errorLevel type="suppress">
+                <file name="tests/config/*" />
+            </errorLevel>
+        </UnusedVariable>
+
         <PropertyNotSetInConstructor errorLevel="info"/>
+
+        <!-- Ignore errors related to unused classes, methods... -->
+        <UnusedClass errorLevel="suppress" />
+        <UnusedMethodCall errorLevel="suppress" />
+        <PossiblyUnusedMethod errorLevel="suppress" />
+        <PossiblyUnusedReturnValue errorLevel="suppress" />
+
+        <!-- Ignore RiskyTruthyFalsyComparison -->
+        <RiskyTruthyFalsyComparison errorLevel="suppress" />
     </issueHandlers>
 <plugins><pluginClass class="Psalm\PhpUnitPlugin\Plugin"/></plugins></psalm>

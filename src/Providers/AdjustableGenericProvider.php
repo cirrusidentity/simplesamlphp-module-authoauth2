@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Module\authoauth2\Providers;
 
 use League\OAuth2\Client\Provider\GenericProvider;

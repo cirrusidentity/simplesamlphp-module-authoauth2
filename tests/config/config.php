@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 $config = [];
 // require a vanilla SSP config
 require "ssp2_0-config.php";
