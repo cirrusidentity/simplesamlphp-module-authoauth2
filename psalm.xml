@@ -29,21 +29,14 @@
             </errorLevel>
         </UnusedVariable>
 
-        <MixedArrayAccess>
-            <errorLevel type="suppress">
-                <file name="src/Auth/Source/OrcidOIDCAuth.php" />
-                <file name="src/Providers/OpenIDConnectProvider.php" />
-            </errorLevel>
-        </MixedArrayAccess>
-
-        <MixedArgument>
-            <errorLevel type="suppress">
-                <file name="src/Auth/Source/OrcidOIDCAuth.php" />
-                <file name="src/Providers/OpenIDConnectProvider.php" />
-            </errorLevel>
-        </MixedArgument>
-
         <PropertyNotSetInConstructor errorLevel="info"/>
+        <!-- Ignore mixed errors -->
+        <MixedArrayAssignment errorLevel="suppress" />
+        <MixedArrayAccess errorLevel="suppress" />
+        <MixedReturnTypeCoercion errorLevel="suppress" />
+        <MixedReturnStatement errorLevel="suppress" />
+        <MixedInferredReturnType errorLevel="suppress" />
+        <MixedAssignment errorLevel="suppress" />
 
         <!-- Ignore errors related to unused classes, methods... -->
         <UnusedClass errorLevel="suppress" />

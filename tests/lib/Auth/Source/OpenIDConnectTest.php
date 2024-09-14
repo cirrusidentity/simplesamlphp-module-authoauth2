@@ -18,7 +18,9 @@ use Test\SimpleSAML\RedirectException;
  */
 class OpenIDConnectTest extends OAuth2Test
 {
+    /** @var string */
     public const AUTH_ID = 'openidconnect';
+
     protected function getInstance(array $config): OpenIDConnect
     {
         $info = ['AuthId' => self::AUTH_ID];

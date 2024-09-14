@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 $attributemap = [
     'apple.name.firstName' => 'givenName',
     'apple.name.lastName' => 'sn',

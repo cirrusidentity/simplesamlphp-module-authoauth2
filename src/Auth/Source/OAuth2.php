@@ -210,9 +210,12 @@ class OAuth2 extends Source
     /**
      * Retrieve access token and lookup resource owner profile
      *
-     * @param array $state
-     * @param string $oauth2Code
+     * @param   array   $state
+     * @param   string  $oauth2Code
      *
+     * @return void
+     * @throws \SimpleSAML\Error\Exception
+     * @throws \SimpleSAML\Error\UnserializableException
      */
     public function finalStep(array &$state, string $oauth2Code): void
     {
@@ -318,15 +321,15 @@ class OAuth2 extends Source
     }
 
     /**
-     * Retry token and user info endpoints in event of network errors.
+     * Retry token and user info endpoints in the event of network errors.
      * @param callable $function the function to try
      * @param ?int $retries number of attempts to try
      * @param int $delay The time to delay between tries.
      * @return mixed the result of the function
      */
-    protected function retry(callable $function, ?int $retries = null, int $delay = 1)
+    protected function retry(callable $function, ?int $retries = null, int $delay = 1): mixed
     {
-        if ($retries === null) {
+        if ($retries == null) {
             $retries = $this->config->getOptionalInteger('retryOnError', 1);
         }
         if ($delay < 0) {
@@ -370,6 +373,11 @@ class OAuth2 extends Source
         return $data;
     }
 
+    /**
+     * @param   string|null  $jwt
+     *
+     * @return string|null
+     */
     protected function extraAndDecodeJwtPayload(?string $jwt): ?string
     {
         $parts = explode('.', $jwt ?? '');
@@ -386,6 +394,9 @@ class OAuth2 extends Source
         return $decoded;
     }
 
+    /**
+     * @return bool
+     */
     protected function isPkceEnabled(): bool
     {
         return (bool)$this->config->getOptionalValueValidate('pkceMethod', [
@@ -449,6 +460,9 @@ class OAuth2 extends Source
         return $this->config;
     }
 
+    /**
+     * @return string
+     */
     protected function getAttributePrefix(): string
     {
         return $this->config->getOptionalString('attributePrefix', '');

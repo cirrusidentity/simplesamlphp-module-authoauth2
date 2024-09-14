@@ -21,7 +21,7 @@ trait RequestTrait
     /**
      * @var Source|null
      */
-    protected ?OAuth2 $source;
+    protected ?Source $source;
     /**
      * @var string|null
      */
@@ -74,9 +74,6 @@ trait RequestTrait
             throw new BadRequest('No authsource id data in state for ' . $this->expectedStateAuthId);
         }
 
-        /**
-         * @var ?OAuth2 $source
-         */
         if (empty($this->state[$this->expectedStateAuthId])) {
             throw new BadRequest('Source ID is undefined');
         }

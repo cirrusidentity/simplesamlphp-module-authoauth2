@@ -45,7 +45,6 @@ class OpenIDConnect extends OAuth2
         $provider = parent::getProvider($config);
         $httpClient = $provider->getHttpClient();
         /** @psalm-suppress DeprecatedMethod */
-        /** @psalm-suppress MixedAssignment */
         $handler = $httpClient->getConfig('handler');
         if (!($handler instanceof HandlerStack)) {
             $newhandler = HandlerStack::create();

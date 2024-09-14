@@ -123,7 +123,7 @@ class LinkedInV2Auth extends OAuth2
             return;
         }
 
-        if (is_array($response) && isset($response['elements'][0]['handle~']['emailAddress'])) {
+        if (\is_array($response) && isset($response['elements'][0]['handle~']['emailAddress'])) {
             /**
              * A valid response for email lookups is:
              * {

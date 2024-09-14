@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 $attributemap = [
     'linkedin.firstName' => 'givenName',
     'linkedin.lastName' => 'sn',

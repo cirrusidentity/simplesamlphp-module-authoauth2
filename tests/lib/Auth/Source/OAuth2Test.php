@@ -25,6 +25,7 @@ use Test\SimpleSAML\RedirectException;
  */
 class OAuth2Test extends TestCase
 {
+    /** @var string */
     public const AUTH_ID = 'oauth2';
 
     protected function getInstance(array $config): OAuth2
@@ -440,6 +441,7 @@ class OAuth2Test extends TestCase
         $authOAuth2 = $this->getInstance($config);
         $provider = $authOAuth2->getProvider($authOAuth2->getConfig());
 
+        /** @psalm-suppress DeprecatedMethod*/
         $clientConfig = (array)$provider->getHttpClient()->getConfig();
         /** @var HandlerStack $handlerStack */
         $handlerStack = $clientConfig['handler'];

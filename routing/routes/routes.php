@@ -9,6 +9,7 @@ declare(strict_types=1);
 use SimpleSAML\Module\authoauth2\Codebooks\RoutesEnum;
 use SimpleSAML\Module\authoauth2\Controller\Oauth2Controller;
 use SimpleSAML\Module\authoauth2\Controller\OIDCLogoutController;
+use SimpleSAML\Module\authoauth2\Controller\ErrorController;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
 /** @psalm-suppress InvalidArgument */

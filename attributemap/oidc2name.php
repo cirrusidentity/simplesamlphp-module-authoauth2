@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 $attributemap = [
     // http://openid.net/specs/openid-connect-core-1_0.html#Claims
     'oidc.sub'  => 'uid',
