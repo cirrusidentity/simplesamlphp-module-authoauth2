@@ -20,10 +20,12 @@ class ErrorController
      * It initializes the global configuration for the controllers implemented here.
      *
      * @param   Configuration|null  $config
+     *
+     * @throws \Exception
      */
     public function __construct(Configuration $config = null)
     {
-        $this->config = $config ?? SimpleSAML\Configuration::getInstance();
+        $this->config = $config ?? Configuration::getInstance();
     }
 
     /**

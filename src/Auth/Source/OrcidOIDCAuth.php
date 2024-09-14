@@ -35,7 +35,11 @@ class OrcidOIDCAuth extends OpenIDConnect
     public function parseEmailLookupResponse(mixed $response): ?string
     {
         $email = null;
-        if (\is_array($response) && isset($response['email']) && \is_array($response['email'])) {
+        if (
+            \is_array($response)
+            && isset($response['email'])
+            && \is_array($response['email'])
+        ) {
             /**
              * A valid response for email lookups is:
              * {
@@ -105,6 +109,7 @@ class OrcidOIDCAuth extends OpenIDConnect
              * Use the first email address in an array marked primary (if any), else use the first email address.
              */
             /** @var string $email */
+            /** @psalm-suppress MixedAssignment */
             foreach ($response['email'] as $e) {
                 if ($email === null || $e['primary'] === true) {
                     $email = (string)$e['email'];
@@ -157,8 +162,9 @@ class OrcidOIDCAuth extends OpenIDConnect
             return;
         }
         $email = $this->parseEmailLookupResponse($response);
-        if ($email !== null) {
-            $state['Attributes'][$prefix . 'email'] = [$email];
+        if ($email !== null && \is_array($state['Attributes'])) {
+            /** @psalm-suppress MixedArrayAssignment */
+            $state['Attributes'][$prefix . 'email'][] = $email;
         } else {
             Logger::error(
                 'OrcidOIDCAuth: ' . $this->getLabel() . ' invalid email query response ' . var_export($response, true)

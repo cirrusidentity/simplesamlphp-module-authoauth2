@@ -29,6 +29,20 @@
             </errorLevel>
         </UnusedVariable>
 
+        <MixedArrayAccess>
+            <errorLevel type="suppress">
+                <file name="src/Auth/Source/OrcidOIDCAuth.php" />
+                <file name="src/Providers/OpenIDConnectProvider.php" />
+            </errorLevel>
+        </MixedArrayAccess>
+
+        <MixedArgument>
+            <errorLevel type="suppress">
+                <file name="src/Auth/Source/OrcidOIDCAuth.php" />
+                <file name="src/Providers/OpenIDConnectProvider.php" />
+            </errorLevel>
+        </MixedArgument>
+
         <PropertyNotSetInConstructor errorLevel="info"/>
 
         <!-- Ignore errors related to unused classes, methods... -->
@@ -36,6 +50,7 @@
         <UnusedMethodCall errorLevel="suppress" />
         <PossiblyUnusedMethod errorLevel="suppress" />
         <PossiblyUnusedReturnValue errorLevel="suppress" />
+        <PossiblyUnusedParam errorLevel="suppress" />
 
         <!-- Ignore RiskyTruthyFalsyComparison -->
         <RiskyTruthyFalsyComparison errorLevel="suppress" />
