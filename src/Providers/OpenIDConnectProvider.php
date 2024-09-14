@@ -194,23 +194,26 @@ class OpenIDConnectProvider extends AbstractProvider
         $req = $this->getRequest('GET', $this->getDiscoveryUrl());
         /** @var array $config */
         $config = $this->getParsedResponse($req);
-        $requiredEndPoints = [ "authorization_endpoint", "token_endpoint", "jwks_uri", "issuer", "userinfo_endpoint" ];
+        $requiredEndPoints = ['authorization_endpoint', 'token_endpoint', 'jwks_uri', 'issuer', 'userinfo_endpoint'];
         foreach ($requiredEndPoints as $key) {
-            if (!array_key_exists($key, $config)) {
-                throw new \UnexpectedValueException("OpenID Configuration data misses required key: " . $key);
+            if (!\array_key_exists($key, $config)) {
+                throw new \UnexpectedValueException('OpenID Configuration data misses required key: ' . $key);
             }
-            if (!is_string($config[$key])) {
-                throw new \UnexpectedValueException("OpenID Configuration data for key: " . $key . " is not a string");
+            if (!\is_string($config[$key])) {
+                throw new \UnexpectedValueException('OpenID Configuration data for key: ' . $key . ' is not a string');
             }
-            if (substr($config[$key], 0, 8) !== 'https://') {
-                throw new \UnexpectedValueException("OpenID Configuration data for key " . $key .
-                                                    " should be url. Got: " . $config[$key]);
+            if (!str_starts_with($config[$key], 'https://')) {
+                throw new \UnexpectedValueException(
+                    'OpenID Configuration data for key ' . $key .
+                    ' should be url. Got: ' . $config[$key]
+                );
             }
         }
         if ($config['issuer'] !== $this->issuer) {
             throw new \UnexpectedValueException(
-                'OpenID Configuration data contains unexpected issuer: ' .
-                (string)$config['issuer'] . ' expected: ' . $this->issuer);
+                'OpenID Configuration data contains unexpected issuer: ' . (string)$config['issuer'] .
+                ' expected: ' . $this->issuer
+            );
         }
         $optionalEndPoints = ['end_session_endpoint'];
         foreach ($optionalEndPoints as $key) {
