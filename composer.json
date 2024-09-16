@@ -38,7 +38,8 @@
   "config": {
     "allow-plugins": {
       "simplesamlphp/composer-module-installer": true,
-      "dealerdirect/phpcodesniffer-composer-installer": false
+      "dealerdirect/phpcodesniffer-composer-installer": false,
+      "simplesamlphp/composer-xmlprovider-installer": false
     }
   },
   "suggest": {
