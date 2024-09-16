@@ -14,6 +14,7 @@ use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 use SimpleSAML\Auth\State;
+use SimpleSAML\Error\UnserializableException;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
 use SimpleSAML\Session;
 use SimpleSAML\Utils\HTTP;
@@ -27,6 +28,13 @@ class OAuth2Test extends TestCase
 {
     /** @var string */
     public const AUTH_ID = 'oauth2';
+
+    public static function setUpBeforeClass(): void
+    {
+        // To make lib/SimpleSAML/Utils/HTTP::getSelfURL() work...
+        global $_SERVER;
+        $_SERVER['REQUEST_URI'] = '/';
+    }
 
     protected function getInstance(array $config): OAuth2
     {
@@ -387,12 +395,12 @@ class OAuth2Test extends TestCase
         $this->assertEquals($expectedAttributes, $state['Attributes']);
     }
 
+    /**
+     * @throws \SimpleSAML\Error\Exception
+     * @throws UnserializableException
+     */
     public function testTooManyErrorsForRetry(): void
     {
-        // Exception expected on the 3rd attempt
-        $this->expectException(ConnectException::class);
-        $this->expectExceptionMessage('error3');
-
         // given: A mock Oauth2 provider
         $code = 'theCode';
         $config = [
@@ -425,6 +433,11 @@ class OAuth2Test extends TestCase
 
         // when: turning a code into a token and then into a resource owner attributes
         $authOAuth2 = $this->getInstance($config);
+
+        // Exception expected on the 3rd attempt
+        $this->expectException(ConnectException::class);
+        $this->expectExceptionMessage('error3');
+
         $authOAuth2->finalStep($state, $code);
     }
 

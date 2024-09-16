@@ -329,7 +329,7 @@ class OAuth2 extends Source
      */
     protected function retry(callable $function, ?int $retries = null, int $delay = 1): mixed
     {
-        if ($retries == null) {
+        if ($retries === null) {
             $retries = $this->config->getOptionalInteger('retryOnError', 1);
         }
         if ($delay < 0) {
@@ -345,7 +345,7 @@ class OAuth2 extends Source
                 sleep($delay);
                 return $this->retry($function, $retries - 1, $delay);
             } else {
-                Logger::info('authoauth2: ' . $providerLabel . ". Out of retries. Rethrowing error");
+                Logger::info('authoauth2: ' . $providerLabel . '. Out of retries. Rethrowing error');
                 throw $e;
             }
         }
