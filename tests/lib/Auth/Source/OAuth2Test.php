@@ -115,6 +115,7 @@ class OAuth2Test extends TestCase
      */
     public function testAuthenticatePerformsRedirect($config, $state, $expectedUrl)
     {
+        $_SERVER['REQUEST_URI'] = '/dummy';
         // Override redirect behavior
         $http = $this->createMock(HTTP::class);
         $http->method('redirectTrustedURL')
