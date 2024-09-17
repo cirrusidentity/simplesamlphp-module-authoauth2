@@ -28,11 +28,6 @@ class Oauth2Controller
     use RequestTrait;
     use ErrorTrait;
 
-    private string $expectedStageState = OAuth2::STAGE_INIT;
-    private string $expectedStateAuthId = OAuth2::AUTHID;
-
-    private string $expectedPrefix = OAuth2::STATE_PREFIX . '|';
-
     public function __construct()
     {
     }
@@ -49,9 +44,9 @@ class Oauth2Controller
         $this->parseRequest($request);
 
         // Required for psalm
-        assert($this->source instanceof  OAuth2);
-        assert(is_array($this->state));
-        assert(is_string($this->sourceId));
+        \assert($this->source instanceof  OAuth2);
+        \assert(\is_array($this->state));
+        \assert(\is_string($this->sourceId));
 
         // Handle Identify Provider error
         if (!$request->query->has('code') || empty($request->query->get('code'))) {
@@ -81,7 +76,7 @@ class Oauth2Controller
     /**
      * @throws Exception
      */
-    private function handleError(OAuth2 $source, array $state, Request $request): void
+    protected function handleError(OAuth2 $source, array $state, Request $request): void
     {
         // Errors can be pretty inconsistent
         // XXX We do not have the ability to parse hash parameters in the backend, for example

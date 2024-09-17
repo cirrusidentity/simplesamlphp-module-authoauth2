@@ -26,6 +26,18 @@ trait RequestTrait
      * @var string|null
      */
     protected ?string $sourceId;
+    /**
+     * @var string
+     */
+    protected string $expectedStageState = OAuth2::STAGE_INIT;
+    /**
+     * @var string
+     */
+    protected string $expectedStateAuthId = OAuth2::AUTHID;
+    /**
+     * @var string
+     */
+    protected string $expectedPrefix = OAuth2::STATE_PREFIX . '|';
 
     /**
      * @param   Request  $request

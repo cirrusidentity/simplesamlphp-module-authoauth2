@@ -10,8 +10,6 @@ use SimpleSAML\Error\BadRequest;
 use SimpleSAML\Error\CriticalConfigurationError;
 use SimpleSAML\Error\NoState;
 use SimpleSAML\Logger;
-use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
-use SimpleSAML\Module\authoauth2\Auth\Source\OpenIDConnect;
 use SimpleSAML\Module\authoauth2\Controller\Traits\RequestTrait;
 use SimpleSAML\Module\authoauth2\locators\SourceServiceLocator;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,20 +18,6 @@ class OIDCLogoutController
 {
     use SourceServiceLocator;
     use RequestTrait;
-
-    /**
-     * @var string
-     */
-    private string $expectedStageState = OpenIDConnect::STAGE_LOGOUT;
-    /**
-     * @var string
-     */
-    private string $expectedStateAuthId = OAuth2::AUTHID;
-
-    /**
-     * @var string
-     */
-    private string $expectedPrefix = OAuth2::STATE_PREFIX . '-';
 
     /**
      * @var Configuration
@@ -46,6 +30,8 @@ class OIDCLogoutController
      *  It initializes the global configuration for the controllers implemented here.
      *
      * @param   Configuration|null  $config
+     *
+     * @throws \Exception
      */
     public function __construct(Configuration $config = null)
     {
@@ -62,7 +48,7 @@ class OIDCLogoutController
 
         $this->parseRequest($request);
 
-        assert(is_array($this->state));
+        \assert(\is_array($this->state));
 
         $this->getSourceService()->completeLogout($this->state);
         // @codeCoverageIgnoreStart
@@ -81,7 +67,7 @@ class OIDCLogoutController
             throw new BadRequest('No authsource in the request');
         }
         $sourceId = $request->query->get('authSource');
-        if (empty($sourceId) || !is_string($sourceId)) {
+        if (empty($sourceId) || !\is_string($sourceId)) {
             throw new BadRequest('Authsource ID invalid');
         }
         $this->getAuthSource($sourceId)
