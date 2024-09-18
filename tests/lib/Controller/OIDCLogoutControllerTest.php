@@ -4,16 +4,25 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Module\authoauth2\Tests\Controller;
 
+use DG\BypassFinals;
 use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\TestCase;
+use SimpleSAML\Auth\Source;
 use SimpleSAML\Configuration;
 use SimpleSAML\Error\BadRequest;
 use SimpleSAML\Module\authoauth2\Controller\OIDCLogoutController;
+use SimpleSAML\Module\authoauth2\Controller\Traits\RequestTrait;
 use SimpleSAML\Module\authoauth2\locators\SourceService;
-use Symfony\Component\HttpFoundation\ParameterBag;
+use SimpleSAML\Module\authoauth2\locators\SourceServiceLocator;
+use Symfony\Component\HttpFoundation\InputBag;
 use Symfony\Component\HttpFoundation\Request;
 
-class OIDCLogoutControllerMock extends OIDCLogoutController {
+// Unless we declare the class here, it is not recognized by phpcs
+class OIDCLogoutControllerMock extends OIDCLogoutController
+{
+    use SourceServiceLocator;
+    use RequestTrait;
+
     public function setSource(Source $source): void
     {
         $this->source = $source;
@@ -30,12 +39,17 @@ class OIDCLogoutControllerMock extends OIDCLogoutController {
     }
 }
 
+// phpcs:ignore PSR1.Classes.ClassDeclaration.MultipleClasses
 class OIDCLogoutControllerTest extends TestCase
 {
+    /** @var OIDCLogoutControllerMock */
     private $controller;
+    /** @var Request */
     private $requestMock;
+    /** @var Configuration */
     private $configMock;
     private array $stateMock;
+    /** @var SourceService */
     private $sourceServiceMock;
 
     /**
@@ -43,6 +57,8 @@ class OIDCLogoutControllerTest extends TestCase
      */
     protected function setUp(): void
     {
+        BypassFinals::enable(bypassReadOnly: false);
+
         $this->configMock = $this->createMock(Configuration::class);
 
         // Initial state setup
@@ -67,6 +83,7 @@ class OIDCLogoutControllerTest extends TestCase
 
         $this->requestMock->request = $this->createRequestMock([]);
 
+        /** @psalm-suppress UndefinedMethod,MixedMethodCall */
         $this->sourceServiceMock
             ->expects($this->once())
             ->method('completeLogout')
@@ -101,17 +118,17 @@ class OIDCLogoutControllerTest extends TestCase
     }
 
     // Mock helper function
-    private function createQueryMock(array $params)
+    private function createQueryMock(array $params): InputBag
     {
-        $queryMock = $this->getMockBuilder(ParameterBag::class)->getMock();
+        $queryMock = $this->getMockBuilder(InputBag::class)->getMock();
         $queryMock->method('has')->willReturnCallback(
-            function ($key) use ($params) {
+            function (string $key) use ($params) {
                 return array_key_exists($key, $params);
             }
         );
 
         $queryMock->method('get')->willReturnCallback(
-            function ($key) use ($params) {
+            function (?string $key) use ($params) {
                 return $params[$key] ?? null;
             }
         );
@@ -119,18 +136,18 @@ class OIDCLogoutControllerTest extends TestCase
     }
 
     // Mock helper function
-    private function createRequestMock(array $params)
+    private function createRequestMock(array $params): InputBag
     {
-        $queryMock = $this->getMockBuilder(ParameterBag::class)->getMock();
+        $queryMock = $this->getMockBuilder(InputBag::class)->getMock();
 
         $queryMock->method('get')->willReturnCallback(
-            function ($key) use ($params) {
+            function (?string $key) use ($params) {
                 return $params[$key] ?? null;
             }
         );
 
         $queryMock->method('all')->willReturnCallback(
-            function ($key) use ($params) {
+            function (?string $key) use ($params) {
                 return $params[$key] ?? [];
             }
         );

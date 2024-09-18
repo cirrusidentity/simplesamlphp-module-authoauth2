@@ -8,6 +8,10 @@
          displayDetailsOnTestsThatTriggerDeprecations="true"
          backupGlobals="false"
 >
+    <extensions>
+        <bootstrap class="DG\BypassFinals\PHPUnitExtension"/>
+    </extensions>
+
     <testsuites>
         <testsuite name="The project's test suite">
             <directory>./tests</directory>

@@ -1,13 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
+namespace SimpleSAML\Module\authoauth2\Tests\Controller\Trait;
+
+use DG\BypassFinals;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\ParameterBag;
+use Symfony\Component\HttpFoundation\InputBag;
 use SimpleSAML\Module\authoauth2\Controller\Traits\ErrorTrait;
 
 class ErrorTraitTest extends TestCase
 {
     use ErrorTrait;
+
+    public function setUp(): void
+    {
+        BypassFinals::enable(bypassReadOnly: false);
+    }
 
     /**
      * @throws \PHPUnit\Framework\MockObject\Exception
@@ -16,9 +26,9 @@ class ErrorTraitTest extends TestCase
     {
         // Mocking Request object
         $request = $this->createMock(Request::class);
-        $request->query = $this->createMock(ParameterBag::class);
+        $request->query = $this->createMock(InputBag::class);
 
-        // Stubbing the method has() and get() of ParameterBag
+        // Stubbing the method has() and get() of InputBag
         $request->query->method('has')
             ->willReturnOnConsecutiveCalls(false, false);
 
@@ -31,9 +41,9 @@ class ErrorTraitTest extends TestCase
     {
         // Mocking Request object
         $request = $this->createMock(Request::class);
-        $request->query = $this->createMock(ParameterBag::class);
+        $request->query = $this->createMock(InputBag::class);
 
-        // Stubbing the method has() and get() of ParameterBag
+        // Stubbing the method has() and get() of InputBag
         $request->query->method('has')
             ->willReturnOnConsecutiveCalls(true, true);
         $request->query->method('get')
@@ -51,13 +61,13 @@ class ErrorTraitTest extends TestCase
     {
         // Mocking Request object
         $request = $this->createMock(Request::class);
-        $request->query = $this->createMock(ParameterBag::class);
+        $request->query = $this->createMock(InputBag::class);
 
         $request->query
             ->method('has')
             ->willReturnOnConsecutiveCalls(true, false);
 
-        // Stubbing the method has() and get() of ParameterBag
+        // Stubbing the method has() and get() of InputBag
         $request->query
             ->method('get')
             ->willReturn('sample_error');
@@ -74,9 +84,9 @@ class ErrorTraitTest extends TestCase
     {
         // Mocking Request object
         $request = $this->createMock(Request::class);
-        $request->query = $this->createMock(ParameterBag::class);
+        $request->query = $this->createMock(InputBag::class);
 
-        // Stubbing the method has() and get() of ParameterBag
+        // Stubbing the method has() and get() of InputBag
         $request->query
             ->method('has')
             ->willReturnOnConsecutiveCalls(false, true);

@@ -4,17 +4,29 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Module\authoauth2\Tests\Controller;
 
+use DG\BypassFinals;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\Auth\Source;
 use SimpleSAML\Error\AuthSource;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
 use SimpleSAML\Module\authoauth2\Controller\Oauth2Controller;
+use SimpleSAML\Module\authoauth2\Controller\Traits\ErrorTrait;
+use SimpleSAML\Module\authoauth2\Controller\Traits\RequestTrait;
+use SimpleSAML\Module\authoauth2\locators\HTTPLocator;
 use SimpleSAML\Module\authoauth2\locators\SourceService;
-use Symfony\Component\HttpFoundation\ParameterBag;
+use SimpleSAML\Module\authoauth2\locators\SourceServiceLocator;
+use Symfony\Component\HttpFoundation\InputBag;
 use Symfony\Component\HttpFoundation\Request;
 
-class Oauth2ControllerMock extends Oauth2Controller {
+// Unless we declare the class here, it is not recognized by phpcs
+class Oauth2ControllerMock extends Oauth2Controller
+{
+    use HTTPLocator;
+    use SourceServiceLocator;
+    use RequestTrait;
+    use ErrorTrait;
+
     public function handleError(OAuth2 $source, array $state, Request $request): void
     {
         parent::handleError($source, $state, $request);
@@ -36,15 +48,21 @@ class Oauth2ControllerMock extends Oauth2Controller {
     }
 }
 
+// phpcs:ignore PSR1.Classes.ClassDeclaration.MultipleClasses
 class Oauth2ControllerTest extends TestCase
 {
+    /** @var Oauth2ControllerMock */
     private $controller;
+    /** @var Request */
     private $requestMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject|(OAuth2&\PHPUnit\Framework\MockObject\MockObject) */
     private $oauth2Mock;
     private array $stateMock;
 
     protected function setUp(): void
     {
+        BypassFinals::enable(bypassReadOnly: false);
+
         $this->controller = $this->getMockBuilder(Oauth2ControllerMock::class)
             ->onlyMethods(['parseRequest', 'handleError', 'getSourceService'])
             ->getMock();
@@ -67,6 +85,7 @@ class Oauth2ControllerTest extends TestCase
             ->method('finalStep')
             ->with($this->stateMock, 'validCode');
 
+        /** @psalm-suppress UndefinedMethod,MixedMethodCall */
         $this->controller
             ->method('getSourceService')
             ->willReturn($this->createMock(SourceService::class));
@@ -80,7 +99,9 @@ class Oauth2ControllerTest extends TestCase
     {
         $this->requestMock->query = $this->createQueryMock([]);
 
-        $this->controller->expects($this->once())
+        /** @psalm-suppress UndefinedMethod,MixedMethodCall */
+        $this->controller
+            ->expects($this->once())
             ->method('handleError');
 
         $this->controller->linkback($this->requestMock);
@@ -99,16 +120,16 @@ class Oauth2ControllerTest extends TestCase
         $this->controller->linkback($this->requestMock);
     }
 
-    private function createQueryMock(array $params)
+    private function createQueryMock(array $params): InputBag
     {
-        $queryMock = $this->getMockBuilder(ParameterBag::class)->getMock();
+        $queryMock = $this->getMockBuilder(InputBag::class)->getMock();
         $queryMock->method('has')->willReturnCallback(
-            function ($key) use ($params) {
+            function (string $key) use ($params) {
                 return array_key_exists($key, $params);
             }
         );
         $queryMock->method('get')->willReturnCallback(
-            function ($key) use ($params) {
+            function (string $key) use ($params) {
                 return $params[$key] ?? null;
             }
         );

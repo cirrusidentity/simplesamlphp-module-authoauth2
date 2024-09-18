@@ -12,7 +12,9 @@ use Symfony\Component\HttpFoundation\Request;
 
 class ErrorControllerTest extends TestCase
 {
+    /** @var ErrorController */
     private $controller;
+    /** @var Configuration */
     private $config;
 
     protected function setUp(): void
