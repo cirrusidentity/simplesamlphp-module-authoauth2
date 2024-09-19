@@ -156,7 +156,7 @@ jobs:
 
         - name: Psalm
           if: always()
-          run: php vendor/bin/psalm --show-info=true --shepherd --php-version=${{ steps.setup-php.outputs.php-version }}
+          run: php vendor/bin/psalm --no-cache --show-info=true --shepherd --php-version=${{ steps.setup-php.outputs.php-version }}
 
         - name: Psalter
           if: always()

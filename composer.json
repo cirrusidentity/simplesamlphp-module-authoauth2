@@ -51,7 +51,7 @@
     "validate": [
       "vendor/bin/phpunit --no-coverage",
       "vendor/bin/phpcs -p",
-      "vendor/bin/psalm"
+      "vendor/bin/psalm --no-cache"
     ],
     "tests": [
       "vendor/bin/phpunit --no-coverage"

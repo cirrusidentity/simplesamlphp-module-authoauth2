@@ -20,7 +20,6 @@ use Symfony\Component\HttpFoundation\Request;
 // Unless we declare the class here, it is not recognized by phpcs
 class OIDCLogoutControllerMock extends OIDCLogoutController
 {
-    use SourceServiceLocator;
     use RequestTrait;
 
     public function setSource(Source $source): void

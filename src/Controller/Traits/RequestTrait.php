@@ -10,10 +10,13 @@ use SimpleSAML\Error\BadRequest;
 use SimpleSAML\Error\NoState;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
 use SimpleSAML\Module\authoauth2\Codebooks\RoutesEnum;
+use SimpleSAML\Module\authoauth2\locators\SourceServiceLocator;
 use Symfony\Component\HttpFoundation\Request;
 
 trait RequestTrait
 {
+    use SourceServiceLocator;
+
     /**
      * @var array|null
      */
