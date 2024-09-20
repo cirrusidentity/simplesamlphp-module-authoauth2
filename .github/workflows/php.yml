@@ -92,13 +92,11 @@ jobs:
       - name: List files in the workspace
         if: ${{ matrix.php-versions == '8.2' && matrix.operating-system == 'ubuntu-latest' }}
         run: |
-          who
-          pwd
-          ls -la ${{ github.workspace }}/build
-          ls -la ${{ github.workspace }}/build/logs
           ls -la
           // Make the resource accessible by integration
-          chmod 777 code-coverage-results.md
+          cp --no-preserve=777,docker ./code-coverage-results.md ./build/logs
+          ls -la ${{ github.workspace }}/build
+          ls -la ${{ github.workspace }}/build/logs
 
       - name: Add Coverage PR Comment
         if: ${{ matrix.php-versions == '8.2' && matrix.operating-system == 'ubuntu-latest' && github.event_name == 'pull_request' }}
