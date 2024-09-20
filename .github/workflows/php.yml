@@ -93,17 +93,13 @@ jobs:
         if: ${{ matrix.php-versions == '8.2' && matrix.operating-system == 'ubuntu-latest' }}
         run: |
           ls -la
-          // Make the resource accessible by integration
-          cp --no-preserve=777,docker ./code-coverage-results.md ./build/logs
-          ls -la ${{ github.workspace }}/build
-          ls -la ${{ github.workspace }}/build/logs
 
       - name: Add Coverage PR Comment
         if: ${{ matrix.php-versions == '8.2' && matrix.operating-system == 'ubuntu-latest' && github.event_name == 'pull_request' }}
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           recreate: true
-          path: code-coverage-results.md
+          path: ./code-coverage-results.md
 
   security:
     name: Security checks
