@@ -28,6 +28,7 @@
 
     <coverage includeUncoveredFiles="true">
         <report>
+            <cobertura outputFile="build/logs/cobertura.xml"/>
             <clover outputFile="build/logs/clover.xml"/>
             <html outputDirectory="build/coverage/html"/>
         </report>
