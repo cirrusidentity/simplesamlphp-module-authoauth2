@@ -93,13 +93,15 @@ jobs:
         if: ${{ matrix.php-versions == '8.2' && matrix.operating-system == 'ubuntu-latest' }}
         run: |
           ls -la
+          chown runner:docker ${{ github.workspace }}/code-coverage-results.md
+          ls -la
 
       - name: Add Coverage PR Comment
         if: ${{ matrix.php-versions == '8.2' && matrix.operating-system == 'ubuntu-latest' && github.event_name == 'pull_request' }}
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           recreate: true
-          path: ./code-coverage-results.md
+          path: ${{ github.workspace }}/code-coverage-results.md
 
   security:
     name: Security checks
@@ -108,7 +110,7 @@ jobs:
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2 #https://github.com/shivammathur/setup-php
         with:
-          php-version: '8.1'
+          php-version: '8.2'
           extensions: mbstring, xml
           tools: composer:v2
           coverage: none
