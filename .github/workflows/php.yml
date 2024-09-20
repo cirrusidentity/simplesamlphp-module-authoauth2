@@ -95,6 +95,8 @@ jobs:
           ls -la ${{ github.workspace }}/build
           ls -la ${{ github.workspace }}/build/logs
           ls -la
+          // Make the resource accessible by integration
+          sudo chown runner:docker code-coverage-results.md
 
       - name: Add Coverage PR Comment
         if: ${{ matrix.php-versions == '8.2' && matrix.operating-system == 'ubuntu-latest' && github.event_name == 'pull_request' }}
