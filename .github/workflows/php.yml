@@ -2,9 +2,6 @@ name: CI
 
 on: [push, pull_request]
 
-permissions:
-  pull-request: write
-
 jobs:
   basic-tests:
     name: Syntax and unit tests, PHP ${{ matrix.php-versions }}, ${{ matrix.operating-system }}
