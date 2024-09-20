@@ -70,6 +70,7 @@ jobs:
           path: ${{ github.workspace }}/build
 
       - name: List files in the workspace
+        if: ${{ matrix.php-versions == '8.2' && matrix.operating-system == 'ubuntu-latest' }}
         run: |
           ls -la ${{ github.workspace }}/build
           ls -la ${{ github.workspace }}/build/logs
@@ -78,7 +79,7 @@ jobs:
         if: ${{ matrix.php-versions == '8.2' && matrix.operating-system == 'ubuntu-latest' }}
         uses: irongut/CodeCoverageSummary@v1.3.0
         with:
-          filename: ${{ github.workspace }}/build/logs/cobertura.xml
+          filename: build/logs/cobertura.xml
           badge: true
           fail_below_min: true
           format: markdown
