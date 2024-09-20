@@ -93,6 +93,7 @@ jobs:
         if: ${{ matrix.php-versions == '8.2' && matrix.operating-system == 'ubuntu-latest' }}
         run: |
           ls -la
+          sudo chown runner:docker ${{ github.workspace }}/code-coverage-results.md
 
       - name: Add Coverage PR Comment
         if: ${{ matrix.php-versions == '8.2' && matrix.operating-system == 'ubuntu-latest' && github.event_name == 'pull_request' }}
