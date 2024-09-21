@@ -24,12 +24,12 @@
         <include>
             <directory>./src</directory>
         </include>
-    </source>
-
-    <coverage includeUncoveredFiles="true">
         <exclude>
             <file>./ConfigTemplate.php</file>
         </exclude>
+    </source>
+
+    <coverage includeUncoveredFiles="true">
         <report>
             <cobertura outputFile="build/logs/cobertura.xml"/>
             <clover outputFile="build/logs/clover.xml"/>
