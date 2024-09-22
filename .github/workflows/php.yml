@@ -24,7 +24,7 @@ jobs:
           extensions: intl, mbstring, mysql, pdo, pdo_sqlite, xml
           tools: composer:v2
           ini-values: error_reporting=E_ALL
-          coverage: xdebug
+          coverage: pcov
 
       - name: Setup problem matchers for PHP
         run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
@@ -93,12 +93,12 @@ jobs:
           output: both
           thresholds: '60 80'
 
-      - name: Add Coverage PR Comment
-        if: ${{ matrix.php-versions == '8.2' && matrix.operating-system == 'ubuntu-latest' && github.event_name == 'pull_request' }}
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          recreate: true
-          path: ${{ github.workspace }}/code-coverage-results.md
+#      - name: Add Coverage PR Comment
+#        if: ${{ matrix.php-versions == '8.2' && matrix.operating-system == 'ubuntu-latest' && github.event_name == 'pull_request' }}
+#        uses: marocchino/sticky-pull-request-comment@v2
+#        with:
+#          recreate: true
+#          path: ${{ github.workspace }}/code-coverage-results.md
 
   security:
     name: Security checks
