@@ -12,8 +12,8 @@
 >
     <projectFiles>
         <directory name="src"/>
-        <directory name="tests"/>
         <directory name="templates" />
+        <directory name="attributemap" />
         <directory name="public" />
         <directory name="routing/routes" />
         <ignoreFiles>
@@ -26,6 +26,7 @@
         <UnusedVariable>
             <errorLevel type="suppress">
                 <file name="tests/config/*" />
+                <directory name="attributemap" />
             </errorLevel>
         </UnusedVariable>
 
@@ -48,4 +49,8 @@
         <!-- Ignore RiskyTruthyFalsyComparison -->
         <RiskyTruthyFalsyComparison errorLevel="suppress" />
     </issueHandlers>
-<plugins><pluginClass class="Psalm\PhpUnitPlugin\Plugin"/></plugins></psalm>
+
+    <plugins>
+        <pluginClass class="Psalm\PhpUnitPlugin\Plugin"/>
+    </plugins>
+</psalm>

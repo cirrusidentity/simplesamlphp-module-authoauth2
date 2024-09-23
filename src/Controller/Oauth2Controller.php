@@ -96,6 +96,9 @@ class Oauth2Controller
             if ($source->getConfig()->getOptionalBoolean('useConsentErrorPage', true)) {
                 $consentErrorPageUrl = Module::getModuleURL('authoauth2/errors/consent');
                 $this->getHttp()->redirectTrustedURL($consentErrorPageUrl);
+                // We should never get here. This is to facilitate testing. If we do get here then
+                // something bad happened
+                return;
             } else {
                 $e = new UserAborted();
                 State::throwException($state, $e);
