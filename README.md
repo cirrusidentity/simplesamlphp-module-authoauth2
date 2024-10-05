@@ -51,7 +51,7 @@ The module can be installed with composer.
 
     composer require cirrusidentity/simplesamlphp-module-authoauth2
 
-
+If you are on SSP 2.3 use version 5.
 If you are on SSP 2 use version 4.
 If you are on SSP 1.X use version 3.
 
@@ -402,7 +402,7 @@ if ($handler->canHandleResponse()) {
 
 ## Docker
 
-The `preprodwarning` module is include for testing authproc filters. *note:* The 1.0.2 version
+The `preprodwarning` module is included for testing authproc filters. *note:* The 1.0.2 version
 of `preprodwarning` has a bug in the redirect url. If using it you need to change `showwarning.php` to `warning`
 in your browser url.
 
@@ -415,7 +415,7 @@ docker run --name ssp-oauth2-dev \
   -e SSP_ENABLED_MODULES="authoauth2 preprodwarning" \
   --mount type=bind,source="$(pwd)/docker/config/authsources.php",target=/var/simplesamlphp/config/authsources.php,readonly \
   --mount type=bind,source="$(pwd)/docker/config/config-override.php",target=/var/simplesamlphp/config/config-override.php,readonly \
-  -p 443:443 cirrusid/simplesamlphp:v2.0.7
+  -p 443:443 cirrusid/simplesamlphp:v2.3.2
 ```
 
 and visit (which resolves to localhost, and the docker container) the [test authsource page](https://oauth2-validation.local.stack-dev.cirrusidentity.com/simplesaml/module.php/admin/test)
