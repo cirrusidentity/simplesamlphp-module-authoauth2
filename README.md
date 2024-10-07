@@ -40,6 +40,7 @@ If you are interested in using SSP as an OIDC OP see the [OIDC module](https://g
 - [Development](#development)
   - [Docker](#docker)
     - [Facebook test user](#facebook-test-user)
+    - [Testing OIDC Logout](#testing-oidc-logout)
   - [Code style](#code-style)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -424,11 +425,21 @@ to test some pre-configured social integrations (yes, you can see the app passwo
 ### Facebook test user
 
 The pre-configured Facebook apps can only be accessed with a test account. You must be signed out of Facebook,
-otherwise you will get an error saying the application is not active.
+otherwise you will get an error saying
+
+```
+App not active
+
+This app is not accessible right now and the app developer is aware of the issue. You will be able to log in when the app is reactivated.
+```
 
 * email: open_nzwvghb_user@tfbnw.net
 * password: SSPisMyFavorite2022
 
+### Testing OIDC Logout
+
+The authsource `microsoftOIDCPkceSource` can be used for testing both OIDC
+login and OIDC logout.  https://oauth2-validation.local.stack-dev.cirrusidentity.com/simplesaml/module.php/admin/test/microsoftOIDCPkceSource
 
 ## Code style
 
