@@ -54,7 +54,7 @@ class OpenIDConnect extends OAuth2
             $httpClient->getConfig()['handler'] = $newhandler;
             $handler = $newhandler;
         }
-        $cacheDir = Configuration::getInstance()->getString('tempdir') . "/oidc-cache";
+        $cacheDir = Configuration::getInstance()->getString('cachedir') . "/oidc-cache";
         $handler->push(
             new CacheMiddleware(
                 new PrivateCacheStrategy(
