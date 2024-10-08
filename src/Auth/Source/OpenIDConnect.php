@@ -156,7 +156,7 @@ class OpenIDConnect extends OAuth2
         $postLogoutUrl = $this->config->getOptionalString('postLogoutRedirectUri', null);
         if (!$postLogoutUrl) {
             $logoutRoute = $this->config->getOptionalBoolean('useLegacyRoutes', false) ?
-                LegacyRoutesEnum::LegacyLogout->value : RoutesEnum::Logout->value;
+                LegacyRoutesEnum::LegacyLoggedOut->value : RoutesEnum::LoggedOut->value;
             $postLogoutUrl = Module::getModuleURL("authoauth2/$logoutRoute");
         }
 
