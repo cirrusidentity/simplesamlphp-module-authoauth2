@@ -23,6 +23,8 @@ use SimpleSAML\Configuration;
 use SimpleSAML\Logger;
 use SimpleSAML\Module;
 use SimpleSAML\Module\authoauth2\AttributeManipulator;
+use SimpleSAML\Module\authoauth2\Codebooks\RoutesEnum;
+use SimpleSAML\Module\authoauth2\Codebooks\LegacyRoutesEnum;
 use SimpleSAML\Module\authoauth2\ConfigTemplate;
 use SimpleSAML\Module\authoauth2\Providers\AdjustableGenericProvider;
 use SimpleSAML\Module\authoauth2\locators\HTTPLocator;
@@ -84,8 +86,11 @@ class OAuth2 extends Source
             }
         }
         if (!\array_key_exists('redirectUri', $config)) {
-            $config['redirectUri'] = Module::getModuleURL('authoauth2/linkback');
-        }
+            $linkbackRoute = RoutesEnum::Linkback->value;
+            if (isset($config['useLegacyRoutes']) && $config['useLegacyRoutes']) {
+                $linkbackRoute = LegacyRoutesEnum::LegacyLinkback->value;
+            }
+            $config['redirectUri'] = Module::getModuleURL("authoauth2/$linkbackRoute");       }
         if (!\array_key_exists('timeout', $config)) {
             $config['timeout'] = 3;
         }

@@ -14,6 +14,7 @@ use SimpleSAML\Auth\State;
 use SimpleSAML\Configuration;
 use SimpleSAML\Logger;
 use SimpleSAML\Module;
+use SimpleSAML\Module\authoauth2\Codebooks\RoutesEnum;
 use SimpleSAML\Module\authoauth2\Providers\OpenIDConnectProvider;
 use SimpleSAML\Utils\HTTP;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
@@ -54,7 +55,7 @@ class OpenIDConnect extends OAuth2
             $httpClient->getConfig()['handler'] = $newhandler;
             $handler = $newhandler;
         }
-        $cacheDir = Configuration::getInstance()->getString('cachedir') . "/oidc-cache";
+        $cacheDir = Configuration::getInstance()->getString('cachedir') . '/oidc-cache';
         $handler->push(
             new CacheMiddleware(
                 new PrivateCacheStrategy(
@@ -153,7 +154,9 @@ class OpenIDConnect extends OAuth2
 
         $postLogoutUrl = $this->config->getOptionalString('postLogoutRedirectUri', null);
         if (!$postLogoutUrl) {
-            $postLogoutUrl = Module::getModuleURL('authoauth2/loggedout');
+            $logoutRoute = $this->config->getOptionalBoolean('useLegacyRoutes', false) ?
+                LegacyRoutesEnum::LegacyLogout->value : RoutesEnum::Logout->value;
+            $postLogoutUrl = Module::getModuleURL("authoauth2/$logoutRoute");
         }
 
         // We are going to need the authId in order to retrieve this authentication source later, in the callback

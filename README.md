@@ -132,6 +132,9 @@ Generic usage provides enough configuration parameters to use with any OAuth2 or
                   //'scope' => ['other']
               ],
               'useConsentErrorPage' => false|true,
+              // If set to true then /linkback.php, /logout.php, /loggedout.php, /consent/error.php legacy route is enabled
+              // if set to false or omitted the /linkback, /logout, /loggedout, /consent/error route is enable
+              'useLegacyRoutes' => false|true,
               // Default scopes to request
               'scopes' => ['email', 'profile'],
               'scopeSeparator' => ' ',

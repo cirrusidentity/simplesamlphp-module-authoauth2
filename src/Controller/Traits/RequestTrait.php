@@ -10,6 +10,7 @@ use SimpleSAML\Error\BadRequest;
 use SimpleSAML\Error\NoState;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
 use SimpleSAML\Module\authoauth2\Codebooks\RoutesEnum;
+use SimpleSAML\Module\authoauth2\Codebooks\LegacyRoutesEnum;
 use SimpleSAML\Module\authoauth2\locators\SourceServiceLocator;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -69,8 +70,10 @@ trait RequestTrait
         if (!$this->stateIsValid($request)) {
             $message = match ($request->attributes->get('_route')) {
                 // phpcs:ignore Generic.Files.LineLength.TooLong
+                LegacyRoutesEnum::LegacyLogout->name,
                 RoutesEnum::Logout->name   => 'Either missing state parameter on OpenID Connect logout callback, or cannot be handled by authoauth2',
                 // phpcs:ignore Generic.Files.LineLength.TooLong
+                LegacyRoutesEnum::LegacyLinkback->name,
                 RoutesEnum::Linkback->name => 'Either missing state parameter on OAuth2 login callback, or cannot be handled by authoauth2',
                 default => 'An error occured'
             };

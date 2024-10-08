@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace SimpleSAML\Module\authoauth2\Controller;
 
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
+use Module\authoauth2\Codebooks\RoutesEnum;
+use Module\authoauth2\Codebooks\LegacyRoutesEnum;
 use SimpleSAML\Auth\State;
 use SimpleSAML\Error\AuthSource;
 use SimpleSAML\Error\BadRequest;
@@ -94,7 +96,9 @@ class Oauth2Controller
                 . $error_description;
             Logger::debug($msg);
             if ($source->getConfig()->getOptionalBoolean('useConsentErrorPage', true)) {
-                $consentErrorPageUrl = Module::getModuleURL('authoauth2/errors/consent');
+                $consentErrorRoute = $source->getConfig()->getOptionalBoolean('useLegacyRoutes', false) ?
+                    LegacyRoutesEnum::LegacyConsentError->value : RoutesEnum::ConsentError->value;
+                $consentErrorPageUrl = Module::getModuleURL("authoauth2/$consentErrorRoute");
                 $this->getHttp()->redirectTrustedURL($consentErrorPageUrl);
                 // We should never get here. This is to facilitate testing. If we do get here then
                 // something bad happened
