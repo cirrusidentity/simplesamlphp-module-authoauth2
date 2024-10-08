@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Test\SimpleSAML\Auth\Source;
 
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 use SimpleSAML\Configuration;
@@ -21,36 +24,36 @@ class LinkedInV2AuthTest extends TestCase
 
     /**
      * Confirms linkedIn's attribute structure gets converted correctly
-     * @dataProvider attributeConversionProvider
      * @param array $userAttributes The attributes from the linkedIn endpoint
      * @param array $expectedAttributes The expected attributes
      */
-    public function testAttributeConversion(array $userAttributes, array $expectedAttributes)
+    #[DataProvider('attributeConversionProvider')]
+    public function testAttributeConversion(array $userAttributes, array $expectedAttributes): void
     {
         $linkedInAuth = new LinkedInV2Auth(['AuthId' => 'linked'], []);
         $attributes = $linkedInAuth->convertResourceOwnerAttributes($userAttributes, 'linkedin.');
         $this->assertEquals($expectedAttributes, $attributes);
     }
 
-    public function attributeConversionProvider(): array
+    public static function attributeConversionProvider(): array
     {
         return [
-            [["id" => "abc"], ["linkedin.id" => ["abc"]]],
+            [['id' => 'abc'], ['linkedin.id' => ['abc']]],
             [
                 [
-                    "id" => "abc",
-                    "firstName" => ["localized" => ["en_US" => "Jon", "en_CA" => "John"]],
-                    "lastName" => ['not-used']
+                    'id'        => 'abc',
+                    'firstName' => ['localized' => ['en_US' => 'Jon', 'en_CA' => 'John']],
+                    'lastName' => ['not-used']
                 ],
-                ["linkedin.id" => ["abc"], 'linkedin.firstName' => ["Jon"]]
+                ['linkedin.id' => ['abc'], 'linkedin.firstName' => ['Jon']]
             ],
             [
                 [
-                    "id" => "abc",
-                    "firstName" => ["localized" => ["en_US" => "Jon", "en_CA" => "John"]],
-                    "lastName" => ["localized" => ["en_CA" => "Smith"]],
+                    'id'        => 'abc',
+                    'firstName' => ['localized' => ['en_US' => 'Jon', 'en_CA' => 'John']],
+                    'lastName'  => ['localized' => ['en_CA' => 'Smith']],
                 ],
-                ["linkedin.id" => ["abc"], 'linkedin.firstName' => ["Jon"], 'linkedin.lastName' => ["Smith"]]
+                ['linkedin.id' => ['abc'], 'linkedin.firstName' => ['Jon'], 'linkedin.lastName' => ['Smith']]
             ],
         ];
     }
@@ -59,9 +62,8 @@ class LinkedInV2AuthTest extends TestCase
     {
         $linkedInAuth = new LinkedInV2Auth(['AuthId' => 'linked'], ['scopes' => ['r_liteprofile']]);
         $state = [];
-        /**
-         * @var AbstractProvider|MockObject $mock
-         */
+        /** @var AbstractProvider $mock */
+        /** @psalm-suppress MixedMethodCall */
         $mock = $this->getMockBuilder(AbstractProvider::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -73,11 +75,13 @@ class LinkedInV2AuthTest extends TestCase
     }
 
     /**
-     * @dataProvider getEmailProvider
-     * @param array $emailResponse The response from the email endpoint
-     * @param array $expectedAttributes What the SSP attributes are expected to be
+     * @param   array  $emailResponse       The response from the email endpoint
+     * @param   array  $expectedAttributes  What the SSP attributes are expected to be
+     *
+     * @throws Exception
      */
-    public function testGettingEmail(array $emailResponse, array $expectedAttributes)
+    #[DataProvider('getEmailProvider')]
+    public function testGettingEmail(array $emailResponse, array $expectedAttributes): void
     {
         $linkedInAuth = new LinkedInV2Auth(['AuthId' => 'linked'], []);
         $state = [
@@ -87,9 +91,8 @@ class LinkedInV2AuthTest extends TestCase
         ];
 
         $token = new AccessToken(['access_token' => 'abc']);
-        /**
-         * @var AbstractProvider|MockObject $mock
-         */
+        /** @var AbstractProvider $mock */
+        /** @psalm-suppress MixedMethodCall */
         $mock = $this->getMockBuilder(AbstractProvider::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -107,11 +110,11 @@ class LinkedInV2AuthTest extends TestCase
         $this->assertEquals(
             $expectedAttributes,
             $state['Attributes'],
-            "mail should be added"
+            'mail should be added'
         );
     }
 
-    public function getEmailProvider()
+    public static function getEmailProvider(): array
     {
         return [
             [

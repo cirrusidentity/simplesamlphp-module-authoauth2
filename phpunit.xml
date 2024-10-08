@@ -1,15 +1,37 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<phpunit bootstrap="./tests/bootstrap.php" backupGlobals="false">
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         colors="true"
+         bootstrap="./tests/bootstrap.php"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
+         cacheDirectory="./build/phpunit-cache"
+         displayDetailsOnTestsThatTriggerWarnings="true"
+         displayDetailsOnTestsThatTriggerDeprecations="true"
+         backupGlobals="false"
+>
+    <extensions>
+        <bootstrap class="DG\BypassFinals\PHPUnitExtension"/>
+    </extensions>
+
     <testsuites>
         <testsuite name="The project's test suite">
             <directory>./tests</directory>
         </testsuite>
     </testsuites>
-    <coverage processUncoveredFiles="true">
+
+    <source restrictDeprecations="true"
+            restrictNotices="true"
+            restrictWarnings="true">
         <include>
             <directory>./src</directory>
         </include>
+        <exclude>
+            <file>./ConfigTemplate.php</file>
+        </exclude>
+    </source>
+
+    <coverage includeUncoveredFiles="true">
         <report>
+            <cobertura outputFile="build/logs/cobertura.xml"/>
             <clover outputFile="build/logs/clover.xml"/>
             <html outputDirectory="build/coverage/html"/>
         </report>

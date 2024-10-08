@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Test\SimpleSAML\Auth\Source;
 
 use League\OAuth2\Client\Token\AccessToken;
@@ -16,7 +18,9 @@ use Test\SimpleSAML\RedirectException;
  */
 class OpenIDConnectTest extends OAuth2Test
 {
+    /** @var string */
     public const AUTH_ID = 'openidconnect';
+
     protected function getInstance(array $config): OpenIDConnect
     {
         $info = ['AuthId' => self::AUTH_ID];
@@ -30,7 +34,7 @@ class OpenIDConnectTest extends OAuth2Test
             Configuration::clearInternalState();
     }
 
-    public function finalStepsDataProvider(): array
+    public static function finalStepsDataProvider(): array
     {
         return [
             [
@@ -56,7 +60,7 @@ class OpenIDConnectTest extends OAuth2Test
         ];
     }
 
-    public function finalStepsDataProviderWithAuthenticatedApiRequest(): array
+    public static function finalStepsDataProviderWithAuthenticatedApiRequest(): array
     {
         return [
             [
@@ -85,7 +89,7 @@ class OpenIDConnectTest extends OAuth2Test
         ];
     }
 
-    public function authenticateDataProvider(): array
+    public static function authenticateDataProvider(): array
     {
         MockOpenIDConnectProvider::setConfig([
             'authorization_endpoint' => 'https://example.com/auth',
@@ -106,7 +110,7 @@ class OpenIDConnectTest extends OAuth2Test
                     'ForceAuthn' => true,
                 ],
                 // phpcs:ignore Generic.Files.LineLength.TooLong
-                'https://example.com/auth?prompt=login&state=authoauth2%7CstateId&scope=openid%20profile&response_type=code&approval_prompt=auto&redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Flinkback.php&client_id=test%20client%20id'
+                'https://example.com/auth?prompt=login&state=authoauth2%7CstateId&scope=openid%20profile&response_type=code&approval_prompt=auto&redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Flinkback&client_id=test%20client%20id'
             ],
             [
                 $config,
@@ -115,7 +119,7 @@ class OpenIDConnectTest extends OAuth2Test
                     'isPassive' => true,
                 ],
                 // phpcs:ignore Generic.Files.LineLength.TooLong
-                'https://example.com/auth?prompt=none&state=authoauth2%7CstateId&scope=openid%20profile&response_type=code&approval_prompt=auto&redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Flinkback.php&client_id=test%20client%20id'
+                'https://example.com/auth?prompt=none&state=authoauth2%7CstateId&scope=openid%20profile&response_type=code&approval_prompt=auto&redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Flinkback&client_id=test%20client%20id'
             ],
             [
                 $config,
@@ -125,24 +129,25 @@ class OpenIDConnectTest extends OAuth2Test
                     'oidc:display' => 'popup',
                 ],
                 // phpcs:ignore Generic.Files.LineLength.TooLong
-                'https://example.com/auth?acr_values=Level4%20Level3&display=popup&state=authoauth2%7CstateId&scope=openid%20profile&response_type=code&approval_prompt=auto&redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Flinkback.php&client_id=test%20client%20id'
+                'https://example.com/auth?acr_values=Level4%20Level3&display=popup&state=authoauth2%7CstateId&scope=openid%20profile&response_type=code&approval_prompt=auto&redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Flinkback&client_id=test%20client%20id'
             ],
         ];
     }
 
-    public function authprocTokenProvider(): array
+    public static function authprocTokenProvider(): array
     {
         return [
             [
                 new AccessToken([
                     'access_token' => 'stubToken',
+                     //phpcs:ignore Generic.Files.LineLength.TooLong
                     'id_token' => 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiYXVkIjoidGVzdCBjbGllbnQgaWQiLCJpYXQiOjE1MTYyMzkwMjJ9.emHrAifV1IyvmTXh3lYX0oAFqqZInhDlclIlTUumut0',
                 ]),
             ]
         ];
     }
 
-    public function testLogoutNoEndpointConfigured()
+    public function testLogoutNoEndpointConfigured(): void
     {
         MockOpenIDConnectProvider::setConfig([
             'authorization_endpoint' => 'https://example.com/auth',
@@ -157,7 +162,7 @@ class OpenIDConnectTest extends OAuth2Test
         $this->assertNull($as->logout($state));
     }
 
-    public function testLogoutNoIDTokenInState()
+    public function testLogoutNoIDTokenInState(): void
     {
         MockOpenIDConnectProvider::setConfig([
             'authorization_endpoint' => 'https://example.com/auth',
@@ -173,10 +178,11 @@ class OpenIDConnectTest extends OAuth2Test
         $this->assertNull($as->logout($state));
     }
 
-    public function testLogoutRedirects()
+    public function testLogoutRedirects(): void
     {
-        //phpcs:ignore Generic.Files.LineLength.TooLong
-        $expectedUrl = 'https://example.org/logout?id_token_hint=myidtoken&post_logout_redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Floggedout.php&state=authoauth2-stateId';
+        $expectedUrl = 'https://example.org/logout?id_token_hint=myidtoken'
+            . '&post_logout_redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Floggedout'
+            . '&state=authoauth2-stateId';
         // Override redirect behavior
         $http = $this->createMock(HTTP::class);
         $http->method('redirectTrustedURL')
@@ -204,7 +210,7 @@ class OpenIDConnectTest extends OAuth2Test
         ];
         try {
             $this->assertNull($as->logout($state));
-            $this->fail("Redirect expected");
+            $this->fail('Redirect expected');
         } catch (RedirectException $e) {
             $this->assertEquals('redirectTrustedURL', $e->getMessage());
             $this->assertEquals($expectedUrl, $e->getUrl());

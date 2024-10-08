@@ -40,6 +40,7 @@ If you are interested in using SSP as an OIDC OP see the [OIDC module](https://g
 - [Development](#development)
   - [Docker](#docker)
     - [Facebook test user](#facebook-test-user)
+    - [Testing OIDC Logout](#testing-oidc-logout)
   - [Code style](#code-style)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -51,7 +52,7 @@ The module can be installed with composer.
 
     composer require cirrusidentity/simplesamlphp-module-authoauth2
 
-
+If you are on SSP 2.3 use version 5.
 If you are on SSP 2 use version 4.
 If you are on SSP 1.X use version 3.
 
@@ -130,6 +131,10 @@ Generic usage provides enough configuration parameters to use with any OAuth2 or
                   // The underlying OAuth2 library also supports overriding requested scopes
                   //'scope' => ['other']
               ],
+              'useConsentErrorPage' => false|true,
+              // If set to true then /linkback.php, /logout.php, /loggedout.php, /consent/error.php legacy route is enabled
+              // if set to false or omitted the /linkback, /logout, /loggedout, /consent/error route is enable
+              'useLegacyRoutes' => false|true,
               // Default scopes to request
               'scopes' => ['email', 'profile'],
               'scopeSeparator' => ' ',
@@ -151,7 +156,6 @@ Generic usage provides enough configuration parameters to use with any OAuth2 or
               'logHttpTraffic' => true, //default is false
               'logMessageFormat' => 'A Guzzle MessageFormatter format string', // default setting is sufficient for most debugging
               'logIdTokenJson' => true, //default false. Log the json in the ID token.
-              
           ),
 ```
 
@@ -402,7 +406,7 @@ if ($handler->canHandleResponse()) {
 
 ## Docker
 
-The `preprodwarning` module is include for testing authproc filters. *note:* The 1.0.2 version
+The `preprodwarning` module is included for testing authproc filters. *note:* The 1.0.2 version
 of `preprodwarning` has a bug in the redirect url. If using it you need to change `showwarning.php` to `warning`
 in your browser url.
 
@@ -415,7 +419,7 @@ docker run --name ssp-oauth2-dev \
   -e SSP_ENABLED_MODULES="authoauth2 preprodwarning" \
   --mount type=bind,source="$(pwd)/docker/config/authsources.php",target=/var/simplesamlphp/config/authsources.php,readonly \
   --mount type=bind,source="$(pwd)/docker/config/config-override.php",target=/var/simplesamlphp/config/config-override.php,readonly \
-  -p 443:443 cirrusid/simplesamlphp:v2.0.7
+  -p 443:443 cirrusid/simplesamlphp:v2.3.2
 ```
 
 and visit (which resolves to localhost, and the docker container) the [test authsource page](https://oauth2-validation.local.stack-dev.cirrusidentity.com/simplesaml/module.php/admin/test)
@@ -424,11 +428,21 @@ to test some pre-configured social integrations (yes, you can see the app passwo
 ### Facebook test user
 
 The pre-configured Facebook apps can only be accessed with a test account. You must be signed out of Facebook,
-otherwise you will get an error saying the application is not active.
+otherwise you will get an error saying
+
+```
+App not active
+
+This app is not accessible right now and the app developer is aware of the issue. You will be able to log in when the app is reactivated.
+```
 
 * email: open_nzwvghb_user@tfbnw.net
 * password: SSPisMyFavorite2022
 
+### Testing OIDC Logout
+
+The authsource `microsoftOIDCPkceSource` can be used for testing both OIDC
+login and OIDC logout.  https://oauth2-validation.local.stack-dev.cirrusidentity.com/simplesaml/module.php/admin/test/microsoftOIDCPkceSource
 
 ## Code style
 

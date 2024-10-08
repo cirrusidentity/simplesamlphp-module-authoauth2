@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 $config = array(
 
     'genericFacebookTest' => array(
@@ -34,7 +36,7 @@ $config = array(
         'scopes' => 'profile',
         // *** Optional ***
         // Allow changing the default redirectUri
-        'redirectUri' => 'https://abc.tutorial.stack-dev.cirrusidentity.com:8732/module.php/authoauth2/linkback.php',
+        'redirectUri' => 'https://abc.tutorial.stack-dev.cirrusidentity.com:8732/module.php/authoauth2/linkback',
     ),
 
     'genericGoogleTest' => array(
@@ -121,7 +123,7 @@ zwIDAQAB
         'clientSecret' => '7a91a2a0-f118-447d-8401-71ba07815eb7',
         // *** Optional ***
         // Allow changing the default redirectUri
-        'redirectUri' => 'https://abc.tutorial.stack-dev.cirrusidentity.com:8732/module.php/authoauth2/linkback.php',
+        'redirectUri' => 'https://abc.tutorial.stack-dev.cirrusidentity.com:8732/module.php/authoauth2/linkback',
     ]),
 
     // This is a authentication source which handles admin authentication.

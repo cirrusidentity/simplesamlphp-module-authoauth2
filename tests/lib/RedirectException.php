@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Test\SimpleSAML;
 
 class RedirectException extends \Exception

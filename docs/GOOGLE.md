@@ -44,13 +44,13 @@ and if are using this with a SAML IdP then you can map the OIDC attributes to re
 
 ```php
     // saml20-idp-hosted.php
-$metadata['myEntityId'] = array(			
-    'authproc' => array(
+$metadata['myEntityId'] = [
+    'authproc' => [
         // Convert oidc names to ldap friendly names
-        90 => array('class' => 'core:AttributeMap',  'authoauth2:oidc2name'),
-    ),
+        90 => ['class' => 'core:AttributeMap',  'authoauth2:oidc2name'],
+    ],
    // other IdP config options
-)
+]
 ```
 
 ## Restricting hosted domain

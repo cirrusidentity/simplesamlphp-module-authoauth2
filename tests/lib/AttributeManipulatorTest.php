@@ -1,11 +1,6 @@
 <?php
 
-/**
- * Created by PhpStorm.
- * User: patrick
- * Date: 1/19/18
- * Time: 4:17 PM
- */
+declare(strict_types=1);
 
 namespace Test\SimpleSAML;
 
@@ -18,7 +13,7 @@ class AttributeManipulatorTest extends TestCase
     /**
      * Test that resource owner attributes are flattened into a SSPs attributes array format
      */
-    public function testPrefixAndFlatten()
+    public function testPrefixAndFlatten(): void
     {
 
         // Single values always become arrays and complex objects are flattened, and not strings are stringified

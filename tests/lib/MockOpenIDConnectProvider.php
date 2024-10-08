@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Test\SimpleSAML;
 
 use SimpleSAML\Configuration;
@@ -11,12 +13,12 @@ class MockOpenIDConnectProvider extends OpenIDConnectProvider
 
     private static array $keys;
 
-    public static function setConfig(array $config)
+    public static function setConfig(array $config): void
     {
         self::$config = Configuration::loadFromArray($config);
     }
 
-    public static function setSigningKeys(array $keys)
+    public static function setSigningKeys(array $keys): void
     {
         self::$keys = $keys;
     }

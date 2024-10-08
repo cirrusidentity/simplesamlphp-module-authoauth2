@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Module\authoauth2;
 
 /**
@@ -20,20 +22,20 @@ class AttributeManipulator
      */
     public function prefixAndFlatten(array $array, string $prefix = ''): array
     {
-        $result = array();
+        $result = [];
         foreach ($array as $key => $value) {
             if ($value === null) {
                 continue;
             }
-            if (is_array($value)) {
+            if (\is_array($value)) {
                 if ($this->isSimpleSequentialArray($value)) {
                     $result[$prefix . $key] = $this->stringify($value);
                 } else {
-                    $result = $result + $this->prefixAndFlatten($value, $prefix . $key . '.');
+                    $result += $this->prefixAndFlatten($value, $prefix . $key . '.');
                 }
             } else {
                 // User strval to handle non-string types
-                $result[$prefix . $key] = array($this->stringify($value));
+                $result[$prefix . $key] = [$this->stringify($value)];
             }
         }
         return $result;
@@ -44,23 +46,21 @@ class AttributeManipulator
      * @param mixed $input if an array stringify the values, removing nulls
      * @return array|string
      */
-    protected function stringify($input)
+    protected function stringify(mixed $input): array|string
     {
-        if (is_bool($input)) {
+        if (\is_bool($input)) {
             return $input ? 'true' : 'false';
-        } else {
-            if (is_array($input)) {
-                $array = [];
-                foreach ($input as $key => $value) {
-                    if ($value === null) {
-                        continue;
-                    }
-                    $array[$key] = $this->stringify($value);
+        } elseif (\is_array($input)) {
+            $array = [];
+            foreach ($input as $key => $value) {
+                if ($value === null) {
+                    continue;
                 }
-                return $array;
+                $array[$key] = $this->stringify($value);
             }
+            return $array;
         }
-        return strval($input);
+        return (string)$input;
     }
 
     /**

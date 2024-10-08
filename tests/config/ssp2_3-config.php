@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * The configuration of SimpleSAMLphp
  */
@@ -9,7 +11,7 @@ $httpUtils = new \SimpleSAML\Utils\HTTP();
 $config = [
 
     /*******************************
-     | BASIC CONFIGURATION OPTIONS |
+    | BASIC CONFIGURATION OPTIONS |
      *******************************/
 
     /*
@@ -24,6 +26,8 @@ $config = [
      *
      * The full url format is useful if your SimpleSAMLphp setup is hosted behind
      * a reverse proxy. In that case you can specify the external url here.
+     * Specifying the full URL including https: will let SimpleSAMLphp know
+     * that it runs on HTTPS even if the backend server is plain HTTP.
      *
      * Please note that SimpleSAMLphp will then redirect all queries to the
      * external url, no matter where you come from (direct access or via the
@@ -35,7 +39,7 @@ $config = [
      * The 'application' configuration array groups a set configuration options
      * relative to an application protected by SimpleSAMLphp.
      */
-    //'application' => [
+    'application' => [
         /*
          * The 'baseURL' configuration option allows you to specify a protocol,
          * host and optionally a port that serves as the canonical base for all
@@ -51,22 +55,24 @@ $config = [
          * to SimpleSAMLphp's API.
          */
         //'baseURL' => 'https://example.com',
-    //],
+    ],
 
     /*
      * The following settings are *filesystem paths* which define where
      * SimpleSAMLphp can find or write the following things:
+     * - 'cachedir': Where SimpleSAMLphp can write its cache.
      * - 'loggingdir': Where to write logs. MUST be set to NULL when using a logging
      *                 handler other than `file`.
      * - 'datadir': Storage of general data.
      * - 'tempdir': Saving temporary files. SimpleSAMLphp will attempt to create
-     *   this directory if it doesn't exist.
+     *   this directory if it doesn't exist. DEPRECATED - replaced by cachedir.
      * When specified as a relative path, this is relative to the SimpleSAMLphp
      * root directory.
      */
-    'loggingdir' => 'log/',
-    'datadir' => 'data/',
-    'tempdir' => '/tmp/simplesaml',
+    'cachedir' => '/var/cache/simplesamlphp',
+    //'loggingdir' => '/var/log/',
+    //'datadir' => '/var/data/',
+    //'tempdir' => '/tmp/simplesamlphp',
 
     /*
      * Certificate and key material can be loaded from different possible
@@ -84,7 +90,7 @@ $config = [
      * 'certdir' parameter below. When 'certdir' is specified as a relative
      * path, it will be interpreted as relative to the SimpleSAMLphp root
      * directory. Note that locations with no prefix included will be treated
-     * as file locations for backwards compatibility.
+     * as file locations.
      */
     'certdir' => 'cert/',
 
@@ -112,7 +118,6 @@ $config = [
      * Defaults are shown below, to change them, uncomment the line and update as
      * needed
      */
-
     //'cert.pdo.table' => 'certificates',
     //'cert.pdo.keytable' => 'private_keys',
     //'cert.pdo.apply_prefix' => true,
@@ -139,19 +144,22 @@ $config = [
      * Set the transport options for the transport method specified.  The valid settings are relative to the
      * selected transport method.
      */
-    // // smtp mail transport options
-    // 'mail.transport.options' => [
-    //     'host' => 'mail.example.org', // required
-    //     'port' => 25, // optional
-    //     'username' => 'user@example.org', // optional: if set, enables smtp authentication
-    //     'password' => 'password', // optional: if set, enables smtp authentication
-    //     'security' => 'tls', // optional: defaults to no smtp security
-    //     'smtpOptions' => [], // optional: passed to stream_context_create when connecting via SMTP
-    // ],
-    // // sendmail mail transport options
-    // 'mail.transport.options' => [
-    //     'path' => '/usr/sbin/sendmail' // optional: defaults to php.ini path
-    // ],
+    /*
+    'mail.transport.options' => [
+        'host' => 'mail.example.org', // required
+        'port' => 25, // optional
+        'username' => 'user@example.org', // optional: if set, enables smtp authentication
+        'password' => 'password', // optional: if set, enables smtp authentication
+        'security' => 'tls', // optional: defaults to no smtp security
+        'smtpOptions' => [], // optional: passed to stream_context_create when connecting via SMTP
+    ],
+
+    // sendmail mail transport options
+    /*
+    'mail.transport.options' => [
+        'path' => '/usr/sbin/sendmail' // optional: defaults to php.ini path
+    ],
+    */
 
     /*
      * The envelope from address for outgoing emails.
@@ -172,7 +180,7 @@ $config = [
 
 
     /**********************************
-     | SECURITY CONFIGURATION OPTIONS |
+    | SECURITY CONFIGURATION OPTIONS |
      **********************************/
 
     /*
@@ -255,7 +263,7 @@ $config = [
     /*
      * Set the allowed clock skew between encrypting/decrypting assertions
      *
-     * If you have an server that is constantly out of sync, this option
+     * If you have a server that is constantly out of sync, this option
      * allows you to adjust the allowed clock-skew.
      *
      * Allowed range: 180 - 300
@@ -263,9 +271,24 @@ $config = [
      */
     'assertion.allowed_clock_skew' => 180,
 
+    /*
+     * Set custom security headers. The defaults can be found in \SimpleSAML\Configuration::DEFAULT_SECURITY_HEADERS
+     *
+     * NOTE: When a header is already set on the response we will NOT overrule it and leave it untouched.
+     *
+     * Whenever you change any of these headers, make sure to validate your config by running your
+     * hostname through a security-test like https://en.internet.nl
+    'headers.security' => [
+        'Content-Security-Policy' => "default-src 'none'; frame-ancestors 'self'; object-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; connect-src 'self'; img-src 'self' data:; base-uri 'none'",
+        'X-Frame-Options' => 'SAMEORIGIN',
+        'X-Content-Type-Options' => 'nosniff',
+        'Referrer-Policy' => 'origin-when-cross-origin',
+    ],
+     */
+
 
     /************************
-     | ERRORS AND DEBUGGING |
+    | ERRORS AND DEBUGGING |
      ************************/
 
     /*
@@ -317,7 +340,7 @@ $config = [
 
     /*
      * Custom error show function called from SimpleSAML\Error\Error::show.
-     * See docs/simplesamlphp-errorhandling.txt for function code example.
+     * See docs/simplesamlphp-errorhandling.md for function code example.
      *
      * Example:
      *   'errors.show_function' => ['SimpleSAML\Module\example\Error', 'show'],
@@ -325,7 +348,7 @@ $config = [
 
 
     /**************************
-     | LOGGING AND STATISTICS |
+    | LOGGING AND STATISTICS |
      **************************/
 
     /*
@@ -340,6 +363,9 @@ $config = [
      *
      * Options: [syslog,file,errorlog,stderr]
      *
+     * If you set the handler to 'file', the directory specified in loggingdir above
+     * must exist and be writable for SimpleSAMLphp. If set to something else, set
+     * loggingdir above to 'null'.
      */
     'logging.level' => SimpleSAML\Logger::NOTICE,
     'logging.handler' => 'syslog',
@@ -359,7 +385,7 @@ $config = [
      *
      * - %level: the log level (name or number depending on the handler used).
      *
--     * - %stat: if the log entry is intended for statistical purposes, it will print the string 'STAT ' (bear in mind
+     * - %stat: if the log entry is intended for statistical purposes, it will print the string 'STAT ' (bear in mind
      *   the trailing space).
      *
      * - %trackid: the track ID, an identifier that allows you to track a single session.
@@ -400,7 +426,8 @@ $config = [
      * This is an array of outputs. Each output has at least a 'class' option, which
      * selects the output.
      */
-    'statistics.out' => [// Log statistics to the normal log.
+    'statistics.out' => [
+        // Log statistics to the normal log.
         /*
         [
             'class' => 'core:Log',
@@ -419,14 +446,14 @@ $config = [
 
 
     /***********************
-     | PROXY CONFIGURATION |
+    | PROXY CONFIGURATION |
      ***********************/
 
     /*
      * Proxy to use for retrieving URLs.
      *
      * Example:
-     *   'proxy' => 'tcp://proxy.example.com:5100'
+     *   'proxy' => 'http://proxy.example.com:5100'
      */
     'proxy' => null,
 
@@ -440,7 +467,7 @@ $config = [
 
 
     /**************************
-     | DATABASE CONFIGURATION |
+    | DATABASE CONFIGURATION |
      **************************/
 
     /*
@@ -502,7 +529,7 @@ $config = [
 
 
     /*************
-     | PROTOCOLS |
+    | PROTOCOLS |
      *************/
 
     /*
@@ -516,7 +543,7 @@ $config = [
 
 
     /***********
-     | MODULES |
+    | MODULES |
      ***********/
 
     /*
@@ -540,7 +567,7 @@ $config = [
 
 
     /*************************
-     | SESSION CONFIGURATION |
+    | SESSION CONFIGURATION |
      *************************/
 
     /*
@@ -602,8 +629,10 @@ $config = [
      * Set this to TRUE if the user only accesses your service
      * through https. If the user can access the service through
      * both http and https, this must be set to FALSE.
+     *
+     * If unset, SimpleSAMLphp will try to automatically determine the right value
      */
-    'session.cookie.secure' => true,
+    //'session.cookie.secure' => true,
 
     /*
      * Set the SameSite attribute in the cookie.
@@ -655,7 +684,7 @@ $config = [
 
     /*
      * Custom function for session checking called on session init and loading.
-     * See docs/simplesamlphp-advancedfeatures.txt for function code example.
+     * See docs/simplesamlphp-advancedfeatures.md for function code example.
      *
      * Example:
      *   'session.check_function' => ['\SimpleSAML\Module\example\Util', 'checkSession'],
@@ -664,7 +693,7 @@ $config = [
 
 
     /**************************
-     | MEMCACHE CONFIGURATION |
+    | MEMCACHE CONFIGURATION |
      **************************/
 
     /*
@@ -786,7 +815,7 @@ $config = [
 
 
     /*************************************
-     | LANGUAGE AND INTERNATIONALIZATION |
+    | LANGUAGE AND INTERNATIONALIZATION |
      *************************************/
 
     /*
@@ -794,7 +823,7 @@ $config = [
      */
     'language.available' => [
         'en', 'no', 'nn', 'se', 'da', 'de', 'sv', 'fi', 'es', 'ca', 'fr', 'it', 'nl', 'lb',
-        'cs', 'sk', 'sl', 'lt', 'hr', 'hu', 'pl', 'pt', 'pt-br', 'tr', 'ja', 'zh', 'zh-tw',
+        'cs', 'sk', 'sl', 'lt', 'hr', 'hu', 'pl', 'pt', 'pt_BR', 'tr', 'ja', 'zh', 'zh_TW',
         'ru', 'et', 'he', 'id', 'sr', 'lv', 'ro', 'eu', 'el', 'af', 'zu', 'xh', 'st',
     ],
     'language.rtl' => ['ar', 'dv', 'fa', 'ur', 'he'],
@@ -830,7 +859,7 @@ $config = [
      */
 
     /**************
-     | APPEARANCE |
+    | APPEARANCE |
      **************/
 
     /*
@@ -842,7 +871,7 @@ $config = [
      * Set this option to the text you would like to appear at the header of each page. Set to false if you don't want
      * any text to appear in the header.
      */
-    //'theme.header' => 'SimpleSAMLphp'
+    //'theme.header' => 'SimpleSAMLphp',
 
     /**
      * A template controller, if any.
@@ -916,7 +945,7 @@ $config = [
     //'frontpage.redirect' => 'https://example.com/',
 
     /*********************
-     | DISCOVERY SERVICE |
+    | DISCOVERY SERVICE |
      *********************/
 
     /*
@@ -947,7 +976,7 @@ $config = [
 
 
     /*************************************
-     | AUTHENTICATION PROCESSING FILTERS |
+    | AUTHENTICATION PROCESSING FILTERS |
      *************************************/
 
     /*
@@ -955,7 +984,7 @@ $config = [
      */
     'authproc.idp' => [
         /* Enable the authproc filter below to add URN prefixes to all attributes
-        10 => array[
+        10 => [
             'class' => 'core:AttributeMap', 'addurnprefix'
         ],
         */
@@ -965,12 +994,6 @@ $config = [
 
         // Adopts language from attribute to use in UI
         30 => 'core:LanguageAdaptor',
-
-        45 => [
-            'class'         => 'core:StatisticsWithAttribute',
-            'attributename' => 'realm',
-            'type'          => 'saml20-idp-SSO',
-        ],
 
         /* When called without parameters, it will fallback to filter attributes 'the old way'
          * by checking the 'attributes' parameter in metadata on IdP hosted and SP remote.
@@ -1037,7 +1060,7 @@ $config = [
 
 
     /**************************
-     | METADATA CONFIGURATION |
+    | METADATA CONFIGURATION |
      **************************/
 
     /*
@@ -1155,10 +1178,11 @@ $config = [
     'metadata.sign.privatekey' => null,
     'metadata.sign.privatekey_pass' => null,
     'metadata.sign.certificate' => null,
+    'metadata.sign.algorithm' => 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256',
 
 
     /****************************
-     | DATA STORE CONFIGURATION |
+    | DATA STORE CONFIGURATION |
      ****************************/
 
     /*
@@ -1218,6 +1242,28 @@ $config = [
     'store.redis.password' => '',
 
     /*
+     * Communicate with Redis over a secure connection instead of plain TCP.
+     *
+     * This setting affects both single host connections as
+     * well as Sentinel mode.
+     */
+    'store.redis.tls' => false,
+
+    /*
+     * Verify the Redis server certificate.
+     */
+    'store.redis.insecure' => false,
+
+    /*
+     * Files related to secure communication with Redis.
+     *
+     * Files are searched in the 'certdir' when using relative paths.
+     */
+    'store.redis.ca_certificate' => null,
+    'store.redis.certificate' => null,
+    'store.redis.privatekey' => null,
+
+    /*
      * The prefix we should use on our Redis datastore.
      */
     'store.redis.prefix' => 'SimpleSAMLphp',
@@ -1230,12 +1276,26 @@ $config = [
     /*
      * The Redis Sentinel hosts.
      * Example:
-     * array(
-     *     'tcp://[yoursentinel1]:[port]'
+     * 'store.redis.sentinels' => [
+     *     'tcp://[yoursentinel1]:[port]',
      *     'tcp://[yoursentinel2]:[port]',
      *     'tcp://[yoursentinel3]:[port]
-     * )
+     * ],
+     *
+     * Use 'tls' instead of 'tcp' in order to make use of the additional
+     * TLS settings.
      */
     'store.redis.sentinels' => [],
 
+    /*********************
+    | IdP/SP PROXY MODE |
+     *********************/
+
+    /*
+     * If the IdP in front of SimpleSAMLphp in IdP/SP proxy mode sends
+     * AuthnContextClassRef, decide whether the AuthnContextClassRef will be
+     * processed by the IdP/SP proxy or if it will be passed to the SP behind
+     * the IdP/SP proxy.
+     */
+    'proxymode.passAuthnContextClassRef' => false,
 ];
