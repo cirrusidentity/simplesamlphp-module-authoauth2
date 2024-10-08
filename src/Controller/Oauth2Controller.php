@@ -6,7 +6,6 @@ namespace SimpleSAML\Module\authoauth2\Controller;
 
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use Module\authoauth2\Codebooks\RoutesEnum;
-use Module\authoauth2\Codebooks\LegacyRoutesEnum;
 use SimpleSAML\Auth\State;
 use SimpleSAML\Error\AuthSource;
 use SimpleSAML\Error\BadRequest;
@@ -16,6 +15,7 @@ use SimpleSAML\Error\UserAborted;
 use SimpleSAML\Logger;
 use SimpleSAML\Module;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
+use SimpleSAML\Module\authoauth2\Codebooks\LegacyRoutesEnum;
 use SimpleSAML\Module\authoauth2\Codebooks\Oauth2ErrorsEnum;
 use SimpleSAML\Module\authoauth2\Controller\Traits\ErrorTrait;
 use SimpleSAML\Module\authoauth2\Controller\Traits\RequestTrait;
