@@ -14,6 +14,7 @@ use SimpleSAML\Auth\State;
 use SimpleSAML\Configuration;
 use SimpleSAML\Logger;
 use SimpleSAML\Module;
+use SimpleSAML\Module\authoauth2\Codebooks\LegacyRoutesEnum;
 use SimpleSAML\Module\authoauth2\Codebooks\RoutesEnum;
 use SimpleSAML\Module\authoauth2\Providers\OpenIDConnectProvider;
 use SimpleSAML\Utils\HTTP;

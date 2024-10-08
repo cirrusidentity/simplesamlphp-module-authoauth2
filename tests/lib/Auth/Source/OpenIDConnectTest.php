@@ -210,7 +210,7 @@ class OpenIDConnectTest extends OAuth2Test
         ];
         try {
             $this->assertNull($as->logout($state));
-            $this->fail("Redirect expected");
+            $this->fail('Redirect expected');
         } catch (RedirectException $e) {
             $this->assertEquals('redirectTrustedURL', $e->getMessage());
             $this->assertEquals($expectedUrl, $e->getUrl());

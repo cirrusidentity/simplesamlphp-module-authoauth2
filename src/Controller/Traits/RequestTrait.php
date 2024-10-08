@@ -69,11 +69,11 @@ trait RequestTrait
     {
         if (!$this->stateIsValid($request)) {
             $message = match ($request->attributes->get('_route')) {
-                // phpcs:ignore Generic.Files.LineLength.TooLong
                 LegacyRoutesEnum::LegacyLogout->name,
-                RoutesEnum::Logout->name   => 'Either missing state parameter on OpenID Connect logout callback, or cannot be handled by authoauth2',
                 // phpcs:ignore Generic.Files.LineLength.TooLong
+                RoutesEnum::Logout->name   => 'Either missing state parameter on OpenID Connect logout callback, or cannot be handled by authoauth2',
                 LegacyRoutesEnum::LegacyLinkback->name,
+                // phpcs:ignore Generic.Files.LineLength.TooLong
                 RoutesEnum::Linkback->name => 'Either missing state parameter on OAuth2 login callback, or cannot be handled by authoauth2',
                 default => 'An error occured'
             };

@@ -139,7 +139,10 @@ class Oauth2ControllerTest extends TestCase
             ->willReturn(new class (['useConsentErrorPage' => true], '') extends Configuration {
                 public function getOptionalBoolean($name, $default): bool
                 {
-                    return true;
+                    if (!$this->hasValue($name) && isset($default)) {
+                        return filter_var($default, FILTER_VALIDATE_BOOLEAN);
+                    }
+                    return filter_var($this->getValue($name), FILTER_VALIDATE_BOOLEAN);
                 }
             });
 
@@ -170,7 +173,10 @@ class Oauth2ControllerTest extends TestCase
             ->willReturn(new class (['useConsentErrorPage' => false], '') extends Configuration {
                 public function getOptionalBoolean($name, $default): bool
                 {
-                    return false;
+                    if (!$this->hasValue($name) && isset($default)) {
+                        return filter_var($default, FILTER_VALIDATE_BOOLEAN);
+                    }
+                    return filter_var($this->getValue($name), FILTER_VALIDATE_BOOLEAN);
                 }
             });
 

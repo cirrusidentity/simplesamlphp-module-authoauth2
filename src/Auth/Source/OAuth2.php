@@ -90,7 +90,8 @@ class OAuth2 extends Source
             if (isset($config['useLegacyRoutes']) && $config['useLegacyRoutes']) {
                 $linkbackRoute = LegacyRoutesEnum::LegacyLinkback->value;
             }
-            $config['redirectUri'] = Module::getModuleURL("authoauth2/$linkbackRoute");       }
+            $config['redirectUri'] = Module::getModuleURL("authoauth2/$linkbackRoute");
+        }
         if (!\array_key_exists('timeout', $config)) {
             $config['timeout'] = 3;
         }

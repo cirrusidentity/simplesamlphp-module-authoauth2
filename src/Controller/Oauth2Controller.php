@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SimpleSAML\Module\authoauth2\Controller;
 
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
-use Module\authoauth2\Codebooks\RoutesEnum;
 use SimpleSAML\Auth\State;
 use SimpleSAML\Error\AuthSource;
 use SimpleSAML\Error\BadRequest;
@@ -17,6 +16,7 @@ use SimpleSAML\Module;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
 use SimpleSAML\Module\authoauth2\Codebooks\LegacyRoutesEnum;
 use SimpleSAML\Module\authoauth2\Codebooks\Oauth2ErrorsEnum;
+use SimpleSAML\Module\authoauth2\Codebooks\RoutesEnum;
 use SimpleSAML\Module\authoauth2\Controller\Traits\ErrorTrait;
 use SimpleSAML\Module\authoauth2\Controller\Traits\RequestTrait;
 use SimpleSAML\Module\authoauth2\locators\HTTPLocator;
