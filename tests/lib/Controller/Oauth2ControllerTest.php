@@ -55,6 +55,16 @@ class Oauth2ControllerMock extends Oauth2Controller
     {
         $this->sourceId = $sourceId;
     }
+
+    public function getExpectedStageState(): string
+    {
+        return $this->expectedStageState;
+    }
+
+    public function getExpectedPrefix(): string
+    {
+        return $this->expectedPrefix;
+    }
 }
 
 // phpcs:ignore PSR1.Classes.ClassDeclaration.MultipleClasses
@@ -78,6 +88,13 @@ class Oauth2ControllerTest extends TestCase
         $this->oauth2Mock = $this->getMockBuilder(OAuth2::class)->disableOriginalConstructor()->getMock();
         $this->httpMock = $this->getMockBuilder(HTTP::class)->getMock();
         $this->stateMock = ['state' => 'testState'];
+    }
+
+    public function testExpectedConstVariables(): void
+    {
+        $this->createControllerMock(['parseRequest', 'getSourceService', 'handleError', 'getHttp', 'parseError']);
+        $this->assertEquals(OAuth2::STAGE_INIT, $this->controller->getExpectedStageState());
+        $this->assertEquals(OAuth2::STATE_PREFIX . '|', $this->controller->getExpectedPrefix());
     }
 
     public function testLinkbackValidCode(): void

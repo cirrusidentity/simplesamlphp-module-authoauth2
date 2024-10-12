@@ -10,10 +10,11 @@ use PHPUnit\Framework\TestCase;
 use SimpleSAML\Auth\Source;
 use SimpleSAML\Configuration;
 use SimpleSAML\Error\BadRequest;
+use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
+use SimpleSAML\Module\authoauth2\Auth\Source\OpenIDConnect;
 use SimpleSAML\Module\authoauth2\Controller\OIDCLogoutController;
 use SimpleSAML\Module\authoauth2\Controller\Traits\RequestTrait;
 use SimpleSAML\Module\authoauth2\locators\SourceService;
-use SimpleSAML\Module\authoauth2\locators\SourceServiceLocator;
 use Symfony\Component\HttpFoundation\InputBag;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -35,6 +36,16 @@ class OIDCLogoutControllerMock extends OIDCLogoutController
     public function setSourceId(string $sourceId): void
     {
         $this->sourceId = $sourceId;
+    }
+
+    public function getExpectedStageState(): string
+    {
+        return $this->expectedStageState;
+    }
+
+    public function getExpectedPrefix(): string
+    {
+        return $this->expectedPrefix;
     }
 }
 
@@ -74,6 +85,12 @@ class OIDCLogoutControllerTest extends TestCase
             ->willReturn($this->createMock(SourceService::class));
 
         $this->sourceServiceMock = $this->controller->getSourceService();
+    }
+
+    public function testExpectedConstVariables(): void
+    {
+        $this->assertEquals(OpenIDConnect::STAGE_LOGOUT, $this->controller->getExpectedStageState());
+        $this->assertEquals(OAuth2::STATE_PREFIX . '-', $this->controller->getExpectedPrefix());
     }
 
     public function testLoggedOutSuccess(): void
