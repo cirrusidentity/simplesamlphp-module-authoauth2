@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Module\authoauth2\Tests\Controller\Trait;
 
-use Brick\VarExporter\Internal\GenericExporter;
-use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\Auth\Source;
 use SimpleSAML\Error\BadRequest;
@@ -17,6 +15,16 @@ use Symfony\Component\HttpFoundation\Request;
 class GenericController
 {
     use RequestTrait;
+
+    /**
+     * @var string
+     */
+    protected string $expectedStageState = OAuth2::STAGE_INIT;
+
+    /**
+     * @var string
+     */
+    protected string $expectedPrefix = OAuth2::STATE_PREFIX . '|';
 
     public function __construct()
     {
@@ -55,8 +63,6 @@ class RequestTraitTest extends TestCase
     {
         parent::setUp();
         $this->request = new Request();
-        $this->expectedPrefix = OAuth2::STATE_PREFIX;
-        $this->expectedStageState = OAuth2::STAGE_INIT;
         $this->expectedStateAuthId =  OAuth2::AUTHID;
         $this->controller = $this->getMockBuilder(GenericController::class)
             ->onlyMethods(['loadState', 'getSourceService'])

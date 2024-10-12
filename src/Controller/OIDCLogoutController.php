@@ -10,6 +10,8 @@ use SimpleSAML\Error\BadRequest;
 use SimpleSAML\Error\CriticalConfigurationError;
 use SimpleSAML\Error\NoState;
 use SimpleSAML\Logger;
+use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
+use SimpleSAML\Module\authoauth2\Auth\Source\OpenIDConnect;
 use SimpleSAML\Module\authoauth2\Controller\Traits\RequestTrait;
 use SimpleSAML\Module\authoauth2\locators\SourceServiceLocator;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,6 +25,15 @@ class OIDCLogoutController
      * @var Configuration
      */
     protected Configuration $config;
+
+    /**
+     * @var string
+     */
+    protected string $expectedStageState = OpenIDConnect::STAGE_LOGOUT;
+    /**
+     * @var string
+     */
+    protected string $expectedPrefix = OAuth2::STATE_PREFIX . '-';
 
     /**
      *  Controller constructor.

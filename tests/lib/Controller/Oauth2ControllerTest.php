@@ -163,6 +163,43 @@ class Oauth2ControllerTest extends TestCase
         $this->controller->handleError($this->controller->getSource(), $this->stateMock, $this->requestMock);
     }
 
+    public function testHandleErrorWithConsentErrorAtLegacyRoute(): void
+    {
+        $this->createControllerMock(['parseRequest', 'getSourceService', 'getHttp', 'parseError']);
+        $this->controller->getSource()->method('getAuthId')->willReturn('authId');
+        $this->controller
+            ->getSource()
+            ->method('getConfig')
+            ->willReturn(new class ([
+                'useConsentErrorPage' => true,
+                'useLegacyRoutes' => true
+            ], '') extends Configuration {
+                public function getOptionalBoolean($name, $default): bool
+                {
+                    if (!$this->hasValue($name) && isset($default)) {
+                        return filter_var($default, FILTER_VALIDATE_BOOLEAN);
+                    }
+                    return filter_var($this->getValue($name), FILTER_VALIDATE_BOOLEAN);
+                }
+            });
+
+        $this->requestMock->query = $this->createQueryMock(
+            ['error' => 'invalid_scope', 'error_description' => 'Invalid scope']
+        );
+
+        $this->controller->method('parseError')
+            ->with($this->requestMock)
+            ->willReturn(['invalid_scope', 'Invalid scope']);
+
+        $this->controller->method('getHttp')->willReturn($this->httpMock);
+
+        $this->httpMock->expects($this->once())
+            ->method('redirectTrustedURL')
+            ->with('http://localhost/module.php/authoauth2/errors/consent.php');
+
+        $this->controller->handleError($this->controller->getSource(), $this->stateMock, $this->requestMock);
+    }
+
     public function testHandleErrorWithUserAborted(): void
     {
         $this->createControllerMock(['parseRequest', 'getSourceService', 'getHttp', 'parseError']);

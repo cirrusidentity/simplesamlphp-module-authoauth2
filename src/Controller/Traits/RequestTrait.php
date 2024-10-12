@@ -30,18 +30,11 @@ trait RequestTrait
      * @var string|null
      */
     protected ?string $sourceId;
-    /**
-     * @var string
-     */
-    protected string $expectedStageState = OAuth2::STAGE_INIT;
+
     /**
      * @var string
      */
     protected string $expectedStateAuthId = OAuth2::AUTHID;
-    /**
-     * @var string
-     */
-    protected string $expectedPrefix = OAuth2::STATE_PREFIX . '|';
 
     /**
      * @param   Request  $request
@@ -80,7 +73,7 @@ trait RequestTrait
             throw new BadRequest($message);
         }
         $stateIdWithPrefix = (string)($request->query->get('state') ?? '');
-        $stateId = substr($stateIdWithPrefix, strlen($this->expectedPrefix));
+        $stateId = substr($stateIdWithPrefix, \strlen($this->expectedPrefix));
 
         $this->state = $this->loadState($stateId, $this->expectedStageState);
 

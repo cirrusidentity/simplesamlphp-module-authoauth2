@@ -30,6 +30,16 @@ class Oauth2Controller
     use RequestTrait;
     use ErrorTrait;
 
+    /**
+     * @var string
+     */
+    protected string $expectedStageState = OAuth2::STAGE_INIT;
+
+    /**
+     * @var string
+     */
+    protected string $expectedPrefix = OAuth2::STATE_PREFIX . '|';
+
     public function __construct()
     {
     }
