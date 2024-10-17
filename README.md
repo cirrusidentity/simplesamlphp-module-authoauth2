@@ -52,7 +52,7 @@ The module can be installed with composer.
 
     composer require cirrusidentity/simplesamlphp-module-authoauth2
 
-If you are on SSP 2.3 use version 5.
+If you are on SSP 2.3 use version 5.  See Changelog for breaking changes
 If you are on SSP 2 use version 4.
 If you are on SSP 1.X use version 3.
 
@@ -68,6 +68,11 @@ If you prefer not having dev dependencies installed, then you can use.
 ## Changelog
 
 [View the change log](CHANGELOG.md)
+
+There are breaking changes in version 5.
+* URLs are generated without `.php` extensions. To use the older style urls enable `'useLegacyRoutes' => true`
+* If you previously migrated to this module from `authfacebook` or some other module AND opted to not update your
+  client app redirect urls then you may need to do add some rewrite rules to your webserver.
 
 # Usage
 
@@ -378,9 +383,11 @@ Take the access token from above and call the user info endpoint
 If you are migrating away from an existing auth module, such as `authfacebook` you will need to one of the following:
  * add this module's `authoauth2` redirect URI to the facebook app, or
  * override the `authoauth2` authsource's redirect URI to match the `authfacebook` uri (`https://myserver.com/module.php/authfacebook/linkback.php)` AND do one of the following
-   * edit `/modules/authfacebook/www/linkback.php` to conditionally call `OAuth2ResponseHandler` (see below)
    * configure an Apache rewrite rule to change '/module.php/authfacebook/linkback.php' to '/module.php/authoauth2/linkback.php'
-   * symlink or edit `/modules/authfacebook/www/linkback.php` to invoke the `/modules/authoauth2/public/linkback.php`
+   * Prior to the move to version 5 and Controllers we supported two addtional ways. These will not work in version 5 since the referenced files to not exist
+     * symlink or edit `/modules/authfacebook/www/linkback.php` to invoke the `/modules/authoauth2/public/linkback.php`
+     * edit `/modules/authfacebook/www/linkback.php` to conditionally call `OAuth2ResponseHandler` (see below)
+
    
 
 Some social providers support multiple login protocols and older SSP modules may use the non-OAuth2 version for login.
