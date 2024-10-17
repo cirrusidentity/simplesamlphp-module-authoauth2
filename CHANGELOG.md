@@ -1,5 +1,9 @@
 # simplesamlphp-module-authoauth2  Changelog
 
+## v4.1.0
+_Release: 2024-10-01
+* Allow urlResourceOwnerDetails to be overridden for OIDC
+
 ## v4.1.0-beta.2
 _Release: 2024-02-13
 * Update consent template to twig
