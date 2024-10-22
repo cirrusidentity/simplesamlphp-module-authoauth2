@@ -30,19 +30,9 @@ class GenericController
     {
     }
 
-    public function setSource(Source $source): void
-    {
-        $this->source = $source;
-    }
-
     public function setState(array $state): void
     {
         $this->state = $state;
-    }
-
-    public function setSourceId(string $sourceId): void
-    {
-        $this->sourceId = $sourceId;
     }
 
     public function getSourceId(): ?string
@@ -117,16 +107,12 @@ class RequestTraitTest extends TestCase
         /** @psalm-suppress UndefinedMethod,MixedMethodCall */
         $this->controller->method('loadState')->willReturn([OAuth2::AUTHID => 'test_authsource_id']);
 
-        $this->controller->setSourceId('test_authsource_id');
-
         $mockSourceService = $this->getMockBuilder(SourceService::class)->getMock();
         $mockSource = $this->getMockBuilder(Source::class)->disableOriginalConstructor()->getMock();
         /** @psalm-suppress UndefinedMethod,MixedMethodCall */
         $this->controller->method('getSourceService')->willReturn($mockSourceService);
 
         $mockSourceService->method('getById')->willReturn($mockSource);
-
-        $this->controller->setSource($mockSource);
 
         $this->controller->parseRequest($this->request);
 
@@ -169,7 +155,6 @@ class RequestTraitTest extends TestCase
 
         /** @psalm-suppress UndefinedMethod,MixedMethodCall */
         $this->controller->method('loadState')->willReturn([OAuth2::AUTHID => 'invalid_source_id']);
-        $this->controller->setSourceId('invalid_source_id');
 
         $mockSourceService = $this->getMockBuilder(SourceService::class)->getMock();
         /** @psalm-suppress UndefinedMethod,MixedMethodCall */

@@ -184,21 +184,11 @@ class Oauth2ControllerTest extends TestCase
     {
         $this->createControllerMock(['parseRequest', 'getSourceService', 'getHttp', 'parseError']);
         $this->controller->getSource()->method('getAuthId')->willReturn('authId');
+        $configArray = ['useConsentErrorPage' => true, 'useLegacyRoutes' => true];
         $this->controller
             ->getSource()
             ->method('getConfig')
-            ->willReturn(new class ([
-                'useConsentErrorPage' => true,
-                'useLegacyRoutes' => true
-            ], '') extends Configuration {
-                public function getOptionalBoolean($name, $default): bool
-                {
-                    if (!$this->hasValue($name) && isset($default)) {
-                        return filter_var($default, FILTER_VALIDATE_BOOLEAN);
-                    }
-                    return filter_var($this->getValue($name), FILTER_VALIDATE_BOOLEAN);
-                }
-            });
+            ->willReturn(new Configuration($configArray, 'test'));
 
         $this->requestMock->query = $this->createQueryMock(
             ['error' => 'invalid_scope', 'error_description' => 'Invalid scope']
@@ -221,18 +211,11 @@ class Oauth2ControllerTest extends TestCase
     {
         $this->createControllerMock(['parseRequest', 'getSourceService', 'getHttp', 'parseError']);
         $this->controller->getSource()->method('getAuthId')->willReturn('authId');
+        $configArray = ['useConsentErrorPage' => false];
         $this->controller
             ->getSource()
             ->method('getConfig')
-            ->willReturn(new class (['useConsentErrorPage' => false], '') extends Configuration {
-                public function getOptionalBoolean($name, $default): bool
-                {
-                    if (!$this->hasValue($name) && isset($default)) {
-                        return filter_var($default, FILTER_VALIDATE_BOOLEAN);
-                    }
-                    return filter_var($this->getValue($name), FILTER_VALIDATE_BOOLEAN);
-                }
-            });
+            ->willReturn(new Configuration($configArray, 'test'));
 
         $this->requestMock->query = $this->createQueryMock(
             ['error' => 'invalid_scope', 'error_description' => 'Invalid scope']
