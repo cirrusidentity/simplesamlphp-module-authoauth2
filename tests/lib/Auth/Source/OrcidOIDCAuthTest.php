@@ -1,11 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Test\SimpleSAML\Auth\Source;
 
-use League\OAuth2\Client\Provider\AbstractProvider;
-use League\OAuth2\Client\Token\AccessToken;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\RequestInterface;
 use SimpleSAML\Configuration;
 use SimpleSAML\Module\authoauth2\Auth\Source\OrcidOIDCAuth;
 
@@ -18,7 +18,7 @@ class OrcidOIDCAuthTest extends TestCase
         Configuration::clearInternalState();
     }
 
-    public function emailResponseProvider(): array
+    public static function emailResponseProvider(): array
     {
         return [
             // no email addresses
@@ -182,10 +182,10 @@ class OrcidOIDCAuthTest extends TestCase
     }
 
     /**
-     * @dataProvider emailResponseProvider
-     * @param array $emailResponse The JSON response from the email endpoint
-     * @param string $expectedEmail What the resolved email address should be
+     * @param   array        $emailResponse  The JSON response from the email endpoint
+     * @param   string|null  $expectedEmail  What the resolved email address should be
      */
+    #[DataProvider('emailResponseProvider')]
     public function testEmailResolution(array $emailResponse, ?string $expectedEmail): void
     {
         $orcidAuth = new OrcidOIDCAuth(['AuthId' => 'orcid'], []);

@@ -5,6 +5,7 @@ $config = array(
     /** Test facebook template */
     'templateFacebook' => [
         'authoauth2:OAuth2',
+        'useLegacyRoutes' => true,
         'template' => 'Facebook',
         // App is in development mode and can be used to login as a test user
         'clientId' => '1223209798230151',
@@ -18,6 +19,7 @@ $config = array(
 
     'templateAuthProcFacebook' => [
         'authoauth2:OAuth2',
+        'useLegacyRoutes' => true,
         'template' => 'Facebook',
         // App is in development mode and can be used to login as a test user
         'clientId' => '1223209798230151',
@@ -49,6 +51,7 @@ $config = array(
 
     'templateMicrosoft' => [
         'authoauth2:OAuth2',
+        'useLegacyRoutes' => true,
         'template' => 'MicrosoftGraphV1',
         'clientId' => 'f579dc6e-58f5-41a8-8bbf-96d54eacfe8d',
         'clientSecret' => 'GXc8Q~mgI7kTBllrvpBthUEioeARdjrRYORSyda4',
@@ -57,6 +60,7 @@ $config = array(
     /** Test using Google OIDC but with config explicitly define rather than pulled from .well-know */
     'templateGoogle' => [
         'authoauth2:OAuth2',
+        'useLegacyRoutes' => true,
         'template' => 'GoogleOIDC',
         'clientId' => '105348996343-6jb2828gnlo07mop7b08gjse1ms77bm0.apps.googleusercontent.com',
         'clientSecret' => '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',
@@ -65,6 +69,7 @@ $config = array(
     /** Test using the OpenIDConnect functionality to interact with Google. This configures itself from `.well-known/openid-configuration` */
     'googleOIDCSource' => [
         'authoauth2:OpenIDConnect',
+        'useLegacyRoutes' => true,
         'issuer' => 'https://accounts.google.com',
 
         'clientId' => '105348996343-6jb2828gnlo07mop7b08gjse1ms77bm0.apps.googleusercontent.com',
@@ -79,6 +84,7 @@ $config = array(
     /** Using the OIDC authsource for MS logins */
     'microsoftOIDCSource' => [
         'authoauth2:OpenIDConnect',
+        'useLegacyRoutes' => true,
         'issuer' => 'https://sts.windows.net/{tenantid}/',
         // When using the 'common' discovery endpoint it allows any Azure user to authenticate, however
         // the token issuer is tenant specific and will not match what is in the common discovery document.
@@ -90,6 +96,7 @@ $config = array(
 
     'microsoftOIDCPkceSource' => [
         'authoauth2:OpenIDConnect',
+        'useLegacyRoutes' => true,
         'issuer' => 'https://sts.windows.net/{tenantid}/',
         // When using the 'common' discovery endpoint it allows any Azure user to authenticate, however
         // the token issuer is tenant specific and will not match what is in the common discovery document.

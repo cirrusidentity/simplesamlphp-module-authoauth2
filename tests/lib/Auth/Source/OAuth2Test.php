@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Test\SimpleSAML\Auth\Source;
 
 use GuzzleHttp\Exception\ConnectException;
@@ -7,10 +9,12 @@ use GuzzleHttp\HandlerStack;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Provider\GenericResourceOwner;
 use League\OAuth2\Client\Token\AccessToken;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 use SimpleSAML\Auth\State;
+use SimpleSAML\Error\UnserializableException;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
 use SimpleSAML\Session;
 use SimpleSAML\Utils\HTTP;
@@ -22,9 +26,15 @@ use Test\SimpleSAML\RedirectException;
  */
 class OAuth2Test extends TestCase
 {
+    /** @var string */
     public const AUTH_ID = 'oauth2';
 
-    public $module_config;
+    public static function setUpBeforeClass(): void
+    {
+        // To make lib/SimpleSAML/Utils/HTTP::getSelfURL() work...
+        global $_SERVER;
+        $_SERVER['REQUEST_URI'] = '/';
+    }
 
     protected function getInstance(array $config): OAuth2
     {
@@ -32,13 +42,13 @@ class OAuth2Test extends TestCase
         return new OAuth2($info, $config);
     }
 
-    public function testDefaultConfigItemsSet()
+    public function testDefaultConfigItemsSet(): void
     {
         $authOAuth2 = $this->getInstance([]);
 
-        $this->assertEquals(
-            'http://localhost/module.php/authoauth2/linkback.php',
-            $authOAuth2->getConfig()->getString('redirectUri')
+        $this->assertStringEndsWith(
+            '/module.php/authoauth2/linkback',
+            $authOAuth2->getConfig()->getString('redirectUri'),
         );
         $this->assertEquals(3, $authOAuth2->getConfig()->getInteger('timeout'));
 
@@ -47,7 +57,7 @@ class OAuth2Test extends TestCase
         $this->assertEquals(6, $authOAuth2->getConfig()->getInteger('timeout'));
     }
 
-    public function testConfigTemplateByName()
+    public function testConfigTemplateByName(): void
     {
         $authOAuth2 = $this->getInstance([
             'template' => 'GoogleOIDC',
@@ -68,7 +78,7 @@ class OAuth2Test extends TestCase
             'attributePrefix' => 'myPrefix.',
             'label' => 'override',
             'template' => 'GoogleOIDC',
-            'redirectUri' => 'http://localhost/module.php/authoauth2/linkback.php',
+            'redirectUri' => 'http://localhost/module.php/authoauth2/linkback',
             'timeout' => 3,
 
         ];
@@ -76,7 +86,7 @@ class OAuth2Test extends TestCase
         $this->assertEquals($expectedConfig, $authOAuth2->getConfig()->toArray());
     }
 
-    public function testResourceOwnerQueryParamOption()
+    public function testResourceOwnerQueryParamOption(): void
     {
         $authOAuth2 = $this->getInstance([
             'template' => 'Facebook',
@@ -91,7 +101,7 @@ class OAuth2Test extends TestCase
         );
     }
 
-    public function authenticateDataProvider(): array
+    public static function authenticateDataProvider(): array
     {
         return [
             [
@@ -102,18 +112,18 @@ class OAuth2Test extends TestCase
                 ],
                 [State::ID => 'stateId'],
                 // phpcs:ignore Generic.Files.LineLength.TooLong
-                'https://example.com/auth?state=authoauth2%7CstateId&response_type=code&approval_prompt=auto&redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Flinkback.php'
+                'https://example.com/auth?state=authoauth2%7CstateId&response_type=code&approval_prompt=auto&redirect_uri=http%3A%2F%2Flocalhost%2Fmodule.php%2Fauthoauth2%2Flinkback'
             ]
         ];
     }
 
     /**
-     * @dataProvider authenticateDataProvider
-     * @param $config
-     * @param $state
-     * @param $expectedUrl
+     * @param   array   $config
+     * @param   array   $state
+     * @param   string  $expectedUrl
      */
-    public function testAuthenticatePerformsRedirect($config, $state, $expectedUrl)
+    #[DataProvider('authenticateDataProvider')]
+    public function testAuthenticatePerformsRedirect(array $config, array $state, string $expectedUrl): void
     {
         $_SERVER['REQUEST_URI'] = '/dummy';
         // Override redirect behavior
@@ -138,7 +148,7 @@ class OAuth2Test extends TestCase
         $this->assertEquals(static::AUTH_ID, $state[OAuth2::AUTHID], 'Ensure authsource name is presevered in state');
     }
 
-    public function finalStepsDataProvider()
+    public static function finalStepsDataProvider(): array
     {
         return [
             [
@@ -154,11 +164,12 @@ class OAuth2Test extends TestCase
     }
 
     /**
-     * @dataProvider finalStepsDataProvider
-     * @param $config
-     * @param $expectedAttributes
+     * @param   array        $config
+     * @param   AccessToken  $accessToken
+     * @param   array        $expectedAttributes
      */
-    public function testFinalSteps($config, $accessToken, $expectedAttributes)
+    #[DataProvider('finalStepsDataProvider')]
+    public function testFinalSteps(array $config, AccessToken $accessToken, array $expectedAttributes): void
     {
         // given: A mock Oauth2 provider
         $state = [State::ID => 'stateId'];
@@ -178,8 +189,12 @@ class OAuth2Test extends TestCase
      * @param array $attributes
      * @return OAuth2
      */
-    public function setupAndCallFinalSteps(array $config, array &$state, AccessToken $accessToken, array $attributes = ['name' => 'Bob']): OAuth2
-    {
+    public function setupAndCallFinalSteps(
+        array $config,
+        array &$state,
+        AccessToken $accessToken,
+        array $attributes = ['name' => 'Bob']
+    ): OAuth2 {
 
         $code = 'theCode';
         $state = [State::ID => 'stateId'];
@@ -201,7 +216,7 @@ class OAuth2Test extends TestCase
         return $authOAuth2;
     }
 
-    public function finalStepsDataProviderWithAuthenticatedApiRequest()
+    public static function finalStepsDataProviderWithAuthenticatedApiRequest(): array
     {
         return [
             [
@@ -221,13 +236,16 @@ class OAuth2Test extends TestCase
     }
 
     /**
-     * @dataProvider finalStepsDataProviderWithAuthenticatedApiRequest
-     * @param $config
-     * @param $accessToken
-     * @param $expectedAttributes
+     * @param   array        $config
+     * @param   AccessToken  $accessToken
+     * @param   array        $expectedAttributes
      */
-    public function testFinalStepsWithAuthenticatedApiRequest($config, $accessToken, $expectedAttributes)
-    {
+    #[DataProvider('finalStepsDataProviderWithAuthenticatedApiRequest')]
+    public function testFinalStepsWithAuthenticatedApiRequest(
+        array $config,
+        AccessToken $accessToken,
+        array $expectedAttributes
+    ): void {
         // given: A mock Oauth2 provider
         $code = 'theCode';
         $state = [State::ID => 'stateId'];
@@ -268,41 +286,46 @@ class OAuth2Test extends TestCase
     }
 
     /**
-     * @dataProvider finalStepsDataProvider
-     * @param $config
-     * @param $accessToken
-     * @param $expectedAttributes
+     * @param   array        $config
+     * @param   AccessToken  $accessToken
+     * @param   array        $expectedAttributes
      */
-    public function testFinalStepsWithNetworkErrorsAndRetries($config, $accessToken, $expectedAttributes)
-    {
+    #[DataProvider('finalStepsDataProvider')]
+    public function testFinalStepsWithNetworkErrorsAndRetries(
+        array $config,
+        AccessToken $accessToken,
+        array $expectedAttributes
+    ): void {
         // given: A mock Oauth2 provider
         $code = 'theCode';
         $state = [State::ID => 'stateId'];
 
-        /** @var AbstractProvider|MockObject $mock */
+        /** @var AbstractProvider $mock */
+        /** @psalm-suppress MixedMethodCall */
         $mock = $this->getMockBuilder(AbstractProvider::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        /** @var RequestInterface|MockObject $mockRequest */
+        /** @var RequestInterface $mockRequest */
         $mockRequest = $this->getMockBuilder(RequestInterface::class)
             ->getMock();
 
         $mock->method('getAccessToken')
             ->with('authorization_code', ['code' => $code])
-            ->will($this->onConsecutiveCalls(
+            ->willReturnOnConsecutiveCalls(
                 $this->throwException(new ConnectException('tokenConnectionException', $mockRequest)),
                 $accessToken
-            ));
+            );
 
         $attributes = ['name' => 'Bob'];
         $user = new GenericResourceOwner($attributes, 'userId');
         $mock->method('getResourceOwner')
             ->with($accessToken)
-            ->will($this->onConsecutiveCalls(
+            ->willThrowException(new ConnectException('resourceOwnerException', $mockRequest))
+            ->willReturnOnConsecutiveCalls(
                 $this->throwException(new ConnectException('resourceOwnerException', $mockRequest)),
                 $user
-            ));
+            );
         MockOAuth2Provider::setDelegate($mock);
 
         // when: turning a code into a token and then into a resource owner attributes
@@ -314,16 +337,18 @@ class OAuth2Test extends TestCase
     }
 
     /**
-     * @dataProvider finalStepsDataProviderWithAuthenticatedApiRequest
-     * @param $config
-     * @param $accessToken
-     * @param $expectedAttributes
+     * @param   array        $config
+     * @param   AccessToken  $accessToken
+     * @param   array        $expectedAttributes
+     *
+     * @throws Exception
      */
+    #[DataProvider('finalStepsDataProviderWithAuthenticatedApiRequest')]
     public function testFinalStepsWithAuthenticatedApiRequestWithNetworkErrors(
-        $config,
-        $accessToken,
-        $expectedAttributes
-    ) {
+        array $config,
+        AccessToken $accessToken,
+        array $expectedAttributes
+    ): void {
         // given: A mock Oauth2 provider
         $code = 'theCode';
         $state = [State::ID => 'stateId'];
@@ -348,13 +373,13 @@ class OAuth2Test extends TestCase
         $mockRequestAuthenticatedRequest = $this->createMock(RequestInterface::class);
         $mock->method('getAuthenticatedRequest')
             ->with('GET', 'https://mock.com/v1.0/me/memberOf', $accessToken)
-            ->will($this->onConsecutiveCalls(
+            ->willReturnOnConsecutiveCalls(
                 $this->throwException(new ConnectException(
                     'getAuthenticatedRequest',
                     $mockRequestAuthenticatedRequest
                 )),
                 $mockRequest
-            ));
+            );
 
         $mock->method('getParsedResponse')
             ->with($mockRequest)
@@ -370,12 +395,12 @@ class OAuth2Test extends TestCase
         $this->assertEquals($expectedAttributes, $state['Attributes']);
     }
 
-    public function testTooManyErrorsForRetry()
+    /**
+     * @throws \SimpleSAML\Error\Exception
+     * @throws UnserializableException
+     */
+    public function testTooManyErrorsForRetry(): void
     {
-        // Exception expected on the 3rd attempt
-        $this->expectException(ConnectException::class);
-        $this->expectExceptionMessage('error3');
-
         // given: A mock Oauth2 provider
         $code = 'theCode';
         $config = [
@@ -385,32 +410,38 @@ class OAuth2Test extends TestCase
         ];
         $state = [State::ID => 'stateId'];
 
-        /** @var AbstractProvider|MockObject $mock */
+        /** @var AbstractProvider $mock */
+        /** @psalm-suppress MixedMethodCall */
         $mock = $this->getMockBuilder(AbstractProvider::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        /** @var RequestInterface|MockObject $mockRequest */
+        /** @var RequestInterface $mockRequest */
         $mockRequest = $this->getMockBuilder(RequestInterface::class)
             ->getMock();
 
         $mock->method('getAccessToken')
             ->with('authorization_code', ['code' => $code])
-            ->will($this->onConsecutiveCalls(
+            ->willReturnOnConsecutiveCalls(
                 $this->throwException(new ConnectException('error1', $mockRequest)),
                 $this->throwException(new ConnectException('error2', $mockRequest)),
                 $this->throwException(new ConnectException('error3', $mockRequest))
-            ));
+            );
 
 
         MockOAuth2Provider::setDelegate($mock);
 
         // when: turning a code into a token and then into a resource owner attributes
         $authOAuth2 = $this->getInstance($config);
+
+        // Exception expected on the 3rd attempt
+        $this->expectException(ConnectException::class);
+        $this->expectExceptionMessage('error3');
+
         $authOAuth2->finalStep($state, $code);
     }
 
-    public function testEnableDebugLogging()
+    public function testEnableDebugLogging(): void
     {
 
         $config = [
@@ -423,16 +454,17 @@ class OAuth2Test extends TestCase
         $authOAuth2 = $this->getInstance($config);
         $provider = $authOAuth2->getProvider($authOAuth2->getConfig());
 
-        $clientConfig = $provider->getHttpClient()->getConfig();
+        /** @psalm-suppress DeprecatedMethod*/
+        $clientConfig = (array)$provider->getHttpClient()->getConfig();
         /** @var HandlerStack $handlerStack */
         $handlerStack = $clientConfig['handler'];
-        // annoyingly the handlerStack doesn't let us check for middleware by name,
+        // annoyingly, the handlerStack doesn't let us check for middleware by name,
         // so we need to convert to a string and then see if it contains the named middleware
         $strHandler = (string)$handlerStack;
         $this->assertStringContainsString('logHttpTraffic', $strHandler);
     }
 
-    public function authprocTokenProvider(): array
+    public static function authprocTokenProvider(): array
     {
         return [
             [
@@ -442,10 +474,10 @@ class OAuth2Test extends TestCase
     }
 
     /**
-     * @dataProvider authprocTokenProvider
      * @param AccessToken $accessToken
      * @return void
      */
+    #[DataProvider('authprocTokenProvider')]
     public function testAuthProcsCanRun(AccessToken $accessToken): void
     {
 
@@ -460,9 +492,11 @@ class OAuth2Test extends TestCase
         ];
         $state = [State::ID => 'stateId'];
         $this->setupAndCallFinalSteps($config, $state, $accessToken);
-        $this->assertArrayNotHasKey('name', $state['Attributes']);
-        $this->assertArrayHasKey('firstName', $state['Attributes']);
-        $this->assertEquals('Bob', $state['Attributes']['firstName'][0]);
+        $this->assertArrayNotHasKey('name', (array)$state['Attributes']);
+        $this->assertArrayHasKey('firstName', (array)$state['Attributes']);
+        $firstName = (array)($state['Attributes']['firstName'] ?? []);
+        $expectedStructure = ['Bob'];
+        $this->assertEquals($expectedStructure, $firstName);
     }
 
     /**
@@ -471,8 +505,8 @@ class OAuth2Test extends TestCase
      *
      * @psalm-param class-string<\Throwable>|null $expectedException
      *
-     * @dataProvider dataAuthenticateAndFinalStepWillCallSaveAndRetrieveTheCode
      */
+    #[DataProvider('dataAuthenticateAndFinalStepWillCallSaveAndRetrieveTheCode')]
     public function testAuthenticateAndFinalStepWillCallSaveAndRetrieveTheCode(
         ?string $method,
         int $count,
@@ -554,7 +588,7 @@ class OAuth2Test extends TestCase
     /**
      * @return array<string, array{0: string|null, 1: int, 2: class-string<\Throwable>|null}>
      */
-    public function dataAuthenticateAndFinalStepWillCallSaveAndRetrieveTheCode(): array
+    public static function dataAuthenticateAndFinalStepWillCallSaveAndRetrieveTheCode(): array
     {
         return [
             'pkceMethod=S256' => ['S256', 1, null],

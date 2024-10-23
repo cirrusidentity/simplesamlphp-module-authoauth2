@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SimpleSAML\Module\authoauth2\Auth\Source;
 
 use Exception;
@@ -10,6 +12,7 @@ use GuzzleHttp\MessageFormatter;
 use GuzzleHttp\Middleware;
 use InvalidArgumentException;
 use League\OAuth2\Client\Provider\AbstractProvider;
+use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 use League\OAuth2\Client\Token\AccessToken;
 use Psr\Http\Message\RequestInterface;
@@ -20,9 +23,11 @@ use SimpleSAML\Configuration;
 use SimpleSAML\Logger;
 use SimpleSAML\Module;
 use SimpleSAML\Module\authoauth2\AttributeManipulator;
+use SimpleSAML\Module\authoauth2\Codebooks\RoutesEnum;
+use SimpleSAML\Module\authoauth2\Codebooks\LegacyRoutesEnum;
 use SimpleSAML\Module\authoauth2\ConfigTemplate;
-use SimpleSAML\Module\authoauth2\locators\HTTPLocator;
 use SimpleSAML\Module\authoauth2\Providers\AdjustableGenericProvider;
+use SimpleSAML\Module\authoauth2\locators\HTTPLocator;
 use SimpleSAML\Session;
 
 /**
@@ -71,26 +76,30 @@ class OAuth2 extends Source
 
         // Call the parent constructor first, as required by the interface
         parent::__construct($info, $config);
-        if (array_key_exists('template', $config)) {
-            $template = $config['template'];
-            if (is_string($template)) {
-                $templateArray = constant(ConfigTemplate::class . '::' . $template);
+        if (\array_key_exists('template', $config)) {
+            if (\is_string($config['template'])) {
+                /** @var array $templateArray */
+                $templateArray = \constant(ConfigTemplate::class . '::' . $config['template']);
                 // Remove the class name
                 unset($templateArray[0]);
                 $config = array_merge($templateArray, $config);
             }
         }
-        if (!array_key_exists('redirectUri', $config)) {
-            $config['redirectUri'] = Module::getModuleURL('authoauth2/linkback.php');
+        if (!\array_key_exists('redirectUri', $config)) {
+            $linkbackRoute = RoutesEnum::Linkback->value;
+            if (isset($config['useLegacyRoutes']) && $config['useLegacyRoutes']) {
+                $linkbackRoute = LegacyRoutesEnum::LegacyLinkback->value;
+            }
+            $config['redirectUri'] = Module::getModuleURL("authoauth2/$linkbackRoute");
         }
-        if (!array_key_exists('timeout', $config)) {
+        if (!\array_key_exists('timeout', $config)) {
             $config['timeout'] = 3;
         }
         // adjust config to add resource owner query parameters.
-        if (array_key_exists('urlResourceOwnerOptions', $config)) {
+        if (\array_key_exists('urlResourceOwnerOptions', $config)) {
             $newUrl = $this->getHttp()->addURLParameters(
-                $config['urlResourceOwnerDetails'],
-                $config['urlResourceOwnerOptions']
+                (string)$config['urlResourceOwnerDetails'],
+                (array)$config['urlResourceOwnerOptions']
             );
             $config['urlResourceOwnerDetails'] = $newUrl;
         }
@@ -166,6 +175,7 @@ class OAuth2 extends Source
             $format = $config->getOptionalString('logMessageFormat', self::DEBUG_LOG_FORMAT);
             Logger::debug('authoauth2: Enable traffic logging');
             $handlerStack = HandlerStack::create();
+            /** @psalm-suppress  MixedArgumentTypeCoercion */
             $handlerStack->push(
                 Middleware::log(
                     new \SAML2\Compat\Ssp\Logger(),
@@ -185,9 +195,7 @@ class OAuth2 extends Source
                     // phpcs:ignore Generic.Files.LineLength.TooLong
                     throw new InvalidArgumentException("The OAuth2 provider '$providerClass' does not extend " . AbstractProvider::class);
                 }
-                /**
-                 * @psalm-suppress UnsafeInstantiation
-                 */
+                /** @psalm-suppress UnsafeInstantiation */
                 $provider = new $providerClass($config->toArray(), $collaborators);
             } else {
                 throw new InvalidArgumentException("No OAuth2 provider class found for '$providerClass'.");
@@ -208,9 +216,12 @@ class OAuth2 extends Source
     /**
      * Retrieve access token and lookup resource owner profile
      *
-     * @param array $state
-     * @param string $oauth2Code
+     * @param   array   $state
+     * @param   string  $oauth2Code
      *
+     * @return void
+     * @throws \SimpleSAML\Error\Exception
+     * @throws \SimpleSAML\Error\UnserializableException
      */
     public function finalStep(array &$state, string $oauth2Code): void
     {
@@ -238,7 +249,7 @@ class OAuth2 extends Source
             $this->config->getOptionalBoolean('logIdTokenJson', false) &&
             array_key_exists('id_token', $accessToken->getValues())
         ) {
-            $idToken = $accessToken->getValues()['id_token'];
+            $idToken = (string)$accessToken->getValues()['id_token'];
             $decodedIdToken = base64_decode(
                 explode('.', $idToken)[1]
             );
@@ -255,19 +266,21 @@ class OAuth2 extends Source
         $attributes = $resourceOwner->toArray();
 
         $authenticatedApiRequests = $this->config->getOptionalArray('authenticatedApiRequests', []);
+        /** @var string $apiUrl */
         foreach ($authenticatedApiRequests as $apiUrl) {
             try {
+                /** @var array $apiAttributes */
                 $apiAttributes = $this->retry(
                 /**
                  * @return array
+                 * @throws IdentityProviderException
                  */
                     function () use ($provider, $accessToken, $apiUrl) {
-
-                    /** @var RequestInterface $request */
+                        /** @var RequestInterface $request */
                         $apiRequest = $provider->getAuthenticatedRequest(
                             'GET',
                             $apiUrl,
-                            $accessToken
+                            (string)$accessToken
                         );
                         return $provider->getParsedResponse($apiRequest);
                     }
@@ -287,9 +300,12 @@ class OAuth2 extends Source
         $state['Attributes'] = $this->convertResourceOwnerAttributes($attributes, $prefix);
         $this->postFinalStep($accessToken, $provider, $state);
         Logger::debug(
-            'authoauth2: ' . $providerLabel . ' attributes: ' . implode(", ", array_keys($state['Attributes']))
+            'authoauth2: '
+            . $providerLabel
+            . ' attributes: '
+            . implode(', ', array_keys((array)$state['Attributes']))
         );
-        // Track time spent calling out to oauth2 server. This can often be a source of slowness.
+        // Track time spent calling out oauth2 server. This can often be a source of slowness.
         $time = microtime(true) - $start;
         Logger::debug('authoauth2: ' . $providerLabel . ' finished authentication in ' . $time . ' seconds');
 
@@ -311,13 +327,13 @@ class OAuth2 extends Source
     }
 
     /**
-     * Retry token and user info endpoints in event of network errors.
+     * Retry token and user info endpoints in the event of network errors.
      * @param callable $function the function to try
      * @param ?int $retries number of attempts to try
      * @param int $delay The time to delay between tries.
      * @return mixed the result of the function
      */
-    protected function retry(callable $function, ?int $retries = null, int $delay = 1)
+    protected function retry(callable $function, ?int $retries = null, int $delay = 1): mixed
     {
         if ($retries === null) {
             $retries = $this->config->getOptionalInteger('retryOnError', 1);
@@ -332,11 +348,10 @@ class OAuth2 extends Source
             // phpcs:ignore Generic.Files.LineLength.TooLong
             Logger::info('authoauth2: ' . $providerLabel . " Connection error. Retries left $retries. error: {$e->getMessage()}");
             if ($retries > 0) {
-                /** @var 0|positive-int $delay */
                 sleep($delay);
                 return $this->retry($function, $retries - 1, $delay);
             } else {
-                Logger::info('authoauth2: ' . $providerLabel . ". Out of retries. Rethrowing error");
+                Logger::info('authoauth2: ' . $providerLabel . '. Out of retries. Rethrowing error');
                 throw $e;
             }
         }
@@ -351,18 +366,24 @@ class OAuth2 extends Source
         // We don't need to verify the signature on the id token since it was the token returned directly from
         // the OP over TLS
         $decoded = $this->extraAndDecodeJwtPayload($idToken);
-        if ($decoded == null) {
+        if ($decoded === null) {
             return [];
         }
+        /** @var array|null $data */
         $data = json_decode($decoded, true);
         //TODO: spec recommends checking that aud matches us and issuer is as expected.
-        if ($data == null) {
+        if ($data === null) {
             Logger::warning("authoauth2: '$decoded' payload can't be decoded to json.");
             return [];
         }
         return $data;
     }
 
+    /**
+     * @param   string|null  $jwt
+     *
+     * @return string|null
+     */
     protected function extraAndDecodeJwtPayload(?string $jwt): ?string
     {
         $parts = explode('.', $jwt ?? '');
@@ -379,6 +400,9 @@ class OAuth2 extends Source
         return $decoded;
     }
 
+    /**
+     * @return bool
+     */
     protected function isPkceEnabled(): bool
     {
         return (bool)$this->config->getOptionalValueValidate('pkceMethod', [
@@ -442,6 +466,9 @@ class OAuth2 extends Source
         return $this->config;
     }
 
+    /**
+     * @return string
+     */
     protected function getAttributePrefix(): string
     {
         return $this->config->getOptionalString('attributePrefix', '');

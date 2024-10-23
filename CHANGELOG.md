@@ -1,5 +1,10 @@
 # simplesamlphp-module-authoauth2  Changelog
 
+## v5.0.0-beta.1
+* Upgrade to min SSP 2.3 and php 8.1
+* Move to controllers and routes
+* Update default callback/redirect URLS to not include `.php` extension
+
 ## v4.1.0
 _Release: 2024-10-01
 * Allow urlResourceOwnerDetails to be overridden for OIDC
