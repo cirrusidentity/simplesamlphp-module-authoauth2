@@ -163,15 +163,29 @@ class Oauth2ControllerTest extends TestCase
     public static function configuration(): array
     {
         return [ //datasets
-            'useConsentPage' => [ // dataset 0
+            'useConsentPage (GET)' => [ // dataset 0
                 [
                     ['useConsentErrorPage' => true],
                 ],
+                'GET'
             ],
-            'useConsentPage & legacyRoute' => [ // data set 1
+            'useConsentPage & legacyRoute (GET)' => [ // data set 1
                 [
                     ['useConsentErrorPage' => true, 'useLegacyRoutes' => true],
                 ],
+                'GET'
+            ],
+            'useConsentPage (POST)' => [ // dataset 0
+                [
+                    ['useConsentErrorPage' => true],
+                ],
+                'POST'
+            ],
+            'useConsentPage & legacyRoute (POST)' => [ // data set 1
+                [
+                    ['useConsentErrorPage' => true, 'useLegacyRoutes' => true],
+                ],
+                'POST'
             ],
         ];
     }
@@ -180,13 +194,13 @@ class Oauth2ControllerTest extends TestCase
      * @throws Exception
      */
     #[DataProvider('configuration')]
-    public function testHandleErrorWithConsentedError(array $configuration): void
+    public function testHandleErrorWithConsentedError(array $configuration,  string $requestMethod): void
     {
         $this->createControllerMock(['getSourceService', 'loadState', 'getHttp']);
 
         $request = Request::create(
             uri: 'https://localhost/auth/authorize',
-            method: 'POST',
+            method: $requestMethod,
             parameters: [
                      ...$this->parametersMock,
                      'error' => 'invalid_scope',
@@ -210,31 +224,49 @@ class Oauth2ControllerTest extends TestCase
     public static function oauth2errors(): array
     {
         return [
-          'oauth2 valid error code' => [
+          'oauth2 valid error code (GET)' => [
               [
                   'error' => 'invalid_scope',
                   'error_description' => 'Invalid scope'
               ],
-              UserAborted::class
+              UserAborted::class,
+              'GET'
           ],
-          'oauth2 invalid error code' => [
+          'oauth2 invalid error code (GET)' => [
               [
                   'error' => 'invalid_error',
                   'error_description' => 'Invalid error'
               ],
-              AuthSource::class
+              AuthSource::class,
+              'GET'
+          ],
+          'oauth2 valid error code (POST)' => [
+              [
+                  'error' => 'invalid_scope',
+                  'error_description' => 'Invalid scope'
+              ],
+              UserAborted::class,
+              'POST'
+          ],
+          'oauth2 invalid error code(POST)' => [
+              [
+                  'error' => 'invalid_error',
+                  'error_description' => 'Invalid error'
+              ],
+              AuthSource::class,
+              'POST'
           ]
         ];
     }
 
     #[DataProvider('oauth2errors')]
-    public function testHandleErrorThrowException(array $errorResponse, string $className): void
+    public function testHandleErrorThrowException(array $errorResponse, string $className, string $requestMethod): void
     {
         $this->createControllerMock(['getSourceService', 'loadState', 'getHttp']);
 
         $request = Request::create(
             uri: 'https://localhost/auth/authorize',
-            method: 'GET',
+            method: $requestMethod,
             parameters: [
                      ...$this->parametersMock,
                      ...$errorResponse,
