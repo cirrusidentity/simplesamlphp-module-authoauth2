@@ -194,7 +194,7 @@ class Oauth2ControllerTest extends TestCase
      * @throws Exception
      */
     #[DataProvider('configuration')]
-    public function testHandleErrorWithConsentedError(array $configuration,  string $requestMethod): void
+    public function testHandleErrorWithConsentedError(array $configuration, string $requestMethod): void
     {
         $this->createControllerMock(['getSourceService', 'loadState', 'getHttp']);
 
