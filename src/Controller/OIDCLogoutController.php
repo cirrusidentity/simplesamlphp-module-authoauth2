@@ -12,6 +12,8 @@ use SimpleSAML\Error\NoState;
 use SimpleSAML\Logger;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
 use SimpleSAML\Module\authoauth2\Auth\Source\OpenIDConnect;
+use SimpleSAML\Module\authoauth2\Codebooks\LegacyRoutesEnum;
+use SimpleSAML\Module\authoauth2\Codebooks\RoutesEnum;
 use SimpleSAML\Module\authoauth2\Controller\Traits\RequestTrait;
 use SimpleSAML\Module\authoauth2\locators\SourceServiceLocator;
 use Symfony\Component\HttpFoundation\Request;
@@ -55,9 +57,8 @@ class OIDCLogoutController
      */
     public function loggedout(Request $request): void
     {
-        Logger::debug('authoauth2: logout request=' . var_export($request->request->all(), true));
-
         $this->parseRequest($request);
+        Logger::debug('authoauth2: logout request=' . var_export($this->requestParams, true));
 
         \assert(\is_array($this->state));
 
@@ -72,19 +73,22 @@ class OIDCLogoutController
      */
     public function logout(Request $request): void
     {
-        Logger::debug('authoauth2: logout request=' . var_export($request->request->all(), true));
+        $this->parseRequestParamsSingleton($request);
+        Logger::debug('authoauth2: logout request=' . var_export($this->requestParams, true));
         // Find the authentication source
-        if (!$request->query->has('authSource')) {
+        if (!isset($this->requestParams['authSource'])) {
             throw new BadRequest('No authsource in the request');
         }
-        $sourceId = $request->query->get('authSource');
+        $sourceId = $this->requestParams['authSource'];
         if (empty($sourceId) || !\is_string($sourceId)) {
             throw new BadRequest('Authsource ID invalid');
         }
+        $logoutRoute = $this->config->getOptionalBoolean('useLegacyRoutes', false) ?
+            LegacyRoutesEnum::LegacyLogout->value : RoutesEnum::Logout->value;
         $this->getAuthSource($sourceId)
             ->logout([
                          'oidc:localLogout' => true,
-                         'ReturnTo' => $this->config->getBasePath() . 'logout.php',
+                         'ReturnTo' => $this->config->getBasePath() . $logoutRoute,
                      ]);
     }
 

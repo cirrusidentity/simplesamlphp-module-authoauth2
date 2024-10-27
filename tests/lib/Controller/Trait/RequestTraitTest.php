@@ -176,7 +176,8 @@ class RequestTraitTest extends TestCase
 
         $expected = ['error' => 'invalid_request'];
 
-        $this->assertEquals($expected, $this->parseRequestParamsSingleton($request));
+        $this->parseRequestParamsSingleton($request);
+        $this->assertEquals($expected, $this->requestParams);
 
         $request = Request::create(
             uri: 'https://localhost/auth/authorize',
@@ -184,6 +185,7 @@ class RequestTraitTest extends TestCase
             parameters: [ 'error' => 'invalid_request']
         );
 
-        $this->assertEquals($expected, $this->parseRequestParamsSingleton($request));
+        $this->parseRequestParamsSingleton($request);
+        $this->assertEquals($expected, $this->requestParams);
     }
 }

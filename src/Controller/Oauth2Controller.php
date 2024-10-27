@@ -51,9 +51,8 @@ class Oauth2Controller
      */
     public function linkback(Request $request): void
     {
-        Logger::debug('authoauth2: linkback request=' . var_export($request->query->all(), true));
-
         $this->parseRequest($request);
+        Logger::debug('authoauth2: linkback request=' . var_export($this->requestParams, true));
 
         // Required for psalm
         \assert($this->source instanceof  OAuth2);
@@ -61,12 +60,14 @@ class Oauth2Controller
         \assert(\is_string($this->sourceId));
 
         // Handle Identify Provider error
-        if (!$request->query->has('code') || empty($request->query->get('code'))) {
+        if (empty($this->requestParams['code'])) {
             $this->handleError($this->source, $this->state, $request);
+            // Used to facilitate testing
+            return;
         }
 
         try {
-            $this->source->finalStep($this->state, (string)$request->query->get('code'));
+            $this->source->finalStep($this->state, (string)$this->requestParams['code']);
         } catch (IdentityProviderException $e) {
             // phpcs:ignore Generic.Files.LineLength.TooLong
             Logger::error("authoauth2: error in '$this->sourceId' msg '{$e->getMessage()}' body '" . var_export($e->getResponseBody(), true) . "'");

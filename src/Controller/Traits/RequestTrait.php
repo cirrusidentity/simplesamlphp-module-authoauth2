@@ -37,8 +37,8 @@ trait RequestTrait
      */
     protected string $expectedStateAuthId = OAuth2::AUTHID;
 
-    /** @var array|null  */
-    private ?array $requestParams;
+    /** @var array  */
+    protected array $requestParams = [];
 
     /**
      * @param   Request  $request
@@ -47,12 +47,13 @@ trait RequestTrait
      */
     public function stateIsValid(Request $request): bool
     {
-        $requestParams = $this->parseRequestParamsSingleton($request);
-        if (!isset($requestParams['state'])) {
+        // Parse the request parameters
+        $this->parseRequestParamsSingleton($request);
+        if (!isset($this->requestParams['state'])) {
             return false;
         }
         /** @var ?string $stateId */
-        $stateId = $requestParams['state'];
+        $stateId = $this->requestParams['state'];
         if (empty($stateId)) {
             return false;
         }
@@ -77,8 +78,7 @@ trait RequestTrait
             };
             throw new BadRequest($message);
         }
-        $requestParams = $this->parseRequestParamsSingleton($request);
-        $stateIdWithPrefix = (string)($requestParams['state'] ?? '');
+        $stateIdWithPrefix = (string)($this->requestParams['state'] ?? '');
         $stateId = substr($stateIdWithPrefix, \strlen($this->expectedPrefix));
 
         $this->state = $this->loadState($stateId, $this->expectedStageState);
@@ -119,15 +119,11 @@ trait RequestTrait
 
     /**
      * @param   Request  $request
-     *
-     * @return array
      */
-    public function parseRequestParamsSingleton(Request $request): array
+    public function parseRequestParamsSingleton(Request $request): void
     {
-        if (!empty($this->requestParams)) {
-            return $this->requestParams;
+        if (empty($this->requestParams)) {
+            $this->requestParams = RequestUtilities::getRequestParams($request);
         }
-
-        return RequestUtilities::getRequestParams($request);
     }
 }

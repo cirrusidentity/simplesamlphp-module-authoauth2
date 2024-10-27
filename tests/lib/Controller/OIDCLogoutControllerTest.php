@@ -5,38 +5,23 @@ declare(strict_types=1);
 namespace SimpleSAML\Module\authoauth2\Tests\Controller;
 
 use DG\BypassFinals;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\TestCase;
-use SimpleSAML\Auth\Source;
-use SimpleSAML\Configuration;
+use SimpleSAML\Auth\Simple;
 use SimpleSAML\Error\BadRequest;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
 use SimpleSAML\Module\authoauth2\Auth\Source\OpenIDConnect;
+use SimpleSAML\Module\authoauth2\Codebooks\RoutesEnum;
 use SimpleSAML\Module\authoauth2\Controller\OIDCLogoutController;
 use SimpleSAML\Module\authoauth2\Controller\Traits\RequestTrait;
 use SimpleSAML\Module\authoauth2\locators\SourceService;
-use Symfony\Component\HttpFoundation\InputBag;
 use Symfony\Component\HttpFoundation\Request;
 
 // Unless we declare the class here, it is not recognized by phpcs
 class OIDCLogoutControllerMock extends OIDCLogoutController
 {
     use RequestTrait;
-
-    public function setSource(Source $source): void
-    {
-        $this->source = $source;
-    }
-
-    public function setState(array $state): void
-    {
-        $this->state = $state;
-    }
-
-    public function setSourceId(string $sourceId): void
-    {
-        $this->sourceId = $sourceId;
-    }
 
     public function getExpectedStageState(): string
     {
@@ -54,37 +39,25 @@ class OIDCLogoutControllerTest extends TestCase
 {
     /** @var OIDCLogoutControllerMock */
     private $controller;
-    /** @var Request */
-    private $requestMock;
-    /** @var Configuration */
-    private $configMock;
-    private array $stateMock;
     /** @var SourceService */
     private $sourceServiceMock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject|(OAuth2&\PHPUnit\Framework\MockObject\MockObject) */
+    private $oauth2Mock;
+    /** @var \PHPUnit\Framework\MockObject\MockObject|(Simple&\PHPUnit\Framework\MockObject\MockObject) */
+    private $simpleMock;
+    private array $stateMock;
+    private array $parametersMock;
 
     /**
      * @throws Exception
      */
     protected function setUp(): void
     {
-        BypassFinals::enable(bypassReadOnly: false);
+        $this->parametersMock = ['state' => OAuth2::STATE_PREFIX . '-statefoo'];
+        $this->stateMock = [OAuth2::AUTHID => 'testSourceId'];
 
-        $this->configMock = $this->createMock(Configuration::class);
-
-        // Initial state setup
-        $this->stateMock = ['state' => 'testState'];
-
-        $this->controller = $this->getMockBuilder(OIDCLogoutControllerMock::class)
-            ->setConstructorArgs([$this->configMock])
-            ->onlyMethods(['parseRequest', 'getSourceService', 'getAuthSource'])
-            ->getMock();
-
-        $this->requestMock = $this->getMockBuilder(Request::class)->getMock();
-
-        $this->controller->method('getSourceService')
-            ->willReturn($this->createMock(SourceService::class));
-
-        $this->sourceServiceMock = $this->controller->getSourceService();
+        // Create the mock controller
+        $this->createControllerMock(['getSourceService', 'loadState', 'getAuthSource']);
     }
 
     public function testExpectedConstVariables(): void
@@ -93,11 +66,26 @@ class OIDCLogoutControllerTest extends TestCase
         $this->assertEquals(OAuth2::STATE_PREFIX . '-', $this->controller->getExpectedPrefix());
     }
 
-    public function testLoggedOutSuccess(): void
+    public static function requestMethod(): array
     {
-        $this->controller->setState($this->stateMock);
+        return [
+            'GET' => ['GET'],
+            'POST' => ['POST'],
+        ];
+    }
 
-        $this->requestMock->request = $this->createRequestMock([]);
+    #[DataProvider('requestMethod')]
+    public function testLoggedOutSuccess(string $requestMethod): void
+    {
+        $parameters = [
+            ...$this->parametersMock,
+        ];
+
+        $request = Request::create(
+            uri: 'https://localhost/auth/authorize',
+            method: $requestMethod,
+            parameters: $parameters,
+        );
 
         /** @psalm-suppress UndefinedMethod,MixedMethodCall */
         $this->sourceServiceMock
@@ -105,68 +93,112 @@ class OIDCLogoutControllerTest extends TestCase
             ->method('completeLogout')
             ->with($this->stateMock);
 
-        $this->controller->loggedout($this->requestMock);
-
-
-        // Assertions to verify behavior
+        $this->controller->loggedout($request);
     }
 
-    public function testLogoutWithoutAuthSourceThrowsBadRequest(): void
+    #[DataProvider('requestMethod')]
+    public function testLogoutWithoutAuthSourceThrowsBadRequest(string $requestMethod): void
     {
-        $this->requestMock->query = $this->createQueryMock([]);
-        $this->requestMock->request = $this->createRequestMock([]);
+        $parameters = [
+            ...$this->parametersMock,
+        ];
+
+        $request = Request::create(
+            uri: 'https://localhost/auth/authorize',
+            method: $requestMethod,
+            parameters: $parameters,
+        );
 
         $this->expectException(BadRequest::class);
         $this->expectExceptionMessage('No authsource in the request');
 
-        $this->controller->logout($this->requestMock);
+        $this->controller->logout($request);
     }
 
-    public function testLogoutWithInvalidAuthSourceThrowsBadRequest(): void
+    #[DataProvider('requestMethod')]
+    public function testLogoutWithInvalidAuthSourceThrowsBadRequest(string $requestMethod): void
     {
-        $this->requestMock->query = $this->createQueryMock(['authSource' => '']);
-        $this->requestMock->request = $this->createRequestMock([]);
+        $parameters = [
+            'authSource' => ['INVALID SOURCE ID'],
+            ...$this->parametersMock,
+        ];
+
+        $request = Request::create(
+            uri: 'https://localhost/auth/authorize',
+            method: $requestMethod,
+            parameters: $parameters,
+        );
 
         $this->expectException(BadRequest::class);
         $this->expectExceptionMessage('Authsource ID invalid');
 
-        $this->controller->logout($this->requestMock);
+        $this->controller->logout($request);
+    }
+
+    #[DataProvider('requestMethod')]
+    public function testSuccessfullLogout(string $requestMethod): void
+    {
+        $parameters = [
+            'authSource' => 'authsourceid',
+            ...$this->parametersMock,
+        ];
+
+        $request = Request::create(
+            uri: 'https://localhost/auth/authorize',
+            method: $requestMethod,
+            parameters: $parameters,
+        );
+
+        $logoutConfig = [
+            'oidc:localLogout' => true,
+            'ReturnTo' => '/' . RoutesEnum::Logout->value
+        ];
+
+        /** @psalm-suppress UndefinedMethod,MixedMethodCall */
+        $this->simpleMock
+            ->expects($this->once())
+            ->method('logout')
+            ->with($logoutConfig);
+
+        $this->controller->logout($request);
     }
 
     // Mock helper function
-    private function createQueryMock(array $params): InputBag
+    private function createControllerMock(array $methods): void
     {
-        $queryMock = $this->getMockBuilder(InputBag::class)->getMock();
-        $queryMock->method('has')->willReturnCallback(
-            function (string $key) use ($params) {
-                return array_key_exists($key, $params);
-            }
-        );
+        $this->oauth2Mock = $this->getMockBuilder(OAuth2::class)
+            ->disableOriginalConstructor()
+            ->getMock();
 
-        $queryMock->method('get')->willReturnCallback(
-            function (?string $key) use ($params) {
-                return $params[$key] ?? null;
-            }
-        );
-        return $queryMock;
-    }
+        $this->simpleMock = $this->getMockBuilder(Simple::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['logout'])
+            ->getMock();
 
-    // Mock helper function
-    private function createRequestMock(array $params): InputBag
-    {
-        $queryMock = $this->getMockBuilder(InputBag::class)->getMock();
+        $this->sourceServiceMock = $this->getMockBuilder(SourceService::class)
+            ->onlyMethods(['completeLogout', 'getById'])
+            ->getMock();
 
-        $queryMock->method('get')->willReturnCallback(
-            function (?string $key) use ($params) {
-                return $params[$key] ?? null;
-            }
-        );
+        $this->controller = $this->getMockBuilder(OIDCLogoutControllerMock::class)
+            ->onlyMethods($methods)
+            ->getMock();
 
-        $queryMock->method('all')->willReturnCallback(
-            function (?string $key) use ($params) {
-                return $params[$key] ?? [];
-            }
-        );
-        return $queryMock;
+        /** @psalm-suppress UndefinedMethod,MixedMethodCall */
+        $this->controller
+            ->method('getSourceService')
+            ->willReturn($this->sourceServiceMock);
+
+        $this->controller
+            ->method('getAuthSource')
+            ->willReturn($this->simpleMock);
+
+        $this->sourceServiceMock
+            ->method('getById')
+            ->with('testSourceId', OAuth2::class)
+            ->willReturn($this->oauth2Mock);
+
+        $this->controller
+            ->method('loadState')
+            ->willReturn($this->stateMock);
     }
 }
