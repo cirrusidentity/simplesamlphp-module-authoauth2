@@ -81,4 +81,4 @@ initiate a login to Apple. Non-secret values such as keyId and teamId
 
 # Documentation
 
-* (TN3107: Resolving Sign in with Apple response errors)[https://developer.apple.com/documentation/technotes/tn3107-resolving-sign-in-with-apple-response-errors]
+* [TN3107: Resolving Sign in with Apple response errors](https://developer.apple.com/documentation/technotes/tn3107-resolving-sign-in-with-apple-response-errors)
