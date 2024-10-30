@@ -9,8 +9,9 @@ use SimpleSAML\Auth\State;
 use SimpleSAML\Error\BadRequest;
 use SimpleSAML\Error\NoState;
 use SimpleSAML\Module\authoauth2\Auth\Source\OAuth2;
-use SimpleSAML\Module\authoauth2\Codebooks\RoutesEnum;
 use SimpleSAML\Module\authoauth2\Codebooks\LegacyRoutesEnum;
+use SimpleSAML\Module\authoauth2\Codebooks\RoutesEnum;
+use SimpleSAML\Module\authoauth2\Lib\RequestUtilities;
 use SimpleSAML\Module\authoauth2\locators\SourceServiceLocator;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -36,6 +37,9 @@ trait RequestTrait
      */
     protected string $expectedStateAuthId = OAuth2::AUTHID;
 
+    /** @var array  */
+    protected array $requestParams = [];
+
     /**
      * @param   Request  $request
      *
@@ -43,11 +47,13 @@ trait RequestTrait
      */
     public function stateIsValid(Request $request): bool
     {
-        if (!$request->query->has('state')) {
+        // Parse the request parameters
+        $this->parseRequestParamsSingleton($request);
+        if (!isset($this->requestParams['state'])) {
             return false;
         }
         /** @var ?string $stateId */
-        $stateId = $request->query->get('state');
+        $stateId = $this->requestParams['state'];
         if (empty($stateId)) {
             return false;
         }
@@ -72,7 +78,7 @@ trait RequestTrait
             };
             throw new BadRequest($message);
         }
-        $stateIdWithPrefix = (string)($request->query->get('state') ?? '');
+        $stateIdWithPrefix = (string)($this->requestParams['state'] ?? '');
         $stateId = substr($stateIdWithPrefix, \strlen($this->expectedPrefix));
 
         $this->state = $this->loadState($stateId, $this->expectedStageState);
@@ -109,5 +115,15 @@ trait RequestTrait
     public function loadState(string $id, string $stage, bool $allowMissing = false): ?array
     {
         return State::loadState($id, $stage, $allowMissing);
+    }
+
+    /**
+     * @param   Request  $request
+     */
+    public function parseRequestParamsSingleton(Request $request): void
+    {
+        if (empty($this->requestParams)) {
+            $this->requestParams = RequestUtilities::getRequestParams($request);
+        }
     }
 }

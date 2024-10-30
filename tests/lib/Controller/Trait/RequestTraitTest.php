@@ -147,7 +147,6 @@ class RequestTraitTest extends TestCase
         $this->controller->parseRequest($this->request);
     }
 
-
     public function testParseRequestWithInvalidSource(): void
     {
         $this->request->query->set('state', OAuth2::STATE_PREFIX . '|valid_state_with_invalid_source');
@@ -165,5 +164,28 @@ class RequestTraitTest extends TestCase
         $this->expectExceptionMessage('Could not find authentication source with id invalid_source_id');
 
         $this->controller->parseRequest($this->request);
+    }
+
+    public function testParsePostGetRequest(): void
+    {
+        $request = Request::create(
+            uri: 'https://localhost/auth/authorize',
+            method: 'POST',
+            parameters: [ 'error' => 'invalid_request'],
+        );
+
+        $expected = ['error' => 'invalid_request'];
+
+        $this->parseRequestParamsSingleton($request);
+        $this->assertEquals($expected, $this->requestParams);
+
+        $request = Request::create(
+            uri: 'https://localhost/auth/authorize',
+            method: 'GET',
+            parameters: [ 'error' => 'invalid_request']
+        );
+
+        $this->parseRequestParamsSingleton($request);
+        $this->assertEquals($expected, $this->requestParams);
     }
 }

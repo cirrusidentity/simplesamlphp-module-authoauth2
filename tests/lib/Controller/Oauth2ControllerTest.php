@@ -6,8 +6,8 @@ namespace SimpleSAML\Module\authoauth2\Tests\Controller;
 
 use DG\BypassFinals;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use SimpleSAML\Auth\Source;
 use SimpleSAML\Configuration;
 use SimpleSAML\Error\AuthSource;
 use SimpleSAML\Error\Exception;
@@ -20,7 +20,6 @@ use SimpleSAML\Module\authoauth2\locators\HTTPLocator;
 use SimpleSAML\Module\authoauth2\locators\SourceService;
 use SimpleSAML\Module\authoauth2\locators\SourceServiceLocator;
 use SimpleSAML\Utils\HTTP;
-use Symfony\Component\HttpFoundation\InputBag;
 use Symfony\Component\HttpFoundation\Request;
 
 // Unless we declare the class here, it is not recognized by phpcs
@@ -30,31 +29,6 @@ class Oauth2ControllerMock extends Oauth2Controller
     use SourceServiceLocator;
     use RequestTrait;
     use ErrorTrait;
-
-    public function handleError(OAuth2 $source, array $state, Request $request): void
-    {
-        parent::handleError($source, $state, $request);
-    }
-
-    public function setSource(Source $source): void
-    {
-        $this->source = $source;
-    }
-
-    public function getSource(): ?Source
-    {
-        return $this->source;
-    }
-
-    public function setState(array $state): void
-    {
-        $this->state = $state;
-    }
-
-    public function setSourceId(string $sourceId): void
-    {
-        $this->sourceId = $sourceId;
-    }
 
     public function getExpectedStageState(): string
     {
@@ -72,67 +46,110 @@ class Oauth2ControllerTest extends TestCase
 {
     /** @var Oauth2ControllerMock */
     private $controller;
-    /** @var Request */
-    private $requestMock;
     /** @var HTTP  */
     private $httpMock;
     /** @var \PHPUnit\Framework\MockObject\MockObject|(OAuth2&\PHPUnit\Framework\MockObject\MockObject) */
     private $oauth2Mock;
+    /** @var SourceService */
+    private $sourceServiceMock;
     private array $stateMock;
+    private array $parametersMock;
 
     protected function setUp(): void
     {
-        BypassFinals::enable(bypassReadOnly: false);
+        $this->oauth2Mock = $this->getMockBuilder(OAuth2::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['finalStep', 'getConfig'])
+            ->getMock();
+        $this->sourceServiceMock = $this->getMockBuilder(SourceService::class)
+            ->onlyMethods(['getById', 'completeAuth'])
+            ->getMock();
 
-        $this->requestMock = $this->getMockBuilder(Request::class)->getMock();
-        $this->oauth2Mock = $this->getMockBuilder(OAuth2::class)->disableOriginalConstructor()->getMock();
+
         $this->httpMock = $this->getMockBuilder(HTTP::class)->getMock();
-        $this->stateMock = ['state' => 'testState'];
+        $this->parametersMock = ['state' => OAuth2::STATE_PREFIX . '|statefoo'];
+        $this->stateMock = [OAuth2::AUTHID => 'testSourceId'];
     }
 
     public function testExpectedConstVariables(): void
     {
-        $this->createControllerMock(['parseRequest', 'getSourceService', 'handleError', 'getHttp', 'parseError']);
+        $this->createControllerMock(['getSourceService', 'loadState']);
         $this->assertEquals(OAuth2::STAGE_INIT, $this->controller->getExpectedStageState());
         $this->assertEquals(OAuth2::STATE_PREFIX . '|', $this->controller->getExpectedPrefix());
     }
 
-    public function testLinkbackValidCode(): void
+    public static function requestMethod(): array
     {
-        $this->createControllerMock(['parseRequest', 'getSourceService', 'handleError', 'getHttp', 'parseError']);
-        $this->requestMock->query = $this->createQueryMock(['code' => 'validCode']);
+        return [
+            'GET' => ['GET'],
+            'POST' => ['POST'],
+        ];
+    }
+
+    #[DataProvider('requestMethod')]
+    public function testLinkbackValidCode(string $requestMethod): void
+    {
+        $this->createControllerMock(['getSourceService', 'loadState', 'getHttp']);
+        $parameters = [
+            'code' => 'validCode',
+            ...$this->parametersMock,
+        ];
+
+        $request = Request::create(
+            uri: 'https://localhost/auth/authorize',
+            method: $requestMethod,
+            parameters: $parameters,
+        );
 
         $this->oauth2Mock->expects($this->once())
             ->method('finalStep')
             ->with($this->stateMock, 'validCode');
 
-        /** @psalm-suppress UndefinedMethod,MixedMethodCall */
-        $this->controller
-            ->method('getSourceService')
-            ->willReturn($this->createMock(SourceService::class));
+        $this->sourceServiceMock->expects($this->once())
+            ->method('completeAuth')
+            ->with($this->stateMock);
 
-        $this->controller->linkback($this->requestMock);
-
-        // Assertions for the success scenario can be done here
+        $this->controller->linkback($request);
     }
 
-    public function testLinkbackWithNoCode(): void
+    #[DataProvider('requestMethod')]
+    public function testLinkbackWithNoCode(string $requestMethod): void
     {
-        $this->createControllerMock(['parseRequest', 'getSourceService', 'handleError', 'getHttp', 'parseError']);
-        $this->requestMock->query = $this->createQueryMock([]);
+        $this->createControllerMock(['getSourceService', 'loadState', 'handleError']);
+
+        $parameters = [
+            ...$this->parametersMock,
+        ];
+
+        $request = Request::create(
+            uri: 'https://localhost/auth/authorize',
+            method: $requestMethod,
+            parameters: $parameters,
+        );
 
         /** @psalm-suppress UndefinedMethod,MixedMethodCall */
         $this->controller
             ->expects($this->once())
             ->method('handleError');
 
-        $this->controller->linkback($this->requestMock);
+        $this->controller->linkback($request);
     }
 
-    public function testLinkbackWithIdentityProviderException(): void
+    #[DataProvider('requestMethod')]
+    public function testLinkbackWithIdentityProviderException(string $requestMethod): void
     {
-        $this->createControllerMock(['parseRequest', 'getSourceService', 'handleError', 'getHttp', 'parseError']);
-        $this->requestMock->query = $this->createQueryMock(['code' => 'validCode']);
+        $this->createControllerMock(['getSourceService', 'loadState', 'getHttp']);
+
+        $parameters = [
+            'code' => 'validCode',
+            ...$this->parametersMock,
+        ];
+
+        $request = Request::create(
+            uri: 'https://localhost/auth/authorize',
+            method: $requestMethod,
+            parameters: $parameters,
+        );
 
         $this->oauth2Mock->expects($this->once())
             ->method('finalStep')
@@ -140,36 +157,60 @@ class Oauth2ControllerTest extends TestCase
 
         $this->expectException(AuthSource::class);
 
-        $this->controller->linkback($this->requestMock);
+        $this->controller->linkback($request);
+    }
+
+    public static function configuration(): array
+    {
+        return [ //datasets
+            'useConsentPage (GET)' => [ // dataset 0
+                [
+                    ['useConsentErrorPage' => true],
+                ],
+                'GET'
+            ],
+            'useConsentPage & legacyRoute (GET)' => [ // data set 1
+                [
+                    ['useConsentErrorPage' => true, 'useLegacyRoutes' => true],
+                ],
+                'GET'
+            ],
+            'useConsentPage (POST)' => [ // dataset 0
+                [
+                    ['useConsentErrorPage' => true],
+                ],
+                'POST'
+            ],
+            'useConsentPage & legacyRoute (POST)' => [ // data set 1
+                [
+                    ['useConsentErrorPage' => true, 'useLegacyRoutes' => true],
+                ],
+                'POST'
+            ],
+        ];
     }
 
     /**
      * @throws Exception
      */
-    public function testHandleErrorWithConsentedError(): void
+    #[DataProvider('configuration')]
+    public function testHandleErrorWithConsentedError(array $configuration, string $requestMethod): void
     {
-        $this->createControllerMock(['parseRequest', 'getSourceService', 'getHttp', 'parseError']);
-        $this->controller->getSource()->method('getAuthId')->willReturn('authId');
-        $this->controller
-            ->getSource()
-            ->method('getConfig')
-            ->willReturn(new class (['useConsentErrorPage' => true], '') extends Configuration {
-                public function getOptionalBoolean($name, $default): bool
-                {
-                    if (!$this->hasValue($name) && isset($default)) {
-                        return filter_var($default, FILTER_VALIDATE_BOOLEAN);
-                    }
-                    return filter_var($this->getValue($name), FILTER_VALIDATE_BOOLEAN);
-                }
-            });
+        $this->createControllerMock(['getSourceService', 'loadState', 'getHttp']);
 
-        $this->requestMock->query = $this->createQueryMock(
-            ['error' => 'invalid_scope', 'error_description' => 'Invalid scope']
+        $request = Request::create(
+            uri: 'https://localhost/auth/authorize',
+            method: $requestMethod,
+            parameters: [
+                     ...$this->parametersMock,
+                     'error' => 'invalid_scope',
+                     'error_description' => 'Invalid scope',
+                 ],
         );
 
-        $this->controller->method('parseError')
-            ->with($this->requestMock)
-            ->willReturn(['invalid_scope', 'Invalid scope']);
+        $this->oauth2Mock
+            ->method('getConfig')
+            ->willReturn(new Configuration($configuration, 'test'));
 
         $this->controller->method('getHttp')->willReturn($this->httpMock);
 
@@ -177,107 +218,91 @@ class Oauth2ControllerTest extends TestCase
             ->method('redirectTrustedURL')
             ->with('http://localhost/module.php/authoauth2/errors/consent');
 
-        $this->controller->handleError($this->controller->getSource(), $this->stateMock, $this->requestMock);
+        $this->controller->linkback($request);
     }
 
-    public function testHandleErrorWithConsentErrorAtLegacyRoute(): void
+    public static function oauth2errors(): array
     {
-        $this->createControllerMock(['parseRequest', 'getSourceService', 'getHttp', 'parseError']);
-        $this->controller->getSource()->method('getAuthId')->willReturn('authId');
-        $configArray = ['useConsentErrorPage' => true, 'useLegacyRoutes' => true];
-        $this->controller
-            ->getSource()
-            ->method('getConfig')
-            ->willReturn(new Configuration($configArray, 'test'));
+        return [
+          'oauth2 valid error code (GET)' => [
+              [
+                  'error' => 'invalid_scope',
+                  'error_description' => 'Invalid scope'
+              ],
+              UserAborted::class,
+              'GET'
+          ],
+          'oauth2 invalid error code (GET)' => [
+              [
+                  'error' => 'invalid_error',
+                  'error_description' => 'Invalid error'
+              ],
+              AuthSource::class,
+              'GET'
+          ],
+          'oauth2 valid error code (POST)' => [
+              [
+                  'error' => 'invalid_scope',
+                  'error_description' => 'Invalid scope'
+              ],
+              UserAborted::class,
+              'POST'
+          ],
+          'oauth2 invalid error code(POST)' => [
+              [
+                  'error' => 'invalid_error',
+                  'error_description' => 'Invalid error'
+              ],
+              AuthSource::class,
+              'POST'
+          ]
+        ];
+    }
 
-        $this->requestMock->query = $this->createQueryMock(
-            ['error' => 'invalid_scope', 'error_description' => 'Invalid scope']
+    #[DataProvider('oauth2errors')]
+    public function testHandleErrorThrowException(array $errorResponse, string $className, string $requestMethod): void
+    {
+        $this->createControllerMock(['getSourceService', 'loadState', 'getHttp']);
+
+        $request = Request::create(
+            uri: 'https://localhost/auth/authorize',
+            method: $requestMethod,
+            parameters: [
+                     ...$this->parametersMock,
+                     ...$errorResponse,
+                 ],
         );
-
-        $this->controller->method('parseError')
-            ->with($this->requestMock)
-            ->willReturn(['invalid_scope', 'Invalid scope']);
-
-        $this->controller->method('getHttp')->willReturn($this->httpMock);
-
-        $this->httpMock->expects($this->once())
-            ->method('redirectTrustedURL')
-            ->with('http://localhost/module.php/authoauth2/errors/consent.php');
-
-        $this->controller->handleError($this->controller->getSource(), $this->stateMock, $this->requestMock);
-    }
-
-    public function testHandleErrorWithUserAborted(): void
-    {
-        $this->createControllerMock(['parseRequest', 'getSourceService', 'getHttp', 'parseError']);
-        $this->controller->getSource()->method('getAuthId')->willReturn('authId');
         $configArray = ['useConsentErrorPage' => false];
-        $this->controller
-            ->getSource()
+
+        $this->oauth2Mock
             ->method('getConfig')
             ->willReturn(new Configuration($configArray, 'test'));
 
-        $this->requestMock->query = $this->createQueryMock(
-            ['error' => 'invalid_scope', 'error_description' => 'Invalid scope']
-        );
-
-        $this->controller->method('parseError')
-            ->with($this->requestMock)
-            ->willReturn(['invalid_scope', 'Invalid scope']);
-
         $this->controller->method('getHttp')->willReturn($this->httpMock);
 
-        $this->expectException(UserAborted::class);
+        $this->expectException($className);
 
-        $this->controller->handleError($this->controller->getSource(), $this->stateMock, $this->requestMock);
+        $this->controller->linkback($request);
     }
 
-
-    public function testHandleErrorWithAuthSourceException(): void
-    {
-        $this->createControllerMock(['parseRequest', 'getSourceService', 'getHttp', 'parseError']);
-        $this->controller->getSource()->method('getAuthId')->willReturn('authId');
-
-        $this->requestMock->query = $this->createQueryMock(
-            ['error' => 'invalid_error', 'error_description' => 'Invalid Error']
-        );
-
-        $this->controller->method('parseError')
-            ->with($this->requestMock)
-            ->willReturn(['invalid_error', 'Invalid Error']);
-
-        $this->controller->method('getHttp')->willReturn($this->httpMock);
-
-        $this->expectException(AuthSource::class);
-
-        $this->controller->handleError($this->controller->getSource(), $this->stateMock, $this->requestMock);
-    }
-
-    private function createControllerMock(array $methods): void
+    protected function createControllerMock(array $methods): void
     {
         $this->controller = $this->getMockBuilder(Oauth2ControllerMock::class)
             ->onlyMethods($methods)
             ->getMock();
 
-        // Stubbing dependencies
-        $this->controller->setSource($this->oauth2Mock);
-        $this->controller->setState($this->stateMock);
-        $this->controller->setSourceId('testSourceId');
-    }
+        /** @psalm-suppress UndefinedMethod,MixedMethodCall */
+        $this->controller
+            ->method('getSourceService')
+            ->willReturn($this->sourceServiceMock);
 
-    private function createQueryMock(array $params): InputBag
-    {
-        $queryMock = $this->getMockBuilder(InputBag::class)->getMock();
-        $queryMock->method('has')->willReturnCallback(
-            function (string $key) use ($params) {
-                return array_key_exists($key, $params);
-            }
-        );
-        $queryMock->method('get')->willReturnCallback(
-            function (string $key) use ($params) {
-                return $params[$key] ?? null;
-            }
-        );
-        return $queryMock;
+        $this->sourceServiceMock
+            ->method('getById')
+            ->with('testSourceId', OAuth2::class)
+            ->willReturn($this->oauth2Mock);
+
+        $this->controller
+            ->method('loadState')
+            ->willReturn($this->stateMock);
     }
 }
