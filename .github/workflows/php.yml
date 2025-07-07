@@ -169,7 +169,7 @@ jobs:
         - name: Install Composer dependencies
           run: composer install --no-progress --prefer-dist --optimize-autoloader
 
-        - uses: actions/download-artifact@v3
+        - uses: actions/download-artifact@v4
           with:
             name: build-data
             path: ${{ github.workspace }}/build
