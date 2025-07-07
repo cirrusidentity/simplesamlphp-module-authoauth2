@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         operating-system: [ubuntu-latest]
-        php-versions: ['8.1', '8.2', '8.3']
+        php-versions: ['8.1', '8.2', '8.3', '8.4']
 
     steps:
       - name: Setup PHP, with composer and extensions
@@ -37,14 +37,14 @@ jobs:
           git config --global core.autocrlf false
           git config --global core.eol lf
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Get composer cache directory
         id: composer-cache
         run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
       - name: Cache composer dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
@@ -57,7 +57,7 @@ jobs:
         run: composer install --no-progress --prefer-dist --optimize-autoloader
 
       - name: Decide whether to run code coverage or not
-        if: ${{ matrix.php-versions != '8.2' || matrix.operating-system != 'ubuntu-latest' }}
+        if: ${{ matrix.php-versions != '8.4' || matrix.operating-system != 'ubuntu-latest' }}
         run: |
           echo "NO_COVERAGE=--no-coverage" >> $GITHUB_ENV
 
@@ -67,20 +67,20 @@ jobs:
           ./vendor/bin/phpunit $NO_COVERAGE
 
       - name: Save coverage data
-        if: ${{ matrix.php-versions == '8.2' && matrix.operating-system == 'ubuntu-latest' }}
-        uses: actions/upload-artifact@v3
+        if: ${{ matrix.php-versions == '8.4' && matrix.operating-system == 'ubuntu-latest' }}
+        uses: actions/upload-artifact@v4
         with:
           name: build-data
           path: ${{ github.workspace }}/build
 
       - name: List files in the workspace
-        if: ${{ matrix.php-versions == '8.2' && matrix.operating-system == 'ubuntu-latest' }}
+        if: ${{ matrix.php-versions == '8.4' && matrix.operating-system == 'ubuntu-latest' }}
         run: |
           ls -la ${{ github.workspace }}/build
           ls -la ${{ github.workspace }}/build/logs
 
       - name: Code Coverage Report
-        if: ${{ matrix.php-versions == '8.2' && matrix.operating-system == 'ubuntu-latest' }}
+        if: ${{ matrix.php-versions == '8.4' && matrix.operating-system == 'ubuntu-latest' }}
         uses: irongut/CodeCoverageSummary@v1.3.0
         with:
           filename: build/logs/cobertura.xml
@@ -100,7 +100,8 @@ jobs:
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2 #https://github.com/shivammathur/setup-php
         with:
-          php-version: '8.2'
+          # Should be the lowest supported version
+          php-version: '8.1'
           extensions: mbstring, xml
           tools: composer:v2
           coverage: none
@@ -108,14 +109,14 @@ jobs:
       - name: Setup problem matchers for PHP
         run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Get composer cache directory
         id: composer-cache
         run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
       - name: Cache composer dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
@@ -143,21 +144,23 @@ jobs:
           id: setup-php
           uses: shivammathur/setup-php@v2 #https://github.com/shivammathur/setup-php
           with:
-            php-version: '8.2'
+            # Should be the higest supported version, so we can use the newest tools
+            php-version: '8.4'
             tools: composer:v2
-            extensions: mbstring, xml
+            # optional performance gain for psalm: opcache
+            extensions: mbstring, opcache, xml
 
         - name: Setup problem matchers for PHP
           run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
 
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
 
         - name: Get composer cache directory
           id: composer-cache
           run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
         - name: Cache composer dependencies
-          uses: actions/cache@v3
+          uses: actions/cache@v4
           with:
             path: ${{ steps.composer-cache.outputs.dir }}
             key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
@@ -166,7 +169,7 @@ jobs:
         - name: Install Composer dependencies
           run: composer install --no-progress --prefer-dist --optimize-autoloader
 
-        - uses: actions/download-artifact@v3
+        - uses: actions/download-artifact@v4
           with:
             name: build-data
             path: ${{ github.workspace }}/build

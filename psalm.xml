@@ -36,7 +36,6 @@
         <MixedArrayAccess errorLevel="suppress" />
         <MixedReturnTypeCoercion errorLevel="suppress" />
         <MixedReturnStatement errorLevel="suppress" />
-        <MixedInferredReturnType errorLevel="suppress" />
         <MixedAssignment errorLevel="suppress" />
 
         <!-- Ignore errors related to unused classes, methods... -->

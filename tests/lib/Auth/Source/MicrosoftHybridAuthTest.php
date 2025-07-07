@@ -119,18 +119,22 @@ class MicrosoftHybridAuthTest extends TestCase
                     'microsoft.@odata.context' => ['https://graph.microsoft.com/v1.0/$metadata#directoryObjects'],
                     'microsoft.value.0.@odata.type' => ['#microsoft.graph.group'],
                     'microsoft.value.0.id' => ['11111111-1111-1111-1111-111111111111'],
-                ]
+                    'microsoft.tid' => ['9188040d-6c67-4c5b-b11236a304b66dad'],
+                ],
             ],
-            [$validIdToken, $conflictedRequestAttributes, [
-                'microsoft.name' => ['Steve Stratus'],
-                'microsoft.mail' => ['steve.stratus@outlook.com'],
-                'microsoft.id' => ['11111111'],
-                'microsoft.@odata.context' => ['https://graph.microsoft.com/v1.0/$metadata#directoryObjects'],
-                'microsoft.value.0.@odata.type' => ['#microsoft.graph.group'],
-                'microsoft.value.0.id' => ['11111111-1111-1111-1111-111111111111'],
-            ]
+            [
+                $validIdToken,
+                $conflictedRequestAttributes,
+                [
+                    'microsoft.name' => ['Steve Stratus'],
+                    'microsoft.mail' => ['steve.stratus@outlook.com'],
+                    'microsoft.id' => ['11111111'],
+                    'microsoft.@odata.context' => ['https://graph.microsoft.com/v1.0/$metadata#directoryObjects'],
+                    'microsoft.value.0.@odata.type' => ['#microsoft.graph.group'],
+                    'microsoft.value.0.id' => ['11111111-1111-1111-1111-111111111111'],
+                    'microsoft.tid' => ['9188040d-6c67-4c5b-b11236a304b66dad'],
+                ],
             ],
-
         ];
     }
 }
