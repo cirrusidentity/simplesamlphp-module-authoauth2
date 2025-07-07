@@ -23,7 +23,7 @@ class ErrorController
      *
      * @throws \Exception
      */
-    public function __construct(Configuration $config = null)
+    public function __construct(?Configuration $config = null)
     {
         $this->config = $config ?? Configuration::getInstance();
     }
