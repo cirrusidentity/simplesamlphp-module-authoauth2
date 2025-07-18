@@ -45,6 +45,16 @@
         <PossiblyUnusedReturnValue errorLevel="suppress" />
         <PossiblyUnusedParam errorLevel="suppress" />
 
+        <!-- Suppress errors related to PHP 8.3-specific features -->
+        <!-- TODO: Remove this once PHP 8.3 is the minimum required version -->
+        <ClassMustBeFinal errorLevel="suppress" />
+        <MissingOverrideAttribute errorLevel="suppress" />
+
+        <!-- Suppress errors related to PHP 8.4-specific features -->
+        <!-- TODO: Remove this once PHP 8.4 is the minimum required version -->
+        <MissingClassConstType errorLevel="suppress" />
+        <PropertyNotSetInConstructor errorLevel="suppress" />
+
         <!-- Ignore RiskyTruthyFalsyComparison -->
         <RiskyTruthyFalsyComparison errorLevel="suppress" />
     </issueHandlers>

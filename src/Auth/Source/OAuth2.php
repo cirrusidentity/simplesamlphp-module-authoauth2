@@ -209,7 +209,8 @@ class OAuth2 extends Source
             $provider = new static::$defaultProviderClass($config->toArray(), $collaborators);
         }
         /** @psalm-suppress MixedArgument, MixedMethodCall psalm is confused about baseAuthzUrl */
-        $this->oauth2ServerIdentifier = $config->getOptionalString('issuer', $provider->getBaseAuthorizationUrl());
+        $this->oauth2ServerIdentifier = $config->hasValue('issuer') ?
+            $config->getString('issuer') : $provider->getBaseAuthorizationUrl();
         return $provider;
     }
 
@@ -307,7 +308,7 @@ class OAuth2 extends Source
         );
         // Track time spent calling out oauth2 server. This can often be a source of slowness.
         $time = microtime(true) - $start;
-        Logger::debug('authoauth2: ' . $providerLabel . ' finished authentication in ' . $time . ' seconds');
+        Logger::debug(sprintf('authoauth2: %s finished authentication in %.3f seconds', $providerLabel, $time));
 
         // Auth procs may redirect the user and processing may finish in another request/method
         $this->runAuthProcs($state);
