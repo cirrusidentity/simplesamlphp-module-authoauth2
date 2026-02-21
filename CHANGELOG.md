@@ -1,5 +1,9 @@
 # simplesamlphp-module-authoauth2  Changelog
-
+	
+## v5.2.0
+_Release: 2026-02-20
+* Support php-jwt v7, which has min key length check
+	
 ## v5.0.0-beta.1
 * Upgrade to min SSP 2.3 and php 8.1
 * Move to controllers and routes
