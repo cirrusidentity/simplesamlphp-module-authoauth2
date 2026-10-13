@@ -59,6 +59,9 @@ class Oauth2Controller
         \assert(\is_array($this->state));
         \assert(\is_string($this->sourceId));
 
+        // Consume the OAuth state on its first valid use, including error responses.
+        State::deleteState($this->state);
+
         // Handle Identify Provider error
         if (empty($this->requestParams['code'])) {
             $this->handleError($this->source, $this->state, $request);

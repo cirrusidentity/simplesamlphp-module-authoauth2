@@ -8,6 +8,7 @@ use DG\BypassFinals;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use SimpleSAML\Auth\State;
 use SimpleSAML\Configuration;
 use SimpleSAML\Error\AuthSource;
 use SimpleSAML\Error\Exception;
@@ -138,11 +139,12 @@ class Oauth2ControllerTest extends TestCase
     #[DataProvider('requestMethod')]
     public function testLinkbackWithIdentityProviderException(string $requestMethod): void
     {
+        $stateId = State::saveState($this->stateMock, OAuth2::STAGE_INIT);
         $this->createControllerMock(['getSourceService', 'loadState', 'getHttp']);
 
         $parameters = [
             'code' => 'validCode',
-            ...$this->parametersMock,
+            'state' => OAuth2::STATE_PREFIX . '|' . $stateId,
         ];
 
         $request = Request::create(
@@ -157,7 +159,11 @@ class Oauth2ControllerTest extends TestCase
 
         $this->expectException(AuthSource::class);
 
-        $this->controller->linkback($request);
+        try {
+            $this->controller->linkback($request);
+        } finally {
+            $this->assertNull(State::loadState($stateId, OAuth2::STAGE_INIT, true));
+        }
     }
 
     public static function configuration(): array
